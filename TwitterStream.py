@@ -33,10 +33,10 @@ API_ENDPOINT_URL = 'https://stream.twitter.com/1.1/statuses/filter.json'
 #USER_AGENT = 'TwitterStream 1.0' # This can be anything really
 
 # You need to replace these with your own values
-OAUTH_KEYS = {'consumer_key': 'hcmUvbVippqGZ96RGR9Yw',
-              'consumer_secret': '5mJMwzP6YBGk1ew581mx8inhjacqAaDdDxFtNXn9cs',
-              'access_token_key': '84052456-JCwPGhwqm0LChjIgkncUhzaFMEQFtCsP5ODhiaQv2',
-              'access_token_secret': 'hRAx1ZawCTi1Xyca2wqyp7GTEF9x3aSWdoUyHqX3AM8'}
+OAUTH_KEYS = {'consumer_key': '',
+              'consumer_secret': '',
+              'access_token_key': '',
+              'access_token_secret': ''}
 
 # These values are posted when setting up the connection
 POST_PARAMS = {#'include_entities': 0,
@@ -68,7 +68,7 @@ class TwitterStream:
         self.conn = None
         self.buffer = ''
         self.timeout = timeout
-        self.setup_connection()
+        # self.setup_connection()
 
     def setup_connection(self):
         """ Create persistant HTTP connection to Streaming API endpoint using cURL.
@@ -82,9 +82,9 @@ class TwitterStream:
             self.conn.setopt(pycurl.LOW_SPEED_LIMIT, 1)
             self.conn.setopt(pycurl.LOW_SPEED_TIME, self.timeout)
         self.conn.setopt(pycurl.URL, API_ENDPOINT_URL)
-        #self.conn.setopt(pycurl.USERAGENT, USER_AGENT)
+        self.conn.setopt(pycurl.USERAGENT, USER_AGENT)
         # Using gzip is optional but saves us bandwidth.
-        #self.conn.setopt(pycurl.ENCODING, 'deflate, gzip')
+        self.conn.setopt(pycurl.ENCODING, 'deflate, gzip')
         self.conn.setopt(pycurl.POST, 1)
         self.conn.setopt(pycurl.POSTFIELDS, urllib.urlencode(POST_PARAMS))
         self.conn.setopt(pycurl.HTTPHEADER, ['Host: stream.twitter.com',
@@ -113,7 +113,7 @@ class TwitterStream:
         backoff_http_error = 5
         backoff_rate_limit = 60
         while True:
-            self.setup_connection()
+            self.setup_connection() # I guess make sure the connection is open?
             try:
                 self.conn.perform()
             except Exception as e:
@@ -154,8 +154,8 @@ class TwitterStream:
             elif message.get('warning'):
                 print '%d'%(time.time()) +getLineNo() + ':', 'Got warning: %s' % message['warning'].get('message')
             else:
-                db.tweet_SF.insert(dict(message))
-                # print '%d'%(time.time()) +getLineNo() + ':', 'Got tweet with text: %s' % message.get('text')
+                db.tweet_pgh.insert(dict(message))
+                print '%d'%(time.time()) +getLineNo() + ':', 'Got tweet with text: %s' % message.get('text')
         sys.stdout.flush()
         sys.stderr.flush()
         return len(data)
@@ -164,8 +164,8 @@ class TwitterStream:
 
 if __name__ == '__main__':
     timestamp = time.time()
-    errFile = open('SF_error_%d.log'%(timestamp), 'w')
-    outFile = open('SF_output_%d.log'%(timestamp), 'w')
+    errFile = open('pgh_error_%d.log'%(timestamp), 'w')
+    outFile = open('pgh_output_%d.log'%(timestamp), 'w')
     sys.stdout = outFile
     sys.stderr = errFile
     ts = TwitterStream()

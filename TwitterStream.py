@@ -42,7 +42,15 @@ OAUTH_KEYS = {'consumer_key': 'hcmUvbVippqGZ96RGR9Yw',
 POST_PARAMS = {#'include_entities': 0,
                #'stall_warning': 'true',
                #'track': 'iphone,ipad,ipod'}
-               'locations': '-122.5950,37.565,-122.295,37.865'}
+               #'locations': '-122.5950,37.565,-122.295,37.865'}# San Francisco
+                'locations': '-80.3,40.141667,-79.7,40.741667'}# Pgh
+# Locations are lower left long, lower left lat, upper right long, upper right lat
+# This is a pretty arbitrarily chosen square roughly around Pittsburgh.
+# Center of Pittsburgh is 40.441667, -80.0 (exactly -80) so I went .3 deg long
+# and .3 deg lat. Captures most of Pittsburgh and suburbs.
+#
+# More info: https://dev.twitter.com/docs/streaming-apis/parameters#locations
+# Can use -180,-90,180,90 to get all geotagged tweets.
 
 def getLineNo():
   callerframerecord = inspect.stack()[1]    # 0 represents this line
@@ -109,7 +117,7 @@ class TwitterStream:
             try:
                 self.conn.perform()
             except Exception as e:
-                print '%d'%(time.time()) +getLineNo() + ':', e
+                # print '%d'%(time.time()) +getLineNo() + ':', e
                 # Network error, use linear back off up to 16 seconds
                 print '%d'%(time.time()) +getLineNo() + ':', 'Network error: %s' % self.conn.errstr()
                 print '%d'%(time.time()) +getLineNo() + ':', 'Waiting %s seconds before trying again' % backoff_network_error
@@ -147,7 +155,7 @@ class TwitterStream:
                 print '%d'%(time.time()) +getLineNo() + ':', 'Got warning: %s' % message['warning'].get('message')
             else:
                 db.tweet_SF.insert(dict(message))
-                print '%d'%(time.time()) +getLineNo() + ':', 'Got tweet with text: %s' % message.get('text')
+                # print '%d'%(time.time()) +getLineNo() + ':', 'Got tweet with text: %s' % message.get('text')
         sys.stdout.flush()
         sys.stderr.flush()
         return len(data)

@@ -82,7 +82,7 @@ class TwitterStream:
             self.conn.setopt(pycurl.LOW_SPEED_LIMIT, 1)
             self.conn.setopt(pycurl.LOW_SPEED_TIME, self.timeout)
         self.conn.setopt(pycurl.URL, API_ENDPOINT_URL)
-        self.conn.setopt(pycurl.USERAGENT, USER_AGENT)
+        # self.conn.setopt(pycurl.USERAGENT, USER_AGENT)
         # Using gzip is optional but saves us bandwidth.
         self.conn.setopt(pycurl.ENCODING, 'deflate, gzip')
         self.conn.setopt(pycurl.POST, 1)
@@ -155,7 +155,7 @@ class TwitterStream:
                 print '%d'%(time.time()) +getLineNo() + ':', 'Got warning: %s' % message['warning'].get('message')
             else:
                 db.tweet_pgh.insert(dict(message))
-                print '%d'%(time.time()) +getLineNo() + ':', 'Got tweet with text: %s' % message.get('text')
+                print '%d'%(time.time()) +getLineNo() + ':', 'Got tweet with text: %s' % message.get('text').encode('utf-8')
         sys.stdout.flush()
         sys.stderr.flush()
         return len(data)

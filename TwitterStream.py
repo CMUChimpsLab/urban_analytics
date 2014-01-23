@@ -43,11 +43,11 @@ POST_PARAMS = {#'include_entities': 0,
                #'stall_warning': 'true',
                #'track': 'iphone,ipad,ipod'}
                #'locations': '-122.5950,37.565,-122.295,37.865'}# San Francisco
-                'locations': '-80.3,40.141667,-79.7,40.741667'}# Pgh
+                'locations': '-80.2,40.241667,-79.8,40.641667'}# Pgh
 # Locations are lower left long, lower left lat, upper right long, upper right lat
 # This is a pretty arbitrarily chosen square roughly around Pittsburgh.
-# Center of Pittsburgh is 40.441667, -80.0 (exactly -80) so I went .3 deg long
-# and .3 deg lat. Captures most of Pittsburgh and suburbs.
+# Center of Pittsburgh is 40.441667, -80.0 (exactly -80) so I went .2 deg long
+# and .2 deg lat. Captures most of Pittsburgh and suburbs.
 #
 # More info: https://dev.twitter.com/docs/streaming-apis/parameters#locations
 # Can use -180,-90,180,90 to get all geotagged tweets.

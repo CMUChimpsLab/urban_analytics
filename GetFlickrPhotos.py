@@ -27,10 +27,10 @@ searchDate = datetime.datetime(2013, 8, 5)
 # so let's start there and go backwards.
 
 timestamp = time.time()
-# errFile = open('flickr_error_%d.log'%(timestamp), 'w')
-# outFile = open('flickr_output_%d.log'%(timestamp), 'w')
-# sys.stdout = outFile
-# sys.stderr = errFile
+errFile = open('flickr_error_%d.log'%(timestamp), 'w')
+outFile = open('flickr_output_%d.log'%(timestamp), 'w')
+sys.stdout = outFile
+sys.stderr = errFile
 
 while True:
     mainParams['min_taken_date'] = str(searchDate)

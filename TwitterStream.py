@@ -164,8 +164,8 @@ class TwitterStream:
 
 if __name__ == '__main__':
     timestamp = time.time()
-    errFile = open('pgh_error_%d.log'%(timestamp), 'w')
-    outFile = open('pgh_output_%d.log'%(timestamp), 'w')
+    errFile = open('twitter_error_%d.log'%(timestamp), 'w')
+    outFile = open('twitter_output_%d.log'%(timestamp), 'w')
     sys.stdout = outFile
     sys.stderr = errFile
     ts = TwitterStream()

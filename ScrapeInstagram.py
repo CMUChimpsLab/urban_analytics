@@ -3,11 +3,10 @@
 # Instagram scraper
 # Tries to get all the photos/videos in the Pittsburgh area.
 
-import requests, json, time
+import requests, json, time, sys
+import pymongo
 
-from pymongo import Connection
-
-db = Connection('localhost',27017)['instagram']
+db = pymongo.Connection('localhost',27017)['instagram']
 
 # coordinates in Twitter scraper: lower left (40.241667, -80.2),
 # upper right (40.641667, -79.8)
@@ -64,6 +63,13 @@ curr_point_num = 0
 # ID of each photo/video we've seen already.
 media_seen = []
 
+timestamp = time.time()
+errFile = open('instagram_error_%d.log'%(timestamp), 'w')
+outFile = open('instagram_output_%d.log'%(timestamp), 'w')
+sys.stdout = outFile
+sys.stderr = errFile
+    
+
 # iterate through all the points, querying them in order.
 while True:
     # set latitude and longitude of query for current point
@@ -77,6 +83,7 @@ while True:
     r = requests.get('https://api.instagram.com/v1/media/search', params=payload)
     if r.status_code != 200:
         print 'Request not OK. Code: %d. Reason: %s' % (r.status_code, r.text)
+    print 'For point %s, %s, this many photos: %d' % (payload['lat'], payload['lng'], len(r.json()['data']))
     for media in r.json()['data']:
         id = media['id']
         if id not in media_seen:

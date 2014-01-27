@@ -3,12 +3,22 @@
 # Get all the flickr public photos that are geotagged in Pittsburgh.
 # https://secure.flickr.com/services/api/flickr.photos.search.html
 
-import requests, json, datetime, time, sys
-from pymongo import Connection
-db = Connection('localhost',27017)['flickr']
+import requests, json, datetime, time, sys, argparse
+import pymongo
 
 # don't check in API key
 api_key = ''
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--start_date',
+                   help='latest date to search from. format YYYY-mm-dd',
+                   default='2013-08-05')
+# for some reason the flickr api isn't giving me any photos taken after 9/1/13.
+# so let's start there and go backwards.
+args = parser.parse_args()
+searchDate = datetime.datetime.strptime(args.start_date, '%Y-%m-%d')
+
+db = pymongo.Connection('localhost',27017)['flickr']
 
 mainParams = {'method':'flickr.photos.search',\
     'api_key': api_key,\
@@ -21,10 +31,6 @@ infoParams = {'method':'flickr.photos.getInfo',\
     'photo_id': '',\
     'format':'json',\
     'nojsoncallback':1}
-
-searchDate = datetime.datetime(2013, 8, 5)
-# for some reason the flickr api isn't giving me any photos taken after 9/1/13.
-# so let's start there and go backwards.
 
 timestamp = time.time()
 errFile = open('flickr_error_%d.log'%(timestamp), 'w')

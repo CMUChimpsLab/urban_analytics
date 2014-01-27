@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 # Get all the flickr public photos that are geotagged in Pittsburgh.
+# Starts nearish to the present, goes backwards in time.
 # https://secure.flickr.com/services/api/flickr.photos.search.html
 
 import requests, json, datetime, time, sys, argparse
@@ -20,9 +21,12 @@ searchDate = datetime.datetime.strptime(args.start_date, '%Y-%m-%d')
 
 db = pymongo.Connection('localhost',27017)['flickr']
 
+PER_PAGE = 500
+
 mainParams = {'method':'flickr.photos.search',\
     'api_key': api_key,\
     'bbox':'-80.2,40.241667,-79.8,40.641667',\
+    'per_page': PER_PAGE,\
     'format':'json',\
     'nojsoncallback':1}
 
@@ -38,23 +42,36 @@ outFile = open('flickr_output_%d.log'%(timestamp), 'w')
 sys.stdout = outFile
 sys.stderr = errFile
 
+# given a list of unicode string IDs, request info on each one and store in db.
+def get_these_photos(ids):
+    for photo_id in ids:
+        infoParams['photo_id'] = photo_id
+        rInfo = requests.get('http://api.flickr.com/services/rest/', params=infoParams)
+        photoInfo = rInfo.json()
+        photoInfo['_id'] = photo['id'] # so Mongo uses it as primary ID
+        db.flickr_pgh.insert(dict(photoInfo))
+        # print photo['id']
+
 while True:
+    mainParams['page'] = 1
     mainParams['min_taken_date'] = str(searchDate)
     mainParams['max_taken_date'] = str(searchDate + datetime.timedelta(1)) # 1 day
 
     r = requests.get('http://api.flickr.com/services/rest/', params=mainParams)
     num_photos = int(r.json()['photos']['total'])
     print "Searched: %s, found this many photos: %s" % (mainParams['min_taken_date'], num_photos)
-    if num_photos > 250:
-        print "Warning: too many photos for this day. Number: %s" % num_photos
 
-    for photo in r.json()['photos']['photo']:
-        infoParams['photo_id'] = photo['id']
-        rInfo = requests.get('http://api.flickr.com/services/rest/', params=infoParams)
-        photoInfo = rInfo.json()
-        photoInfo['_id'] = photo['id'] # so Mongo uses it as primary ID
-        db.flickr_pgh.insert(dict(photoInfo))
-        # print photo['id']
+    id_list = [photo['id'] for photo in r.json()['photos']['photo']]
+
+    # catch extra pages if there are any
+    num_pages = num_photos / PER_PAGE + 1
+    for page_num in range(2, num_pages + 1): # +1 because range is exclusive
+        mainParams['page'] = page_num
+        r = requests.get('http://api.flickr.com/services/rest/', params=mainParams)
+        id_list += [photo['id'] for photo in r.json()['photos']['photo']]
+        print "Searched for another page, got this many photos now: %d" % len(id_list)
+
+    get_these_photos(id_list)
 
     searchDate -= datetime.timedelta(1)
     time.sleep(120)

@@ -50,13 +50,17 @@ def get_these_photos(ids):
         infoParams['photo_id'] = photo_id
         rInfo = requests.get('http://api.flickr.com/services/rest/', params=infoParams)
         photoInfo = rInfo.json()
-        photoInfo['_id'] = photo['id'] # so Mongo uses it as primary ID
+        photoInfo['_id'] = photo_id # so Mongo uses it as primary ID
+        print "Storing: %s" % photoInfo['_id']
         db.flickr_pgh.insert(dict(photoInfo))
+        time.sleep(1) # I guess avoid rate limiting? still don't know what the limit is.
 
 while True:
     mainParams['page'] = 1
     mainParams['min_taken_date'] = str(searchDate)
     mainParams['max_taken_date'] = str(searchDate + datetime.timedelta(1)) # 1 day
+    # ... well, as of Jan 28, these parameters seem to be ignored, and it just
+    # returns all photos ever taken in this bbox. Well, okay.
 
     r = requests.get('http://api.flickr.com/services/rest/', params=mainParams)
     num_photos = int(r.json()['photos']['total'])
@@ -70,14 +74,19 @@ while True:
     # case, you do another request for a page number too high, and it returns
     # nothing.
 
+    # get the first page's worth
+    get_these_photos(id_list)
+
+    # now get all the other pages if there are any
+    # (no real reason to split this up besides to save a request; first page
+    # contains the total count as well as the first 250 results)
     for page_num in range(2, num_pages + 1): # +1 because range is exclusive
         mainParams['page'] = page_num
         r2 = requests.get('http://api.flickr.com/services/rest/', params=mainParams)
-        id_list += [photo['id'] for photo in r2.json()['photos']['photo']]
-        print "Searched for another page, got this many photos now: %d" % len(id_list)
-
-    id_list = list(set(id_list)) # remove duplicates due to paging weirdness
-    get_these_photos(id_list)
+        id_list2 = [photo['id'] for photo in r2.json()['photos']['photo']]
+        get_these_photos(id_list2)
+        print "Searched for page %d, got this many more photos: %d" % (page_num, len(id_list2))
+        
 
     searchDate -= datetime.timedelta(1)
     time.sleep(120)

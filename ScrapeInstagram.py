@@ -72,30 +72,37 @@ sys.stderr = errFile
 
 # iterate through all the points, querying them in order.
 while True:
-    # set latitude and longitude of query for current point
-    curr_point = points[curr_point_num]
-    payload['lat'] = str(curr_point[0])
-    payload['lng'] = str(curr_point[1])
-    # only take the last 30 min.
-    payload['min_timestamp'] = int(time.time() - 18000)
-    
-    # print "Searching around: %s, %s since %s" % (payload['lat'], payload['lng'], payload['min_timestamp'])
-    r = requests.get('https://api.instagram.com/v1/media/search', params=payload)
-    if r.status_code != 200:
-        print 'Request not OK. Code: %d. Reason: %s' % (r.status_code, r.text)
-        continue
+    try:
+        # set latitude and longitude of query for current point
+        curr_point = points[curr_point_num]
+        payload['lat'] = str(curr_point[0])
+        payload['lng'] = str(curr_point[1])
+        # only take the last 30 min.
+        payload['min_timestamp'] = int(time.time() - 18000)
+        
+        # print "Searching around: %s, %s since %s" % (payload['lat'], payload['lng'], payload['min_timestamp'])
+        r = requests.get('https://api.instagram.com/v1/media/search', params=payload)
+        if r.status_code != 200:
+            print 'Request not OK. Code: %d. Reason: %s' % (r.status_code, r.text)
+            continue
 
-    print 'For point %s, %s, this many photos: %d' % (payload['lat'], payload['lng'], len(r.json()['data']))
-    for media in r.json()['data']:
-        id = media['id']
-        if id not in media_seen:
-            media['_id'] = id
-            del media['id'] # rename id to _id so mongo will use it as the object ID
-            # print id
-            db.instagram_pgh.insert(dict(media))
-            media_seen.append(id)
-    time.sleep(5)
-    # one request every 5 sec = ~720/hr, well under 5000 rate limit
-    # and if we have 34 points, that means each one gets polled every ~170 sec
-    # (~3 min) so there's still no way we'll miss any media.
-    curr_point_num = (curr_point_num + 1) % len(points)
+        print 'For point %s, %s, this many photos: %d' % (payload['lat'], payload['lng'], len(r.json()['data']))
+        for media in r.json()['data']:
+            id = media['id']
+            if id not in media_seen:
+                media['_id'] = id
+                del media['id'] # rename id to _id so mongo will use it as the object ID
+                # print id
+                db.instagram_pgh.insert(dict(media))
+                media_seen.append(id)
+        time.sleep(5)
+        # one request every 5 sec = ~720/hr, well under 5000 rate limit
+        # and if we have 34 points, that means each one gets polled every ~170 sec
+        # (~3 min) so there's still no way we'll miss any media.
+        curr_point_num = (curr_point_num + 1) % len(points)
+    except Exception as e:
+        print e
+        time.sleep(5)
+    except e:
+        print "some other error!"
+        time.sleep(5)

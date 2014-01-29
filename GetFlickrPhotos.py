@@ -95,8 +95,11 @@ while True:
         # so no need to get greedy.
         # (note that every photo requires an API call too, so this could make a
         # lot of calls)
-    except e:
+    except Exception as e:
         print e
+        time.sleep(120)
+    except:
+        print "Some other error!"
         time.sleep(120)
         # don't want one error to mess up the whole scraper, or to hammer
         # flickr and get us rate-limited

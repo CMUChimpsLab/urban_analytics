@@ -83,6 +83,8 @@ while True:
     r = requests.get('https://api.instagram.com/v1/media/search', params=payload)
     if r.status_code != 200:
         print 'Request not OK. Code: %d. Reason: %s' % (r.status_code, r.text)
+        continue
+
     print 'For point %s, %s, this many photos: %d' % (payload['lat'], payload['lng'], len(r.json()['data']))
     for media in r.json()['data']:
         id = media['id']

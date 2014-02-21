@@ -3,7 +3,7 @@
 # Instagram scraper
 # Tries to get all the photos/videos in the Pittsburgh area.
 
-import requests, json, time, sys
+import requests, json, time, sys, ConfigParser
 import pymongo
 
 db = pymongo.Connection('localhost',27017)['instagram']
@@ -51,11 +51,14 @@ points = [\
 (40.3810745182893,-80.16654968261719),\
 (40.32011119146361,-80.11590957641602)]
 
+config = ConfigParser.ConfigParser()
+config.read('config.txt')
+
 # don't check in the client_secret
-payload = {'client_id': '79942cf734544d4a92eda7f1f535f788',\
-        'client_secret': '',\
-        'object': 'geography',\
-        'aspect': 'media',\
+payload = {'client_id': config.get('instagram', 'client_id'),
+        'client_secret': config.get('instagram', 'client_secret'),
+        'object': 'geography',
+        'aspect': 'media',
         'radius': '5000'}
 
 
@@ -103,6 +106,6 @@ while True:
     except Exception as e:
         print e
         time.sleep(5)
-    except e:
+    except:
         print "some other error!"
         time.sleep(5)

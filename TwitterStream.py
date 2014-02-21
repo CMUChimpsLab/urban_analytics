@@ -25,6 +25,7 @@ import pycurl
 import urllib
 import json
 import oauth2 as oauth
+import ConfigParser
 from pymongo import Connection
 
 db = Connection('localhost',27017)['tweet']
@@ -32,11 +33,13 @@ db = Connection('localhost',27017)['tweet']
 API_ENDPOINT_URL = 'https://stream.twitter.com/1.1/statuses/filter.json'
 #USER_AGENT = 'TwitterStream 1.0' # This can be anything really
 
-# You need to replace these with your own values
-OAUTH_KEYS = {'consumer_key': '',
-              'consumer_secret': '',
-              'access_token_key': '',
-              'access_token_secret': ''}
+config = ConfigParser.ConfigParser()
+config.read('config.txt')
+
+OAUTH_KEYS = {'consumer_key': config.get('twitter', 'consumer_key'),
+              'consumer_secret': config.get('twitter', 'consumer_secret'),
+              'access_token_key': config.get('twitter', 'access_token_key'),
+              'access_token_secret': config.get('twitter', 'access_token_secret')}
 
 # These values are posted when setting up the connection
 POST_PARAMS = {#'include_entities': 0,

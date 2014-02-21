@@ -4,11 +4,13 @@
 # Starts nearish to the present, goes backwards in time.
 # https://secure.flickr.com/services/api/flickr.photos.search.html
 
-import requests, json, datetime, time, sys, argparse
+import requests, json, datetime, time, sys, argparse, ConfigParser
 import pymongo
 
 # don't check in API key
-api_key = ''
+config = ConfigParser.ConfigParser()
+config.read('config.txt')
+api_key = config.get('flickr', 'api_key')
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--start_date',
@@ -25,11 +27,11 @@ db = pymongo.Connection('localhost',27017)['flickr']
 # actually honor this parameter if you set it to 500? ugh. 250 seems to work.
 PER_PAGE = 250
 
-mainParams = {'method':'flickr.photos.search',\
-    'api_key': api_key,\
-    'bbox':'-80.2,40.241667,-79.8,40.641667',\
-    'per_page': PER_PAGE,\
-    'format':'json',\
+mainParams = {'method':'flickr.photos.search',
+    'api_key': api_key,
+    'bbox':'-80.2,40.241667,-79.8,40.641667',
+    'per_page': PER_PAGE,
+    'format':'json',
     'nojsoncallback':1}
 
 infoParams = {'method':'flickr.photos.getInfo',\

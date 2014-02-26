@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+path {
+    fill: none;
+    stroke: black;
+}
+
+.place {
+    stroke: black;
+    fill: red;
+}
+
+</style>
+<body>
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<script src="http://d3js.org/topojson.v1.min.js"></script>
+<script>
+
+var width = 1024,
+    height = 768;
+
+var svg = d3.select("body").append("svg")
+    .attr("width", width)
+    .attr("height", height);
+
+var projection = d3.geo.mercator()
+    .center([-79.98, 40.431667]) //-80, 40.441667 is the center of pgh
+    .scale(230000) // ad hoc hacky, works
+    .translate([width/2, height/2]);
+var path = d3.geo.path().projection(projection);
+
+var pt1 = {
+    type: "GeometryCollection",
+    geometries: [
+        {
+            type: "Point",
+            properties: { name: "Pittsburgh Center" },
+            coordinates: [ -80, 40.441667 ]
+        }
+    ] // center of pgh, just for testing
+};
+
+// todo work on this
+// svg.selectAll(".point")
+//     .data(pt1)
+//   .enter().append("text")
+//     .attr("transform", function(d) { return "translate(" + projection(d.geometry.coordinates) + ")"; })
+//     .text(function(d) {return "hello";});
+
+svg.append("path")
+    .datum(pt1)
+    .attr("d", path)
+    .attr("class", "place");
+
+d3.json("neighborhoodstopo.json", function(error, nghds) {
+    console.log(nghds);
+    var neighborhoods = topojson.feature(nghds, nghds.objects.neighborhoods);
+    svg.append("path")
+        .datum(neighborhoods)
+        .attr("d", path);
+});
+
+</script>
+</body>

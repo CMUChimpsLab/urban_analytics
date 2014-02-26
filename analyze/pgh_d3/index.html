@@ -37,22 +37,27 @@ var pt1 = {
         {
             type: "Point",
             properties: { name: "Pittsburgh Center" },
-            coordinates: [ -80, 40.441667 ]
+            coordinates: [ -80, 40.441667 ] // center of pgh, just for testing
+        }, 
+        {
+            type: "Point",
+            properties: { name: "point 2"},
+            coordinates: [-79.99, 40.451667]
         }
-    ] // center of pgh, just for testing
+    ] 
 };
 
-// todo work on this
-// svg.selectAll(".point")
-//     .data(pt1)
-//   .enter().append("text")
-//     .attr("transform", function(d) { return "translate(" + projection(d.geometry.coordinates) + ")"; })
-//     .text(function(d) {return "hello";});
-
-svg.append("path")
-    .datum(pt1)
-    .attr("d", path)
+svg.selectAll(".place")
+    .data(pt1.geometries)
+  .enter().append("path") // .enter() means "if there's more data than dom elements, do this for each new one"
+    .attr("d", path) // remember, |path| is d3.geo.path().projection(projection)
     .attr("class", "place");
+
+// this... also works?
+// svg.append("path")
+//     .datum(pt1)
+//     .attr("d", path)
+//     .attr("class", "place")ele
 
 d3.json("neighborhoodstopo.json", function(error, nghds) {
     console.log(nghds);

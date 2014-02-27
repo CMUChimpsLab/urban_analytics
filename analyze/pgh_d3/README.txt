@@ -8,3 +8,6 @@ ogr2ogr -f GeoJSON -t_srs -t_srs "+proj=longlat +ellps=WGS84 +no_defs +towgs84=0
 topojson neighborhoodstopo.json neighborhoods.json
 (changing it from GeoJSON to TopoJSON)
 
+Tweets data from Mongo exported like so:
+mongoexport --db tweet --collection tweet_pgh --out tweets.json --jsonArray
+

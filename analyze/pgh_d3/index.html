@@ -29,7 +29,13 @@ var projection = d3.geo.mercator()
     .center([-79.98, 40.431667]) //-80, 40.441667 is the center of pgh
     .scale(230000) // ad hoc hacky, works
     .translate([width/2, height/2]);
+
+// transforms a ... GeometryCollection?... object into a svg path 'd' string
 var path = d3.geo.path().projection(projection);
+// transforms a tweet object into a svg path 'd' string
+var tweetsPath = function(tweet) {
+    return path(tweet.coordinates);
+}
 
 var pt1 = {
     type: "GeometryCollection",
@@ -47,17 +53,10 @@ var pt1 = {
     ] 
 };
 
-svg.selectAll(".place")
-    .data(pt1.geometries)
-  .enter().append("path") // .enter() means "if there's more data than dom elements, do this for each new one"
-    .attr("d", path) // remember, |path| is d3.geo.path().projection(projection)
-    .attr("class", "place");
-
-// this... also works?
 // svg.append("path")
 //     .datum(pt1)
 //     .attr("d", path)
-//     .attr("class", "place")ele
+//     .attr("class", "place")
 
 d3.json("neighborhoodstopo.json", function(error, nghds) {
     console.log(nghds);
@@ -65,6 +64,14 @@ d3.json("neighborhoodstopo.json", function(error, nghds) {
     svg.append("path")
         .datum(neighborhoods)
         .attr("d", path);
+});
+
+d3.json("tweets.json", function(error, tweets) {
+    svg.selectAll(".foo")
+        .data(tweets)
+      .enter().append("path") // .enter() means "if there's more data than dom elements, do this for each new one"
+        .attr("d", tweetsPath) // calls tweetsPath on each tweet
+        .attr("class", "place");
 });
 
 </script>

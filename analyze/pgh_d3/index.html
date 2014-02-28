@@ -7,21 +7,80 @@ path {
     stroke: black;
 }
 
-.place {
+.tweet{
     stroke: black;
-    fill: red;
+    /* fill: red; */
 }
 
 </style>
+<link rel="stylesheet" href="//code.jquery.com/ui/1.10.4/themes/smoothness/jquery-ui.css">
 <body>
 <script src="http://d3js.org/d3.v3.min.js"></script>
 <script src="http://d3js.org/topojson.v1.min.js"></script>
+<script src="http://code.jquery.com/jquery-2.1.0.min.js"></script>
+<script src="http://code.jquery.com/ui/1.10.4/jquery-ui.min.js"></script>
+<div>
+    Start date: <input type="text" id="startDate">
+</div>
+<div>
+    End date: <input type="text" id="endDate">
+</div>
+<button id="update">Update</button>
+<svg id="mainSvg"></svg>
+
 <script>
+
+$("#startDate").datepicker();
+$("#endDate").datepicker();
+$("#update").click(function() {
+    update();
+});
+
+var startDate;
+var endDate;
+
+var allTweets;
+var tweetsToShow;
+function update() {
+    startDate = $("#startDate").datepicker("getDate");
+    endDate = $("#endDate").datepicker("getDate");
+
+    
+    d3.json("tweets.json", function(error, tweets) {
+        allTweets = tweets;
+        tweetsToShow = tweets;
+        if (startDate != null) {
+            tweetsToShow = tweetsToShow.filter(function(e) {return new Date(e.created_at) >= startDate;});
+        }
+        if (endDate != null) {
+            tweetsToShow = tweetsToShow.filter(function(e) {return new Date(e.created_at) <= endDate;});
+        }
+        
+        var tweetSelection = svg.selectAll(".tweet").data(tweetsToShow);
+        tweetSelection.enter().append("path") // .enter() means "if there's more data than dom elements, do this for each new one"
+            .attr("class", "tweet");
+        tweetSelection.attr("d", tweetsPath);
+        tweetSelection.exit().remove();
+         
+        var tweetLabelSelection = svg.selectAll(".tweet-label").data(tweetsToShow);
+        tweetLabelSelection.enter().append("text")
+            .attr("class", "tweet-label");
+        tweetLabelSelection
+            .attr("transform", function(d) {
+                if (d.coordinates)
+                    return "translate(" + projection(d.coordinates.coordinates) + ")";
+                else
+                    return null;
+            })
+            .text(function(d) {return d.text});
+         tweetLabelSelection.exit().remove();
+    });
+}
 
 var width = 1024,
     height = 768;
 
-var svg = d3.select("body").append("svg")
+var svg = d3.select("#mainSvg")
     .attr("width", width)
     .attr("height", height);
 
@@ -41,27 +100,6 @@ var tweetsPath = function(tweet) {
     return path(tweet.coordinates);
 }
 
-var pt1 = {
-    type: "GeometryCollection",
-    geometries: [
-        {
-            type: "Point",
-            properties: { name: "Pittsburgh Center" },
-            coordinates: [ -80, 40.441667 ] // center of pgh, just for testing
-        }, 
-        {
-            type: "Point",
-            properties: { name: "point 2"},
-            coordinates: [-79.99, 40.451667]
-        }
-    ] 
-};
-
-// svg.append("path")
-//     .datum(pt1)
-//     .attr("d", path)
-//     .attr("class", "place")
-
 d3.json("neighborhoodstopo.json", function(error, nghds) {
     var neighborhoods = topojson.feature(nghds, nghds.objects.neighborhoods);
     svg.append("path")
@@ -69,28 +107,7 @@ d3.json("neighborhoodstopo.json", function(error, nghds) {
         .attr("d", path);
 });
 
-var tweets_for_later; // for debugging
-d3.json("tweets.json", function(error, tweets) {
-    tweets_for_later = tweets
-    svg.selectAll(".tweet")
-        .data(tweets)
-      .enter().append("path") // .enter() means "if there's more data than dom elements, do this for each new one"
-        .attr("d", tweetsPath) // calls tweetsPath on each tweet
-        .attr("class", "tweet")
-     
-    // svg.selectAll(".tweet-label")
-    //     .data(tweets)
-    //   .enter().append("text")
-    //     .attr("class", "tweet-label")
-    //     .attr("transform", function(d) {
-    //         if (d.coordinates)
-    //             return "translate(" + projection(d.coordinates.coordinates) + ")";
-    //         else
-    //             return null;
-    //     })
-    //     .text(function(d) {return d.user.screen_name;});
-            
-});
-
+// once to start it off
+update();
 </script>
 </body>

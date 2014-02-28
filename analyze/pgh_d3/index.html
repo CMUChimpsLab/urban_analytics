@@ -34,6 +34,10 @@ var projection = d3.geo.mercator()
 var path = d3.geo.path().projection(projection);
 // transforms a tweet object into a svg path 'd' string
 var tweetsPath = function(tweet) {
+    // some tweets don't have coordinates, just a tweet.place.bounding_box
+    // (which can be huge, like 7 degrees lat or lon, so forget it)
+    // Note that there is still useful info in tweet.place (like "Pittsburgh")
+    // Anyway I think path(null) just returns null, which works ok
     return path(tweet.coordinates);
 }
 
@@ -59,19 +63,33 @@ var pt1 = {
 //     .attr("class", "place")
 
 d3.json("neighborhoodstopo.json", function(error, nghds) {
-    console.log(nghds);
     var neighborhoods = topojson.feature(nghds, nghds.objects.neighborhoods);
     svg.append("path")
         .datum(neighborhoods)
         .attr("d", path);
 });
 
+var tweets_for_later; // for debugging
 d3.json("tweets.json", function(error, tweets) {
-    svg.selectAll(".foo")
+    tweets_for_later = tweets
+    svg.selectAll(".tweet")
         .data(tweets)
       .enter().append("path") // .enter() means "if there's more data than dom elements, do this for each new one"
         .attr("d", tweetsPath) // calls tweetsPath on each tweet
-        .attr("class", "place");
+        .attr("class", "tweet")
+     
+    // svg.selectAll(".tweet-label")
+    //     .data(tweets)
+    //   .enter().append("text")
+    //     .attr("class", "tweet-label")
+    //     .attr("transform", function(d) {
+    //         if (d.coordinates)
+    //             return "translate(" + projection(d.coordinates.coordinates) + ")";
+    //         else
+    //             return null;
+    //     })
+    //     .text(function(d) {return d.user.screen_name;});
+            
 });
 
 </script>

@@ -46,7 +46,8 @@ function update() {
     endDate = $("#endDate").datepicker("getDate");
 
     
-    d3.json("tweets.json", function(error, tweets) {
+    // takes about a second per 1k tweets. crashes on 100k.
+    d3.json("1ktweets.json", function(error, tweets) {
         allTweets = tweets;
         tweetsToShow = tweets;
         if (startDate != null) {

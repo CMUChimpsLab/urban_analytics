@@ -54,37 +54,38 @@ var tweetsToShow;
 function update() {
     startDate = $("#startDate").datepicker("getDate");
     endDate = $("#endDate").datepicker("getDate");
-    query = $("#query").val(); // TODO sanitize, obv
+    params = $.parseJSON( $("#query").val() ); // TODO sanitize, obv
     // takes about a second per 1k tweets. crashes on 100k.
-    d3.xhr('/query', function(error, tweets) {
-        allTweets = tweets;
-        tweetsToShow = tweets;
-        if (startDate != null) {
-            tweetsToShow = tweetsToShow.filter(function(e) {return new Date(e.created_at) >= startDate;});
+    $.getJSON("/query", JSON.stringify(params), function(tweets) {
+            allTweets = tweets;
+            tweetsToShow = tweets;
+            if (startDate != null) {
+                tweetsToShow = tweetsToShow.filter(function(e) {return new Date(e.created_at) >= startDate;});
+            }
+            if (endDate != null) {
+                tweetsToShow = tweetsToShow.filter(function(e) {return new Date(e.created_at) <= endDate;});
+            }
+            
+            var tweetSelection = svg.selectAll(".tweet").data(tweetsToShow);
+            tweetSelection.enter().append("path") // .enter() means "if there's more data than dom elements, do this for each new one"
+                .attr("class", "tweet");
+            tweetSelection.attr("d", tweetsPath);
+            tweetSelection.exit().remove();
+             
+            var tweetLabelSelection = svg.selectAll(".tweet-label").data(tweetsToShow);
+            tweetLabelSelection.enter().append("text")
+                .attr("class", "tweet-label");
+            tweetLabelSelection
+                .attr("transform", function(d) {
+                    if (d.coordinates)
+                        return "translate(" + projection(d.coordinates.coordinates) + ")";
+                    else
+                        return null;
+                })
+                .text(function(d) {return d.text});
+             tweetLabelSelection.exit().remove();
         }
-        if (endDate != null) {
-            tweetsToShow = tweetsToShow.filter(function(e) {return new Date(e.created_at) <= endDate;});
-        }
-        
-        var tweetSelection = svg.selectAll(".tweet").data(tweetsToShow);
-        tweetSelection.enter().append("path") // .enter() means "if there's more data than dom elements, do this for each new one"
-            .attr("class", "tweet");
-        tweetSelection.attr("d", tweetsPath);
-        tweetSelection.exit().remove();
-         
-        var tweetLabelSelection = svg.selectAll(".tweet-label").data(tweetsToShow);
-        tweetLabelSelection.enter().append("text")
-            .attr("class", "tweet-label");
-        tweetLabelSelection
-            .attr("transform", function(d) {
-                if (d.coordinates)
-                    return "translate(" + projection(d.coordinates.coordinates) + ")";
-                else
-                    return null;
-            })
-            .text(function(d) {return d.text});
-         tweetLabelSelection.exit().remove();
-    }).header('query', query);
+    );
 }
 
 var width = 1024,

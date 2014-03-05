@@ -17,10 +17,14 @@ def main():
 def query():
     # request.args.keys()[0] is a string representing the whole query
     cursor = db.tweet_pgh.find(json.loads(flask.request.args.keys()[0]))
-    result1 = cursor.next()
-    del result1['_id'] # because it's an ObjectId; not serializable to json
+    cursor.limit(1000) # TODO update this limit based on user input
+    results = list(cursor)
 
-    return flask.json.jsonify(result1)
+    for result in results:
+        del result['_id'] # because it's an ObjectId; not serializable to json
+
+    # got to make this a dict "for security reasons", whatever that means
+    return flask.json.jsonify({'results': results})
 
 if __name__ == "__main__":
     app.run(debug=True) # TODO remove this from anything deployed

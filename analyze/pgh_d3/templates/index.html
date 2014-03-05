@@ -57,6 +57,7 @@ function update() {
     params = $.parseJSON( $("#query").val() ); // TODO sanitize, obv
     // takes about a second per 1k tweets. crashes on 100k.
     $.getJSON("/query", JSON.stringify(params), function(tweets) {
+            console.log(tweets);
             allTweets = tweets;
             tweetsToShow = tweets;
             if (startDate != null) {

@@ -39,5 +39,17 @@ textarea#query {
 <button id="update">Update</button>
 <svg id="mainSvg"></svg>
 
+<script>
+$("#startDate").datepicker();
+$("#endDate").datepicker();
+$("#update").click(function() {
+    update();
+});
+</script>
 <script src="static/main.js"></script>
+<script>
+loadNeighborhoods();
+update();
+</script>
+
 </body>

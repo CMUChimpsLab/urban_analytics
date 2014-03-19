@@ -1,38 +1,40 @@
 
-$("#startDate").datepicker();
-$("#endDate").datepicker();
-$("#update").click(function() {
-    update();
-});
-
 var startDate;
 var endDate;
 
 var allTweets;
 var tweetsToShow;
+
+// Given an array of tweets, return the ones that are between the values in
+// startDate and endDate
+function filterDates(tweets, startDate, endDate) {
+    var tweetsToShow = tweets;
+    if (startDate != null) {
+        tweetsToShow = tweetsToShow.filter(function(e) {return new Date(e.created_at) >= startDate;});
+    }
+    if (endDate != null) {
+        tweetsToShow = tweetsToShow.filter(function(e) {return new Date(e.created_at) <= endDate;});
+    }
+    return tweetsToShow;
+ }
+
 function update() {
-    startDate = $("#startDate").datepicker("getDate");
-    endDate = $("#endDate").datepicker("getDate");
     params = $.parseJSON( $("#query").val() ); // TODO sanitize, obv
     // takes about a second per 1k tweets. crashes on 100k.
     $.getJSON("/query", JSON.stringify(params), function(tweets) {
             console.log(tweets);
             allTweets = tweets.results;
-            tweetsToShow = tweets.results;
-            if (startDate != null) {
-                tweetsToShow = tweetsToShow.filter(function(e) {return new Date(e.created_at) >= startDate;});
-            }
-            if (endDate != null) {
-                tweetsToShow = tweetsToShow.filter(function(e) {return new Date(e.created_at) <= endDate;});
-            }
-            
+            tweetsToShow = filterDates(tweets.results,
+                $("#startDate").datepicker("getDate"),
+                $("#endDate").datepicker("getDate"));
+           
             var tweetSelection = svg.selectAll(".tweet").data(tweetsToShow);
             tweetSelection.enter().append("path") // .enter() means "if there's more data than dom elements, do this for each new one"
                 .attr("class", "tweet")
                 .on("click", function(tweet) {
                     console.log(tweet.user.screen_name + ": " + tweet.text);
                 });
-            tweetSelection.attr("d", tweetsPath);
+            tweetSelection.attr("d", tweetsPath); //TODO is this not right?
             tweetSelection.exit().remove();
 
              
@@ -75,13 +77,15 @@ var tweetsPath = function(tweet) {
     return path(tweet.coordinates);
 }
 
-d3.json("static/neighborhoodstopo.json", function(error, nghds) {
-    var neighborhoods = topojson.feature(nghds, nghds.objects.neighborhoods);
-    svg.append("path")
-        .datum(neighborhoods)
-        .attr("d", path);
-});
+function loadNeighborhoods() {
+    d3.json("static/neighborhoodstopo.json", function(error, nghds) {
+        var neighborhoods = topojson.feature(nghds, nghds.objects.neighborhoods);
+        svg.append("path")
+            .datum(neighborhoods)
+            .attr("d", path);
+    });
+}
 
 // once to start it off
-update();
+// update();
 

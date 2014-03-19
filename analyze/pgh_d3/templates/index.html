@@ -35,6 +35,9 @@ textarea#query {
     <div>
         End date: <input type="text" id="endDate">
     </div>
+    <div>
+        Bounding box (click map to draw): <span id="topLeftCoords">(not selected)</span> to <span id="bottomRightCoords">(not selected)</span>
+    </div>
 </div>
 <button id="update">Update</button>
 <svg id="mainSvg"></svg>
@@ -44,6 +47,13 @@ $("#startDate").datepicker();
 $("#endDate").datepicker();
 $("#update").click(function() {
     update();
+});
+$("#mainSvg").click(function(clickEvent) {
+    storeBoundingBoxPoint(clickEvent.offsetX, clickEvent.offsetY);
+    // there's offsetX/Y, clientX/Y, screenX/Y, pageX/Y
+    // client and screen = where you are on your monitor
+    // offset looks like it's relative to the SVG
+    // and I'm guessing page is relative to the page
 });
 </script>
 <script src="static/main.js"></script>

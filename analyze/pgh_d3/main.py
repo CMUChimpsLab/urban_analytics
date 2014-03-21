@@ -26,6 +26,10 @@ def query():
     # got to make this a dict, not array, "for security reasons", whatever that means
     return flask.json.jsonify({'results': results})
 
+@app.route('/user_centroid_query')
+def user_centroid_query():
+    return flask.json.jsonify({'results':"hello world"})
+
 if __name__ == "__main__":
     app.run(debug=True) # TODO remove this from anything deployed
 

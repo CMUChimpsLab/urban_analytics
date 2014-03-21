@@ -103,3 +103,13 @@ function storeBoundingBoxPoint(x, y) {
     $("#topLeftCoords").text(bboxTopLeft);
     $("#bottomRightCoords").text(bboxBottomRight);
 }
+
+// Gets all tweets from all users whose tweet-centroids are within the box
+// you've drawn.
+function userCentroidQuery() {
+    params = "";
+    $.getJSON("/user_centroid_query", JSON.stringify(params), function(tweets) {
+        console.log(tweets);
+    });
+
+}

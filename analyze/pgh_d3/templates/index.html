@@ -29,7 +29,7 @@ textarea#query {
 
 <div id="arbitrary_query_box">
     <textarea id="query">{}</textarea> <br/>
-    <button id="update">Run Query</button>
+    <button id="run_query">Run Query</button>
 </div>
 <div id="date">
     <div>
@@ -39,7 +39,7 @@ textarea#query {
         End date: <input type="text" id="endDate">
     </div>
     <div>
-        Bounding box (click map to draw): <span id="topLeftCoords">(not selected)</span> to <span id="bottomRightCoords">(not selected)</span>
+        Bounding box (click map to choose top left and bottom right): <span id="topLeftCoords">(not selected)</span> to <span id="bottomRightCoords">(not selected)</span>
     </div>
     <div>
         <button id="user_centroid_query">Only users with centroid within box</button>
@@ -50,8 +50,8 @@ textarea#query {
 <script>
 $("#startDate").datepicker();
 $("#endDate").datepicker();
-$("#update").click(function() {
-    update();
+$("#run_query").click(function() {
+    runQuery();
 });
 $("#user_centroid_query").click(function() {
     userCentroidQuery();

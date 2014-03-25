@@ -54,40 +54,42 @@ function filterDates(tweets, startDate, endDate) {
     return tweetsToShow;
 }
 
-function update() {
+function runQuery() {
     params = $.parseJSON( $("#query").val() ); // TODO sanitize, obv
     // takes about a second per 1k tweets. crashes on 100k.
     $.getJSON("/query", JSON.stringify(params), function(tweets) {
-            console.log(tweets);
-            allTweets = tweets.results;
-            tweetsToShow = filterDates(tweets.results,
-                $("#startDate").datepicker("getDate"),
-                $("#endDate").datepicker("getDate"));
-           
-            var tweetSelection = svg.selectAll(".tweet").data(tweetsToShow);
-            tweetSelection.enter().append("path") // .enter() means "if there's more data than dom elements, do this for each new one"
-                .attr("class", "tweet")
-                .on("click", function(tweet) {
-                    console.log(tweet.user.screen_name + ": " + tweet.text);
-                });
-            tweetSelection.attr("d", tweetsPath); //TODO is this not right?
-            tweetSelection.exit().remove();
+        allTweets = tweets.results;
+        update();
+    });
+ }
 
-             
-            // var tweetLabelSelection = svg.selectAll(".tweet-label").data(tweetsToShow);
-            // tweetLabelSelection.enter().append("text")
-            //     .attr("class", "tweet-label");
-            // tweetLabelSelection
-            //     .attr("transform", function(d) {
-            //         if (d.coordinates)
-            //             return "translate(" + projection(d.coordinates.coordinates) + ")";
-            //         else
-            //             return null;
-            //     })
-            //     .text(function(d) {return d.text});
-            // tweetLabelSelection.exit().remove();
-        }
-    );
+function update() {
+    tweetsToShow = filterDates(allTweets,
+        $("#startDate").datepicker("getDate"),
+        $("#endDate").datepicker("getDate"));
+   
+    var tweetSelection = svg.selectAll(".tweet").data(tweetsToShow);
+    tweetSelection.enter().append("path") // .enter() means "if there's more data than dom elements, do this for each new one"
+        .attr("class", "tweet")
+        .on("click", function(tweet) {
+            console.log(tweet.user.screen_name + ": " + tweet.text);
+        });
+    tweetSelection.attr("d", tweetsPath); //TODO is this not right?
+    tweetSelection.exit().remove();
+
+     
+    // var tweetLabelSelection = svg.selectAll(".tweet-label").data(tweetsToShow);
+    // tweetLabelSelection.enter().append("text")
+    //     .attr("class", "tweet-label");
+    // tweetLabelSelection
+    //     .attr("transform", function(d) {
+    //         if (d.coordinates)
+    //             return "translate(" + projection(d.coordinates.coordinates) + ")";
+    //         else
+    //             return null;
+    //     })
+    //     .text(function(d) {return d.text});
+    // tweetLabelSelection.exit().remove();
 }
 
 function storeBoundingBoxPoint(x, y) {
@@ -107,9 +109,11 @@ function storeBoundingBoxPoint(x, y) {
 // Gets all tweets from all users whose tweet-centroids are within the box
 // you've drawn.
 function userCentroidQuery() {
-    params = "";
-    $.getJSON("/user_centroid_query", JSON.stringify(params), function(tweets) {
-        console.log(tweets);
+    params = {"top_left_lon": bboxTopLeft[0], "top_left_lat":bboxTopLeft[1],
+        "bottom_right_lon": bboxBottomRight[0], "bottom_right_lat": bboxBottomRight[1]};
+    $.getJSON("/user_centroid_query", params, function(tweets) {
+        allTweets = tweets.results;
+        update();
     });
 
 }

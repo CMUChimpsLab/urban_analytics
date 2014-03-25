@@ -52,6 +52,12 @@ POST_PARAMS = {#'include_entities': 0,
 # Center of Pittsburgh is 40.441667, -80.0 (exactly -80) so I went .2 deg long
 # and .2 deg lat. Captures most of Pittsburgh and suburbs.
 #
+# Note! If there is a |coordinates| field in the tweet, that will be tested
+# against our parameters here. If not, the |place.bounding_box| will be tested,
+# and ANY overlap will match. This means we'll get a ton of tweets that are
+# not in Pittsburgh, just because they're very inaccuate and so have a huge
+# bounding box.
+#
 # More info: https://dev.twitter.com/docs/streaming-apis/parameters#locations
 # Can use -180,-90,180,90 to get all geotagged tweets.
 

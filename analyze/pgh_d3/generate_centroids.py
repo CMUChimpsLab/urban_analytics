@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
-# For each user who has tweeted at least once, find all their tweets and
-# compute the centroid. Then add a row to the DB consisting of the user and
-# their centroid.
+# For each user who has tweeted at least once, find all their tweets (that are
+# in Pittsburgh) and compute the centroid. Then add a row to the DB consisting
+# of the user and their centroid.
 #
 # TODO: actually calculate centroid. Right now we're just using average lon/lat
 # (which is okay for city-scale distances but not really accurate).
@@ -15,7 +15,8 @@ db = dbclient['tweet']
 # returns a set of all unique user ids
 def find_all_user_ids():
     all_user_ids = []
-    all_tweets = db.tweet_pgh.find()
+    # use tweet_pgh_good, not tweet_pgh
+    all_tweets = db.tweet_pgh_good.find()
     for tweet in all_tweets:
         all_user_ids.append(tweet['user']['id'])
     return set(all_user_ids)
@@ -24,7 +25,8 @@ def generate_centroids():
     user_ids = find_all_user_ids() 
     for user_id in user_ids:
         print user_id
-        users_tweets = db.tweet_pgh.find({'user.id':user_id})
+        # use tweet_pgh_good, not tweet_pgh
+        users_tweets = db.tweet_pgh_good.find({'user.id':user_id})
         users_tweets_coords = []
         for tweet in users_tweets:
             screen_name = tweet['user']['screen_name']

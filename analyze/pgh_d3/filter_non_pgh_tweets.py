@@ -14,22 +14,26 @@ import pymongo
 dbclient = pymongo.MongoClient('localhost', 27017)
 db = dbclient['tweet']
 
+
 def filter_non_pgh_tweets():
+    counter = 0
     for tweet in db.tweet_pgh.find():
+	counter += 1
+	if (counter % 1000 == 0):
+		print counter
         if tweet['coordinates'] is not None:
             
             lon = tweet['coordinates']['coordinates'][0]
             lat = tweet['coordinates']['coordinates'][1]
             if lon < MIN_LON or lon > MAX_LON:
-                print 'weird lon'
+		pass
             elif lat < MIN_LAT or lat > MAX_LAT:
-                print 'weird lat'
+                pass
             else:
-                print 'good'
                 # this is an upsert: inserts if it's not already there
                 db.tweet_pgh_good.update({'_id':tweet['_id']}, tweet, upsert=True)
         else:
-            print 'no coords'
+            pass
 
 if __name__ == '__main__':
     filter_non_pgh_tweets()

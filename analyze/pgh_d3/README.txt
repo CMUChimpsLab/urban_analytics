@@ -1,5 +1,5 @@
 
-Data from http://pittsburghpa.gov/dcp/gis/gis-data (Census Data link)
+Neighborhood data from http://pittsburghpa.gov/dcp/gis/gis-data (Census Data link)
 
 Things I did to this data before importing it into d3:
 ogr2ogr -f GeoJSON -t_srs -t_srs "+proj=longlat +ellps=WGS84 +no_defs +towgs84=0,0,0" neighborhoods.json Neighborhood/Neighborhood.shp
@@ -17,4 +17,7 @@ mongoexport --db tweet --collection tweet_pgh | head -1000 > 1ktweets.json
 on this query so we don't have to do the "head" thing, but Mongo 2.4 doesn't.)
 Anyway, then I did:
 ./join_json.py < 1ktweets.json > 1ktweetsarray.json
+
+Not-actually-pgh tweets filtered out by filter_non_pgh_tweets.py.
+Good tweets stored in mongodb['tweet']['tweet_pgh_good'].
 

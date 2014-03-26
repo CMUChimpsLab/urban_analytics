@@ -16,7 +16,7 @@ def main():
 @app.route('/query')
 def query():
     # request.args.keys()[0] is a string representing the whole query
-    cursor = db.tweet_pgh.find(json.loads(flask.request.args.keys()[0]))
+    cursor = db.tweet_pgh_good.find(json.loads(flask.request.args.keys()[0]))
     cursor.limit(2000) # TODO update this limit based on user input
     results = list(cursor)
 
@@ -36,12 +36,16 @@ def user_centroid_query():
     cursor = db.user.find()
     tweets_to_return = []
 
+    counter = 0
     for user in cursor:
+        counter += 1
+        if counter % 10 == 0:
+            print counter
         user_lon = float(user['centroid'][0])
         user_lat = float(user['centroid'][1])
         if user_lon > tl_lon and user_lon < br_lon and\
             user_lat > br_lat and user_lat < tl_lat:
-            that_users_tweets = db.tweet_pgh.find({'user.id': user['_id']})
+            that_users_tweets = db.tweet_pgh_good.find({'user.id': user['_id']})
             for tweet in that_users_tweets:
                 del tweet['_id'] # b/c it's not serializable
                 tweets_to_return.append(tweet)

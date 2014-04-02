@@ -23,7 +23,7 @@ def query():
     for result in results:
         del result['_id'] # because it's an ObjectId; not serializable to json
 
-    # got to make this a dict, not array, "for security reasons", whatever that means
+    # has to be a dict, not array, "for security reasons", whatever that means
     return flask.json.jsonify({'results': results})
 
 @app.route('/user_centroid_query')
@@ -33,22 +33,29 @@ def user_centroid_query():
     tl_lat = float(args['top_left_lat'])
     br_lon = float(args['bottom_right_lon'])
     br_lat = float(args['bottom_right_lat'])
-    cursor = db.user.find()
     tweets_to_return = []
 
-    counter = 0
+    search_rect = {'type': 'Polygon', 'coordinates': [[
+        [tl_lon, tl_lat],
+        [tl_lon, br_lat],
+        [br_lon, br_lat],
+        [br_lon, tl_lat],
+        [tl_lon, tl_lat]]]}
+    # Note this is a list of lists of coordinates. (you might have multiple
+    # lists of coordinates; like if you have inner rings like a donut.)
+    # Note also that the first and last coordinate are the same.
+
+    cursor = db['user'].find(
+        {'centroid':
+            {'$geoWithin':
+                {'$geometry': search_rect}
+            }
+        })
     for user in cursor:
-        counter += 1
-        if counter % 100 == 0:
-            print counter
-        user_lon = float(user['centroid'][0])
-        user_lat = float(user['centroid'][1])
-        if user_lon > tl_lon and user_lon < br_lon and\
-            user_lat > br_lat and user_lat < tl_lat:
-            that_users_tweets = db.tweet_pgh_good.find({'user.id': user['_id']})
-            for tweet in that_users_tweets:
-                del tweet['_id'] # b/c it's not serializable
-                tweets_to_return.append(tweet)
+        that_users_tweets = db['tweet_pgh_good'].find({'user.id': user['_id']})
+        for tweet in that_users_tweets:
+            del tweet['_id'] # b/c it's not serializable
+            tweets_to_return.append(tweet)
         
     return flask.json.jsonify({'results':tweets_to_return})
 

@@ -17,7 +17,11 @@ def find_all_user_ids():
     all_user_ids = []
     # use tweet_pgh_good, not tweet_pgh
     all_tweets = db.tweet_pgh_good.find()
+    counter = 0
     for tweet in all_tweets:
+        counter += 1
+        if counter % 1000 == 0:
+            print counter
         all_user_ids.append(tweet['user']['id'])
     return set(all_user_ids)
 

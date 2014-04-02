@@ -36,7 +36,9 @@ def filter_non_pgh_tweets():
             pass
 
 if __name__ == '__main__':
+    print "removing all tweets not actually in pittsburgh"
     filter_non_pgh_tweets()
-
-
+    print "ensuring indexes"
+    db['tweet_pgh_good'].ensure_index([('coordinates', pymongo.GEOSPHERE)])
+    print "done"
 

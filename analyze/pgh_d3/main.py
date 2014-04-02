@@ -39,7 +39,7 @@ def user_centroid_query():
     counter = 0
     for user in cursor:
         counter += 1
-        if counter % 10 == 0:
+        if counter % 100 == 0:
             print counter
         user_lon = float(user['centroid'][0])
         user_lat = float(user['centroid'][1])
@@ -53,5 +53,10 @@ def user_centroid_query():
     return flask.json.jsonify({'results':tweets_to_return})
 
 if __name__ == "__main__":
+    print "ensuring indexes"
+    db['user'].ensure_index('_id')
+    db['user'].ensure_index([('centroid', pymongo.GEOSPHERE)])
+    db['tweet_pgh_good'].ensure_index([('coordinates', pymongo.GEOSPHERE)])
+    print "indexes have all been created, starting app"
     app.run(debug=True) # TODO remove this from anything deployed
 

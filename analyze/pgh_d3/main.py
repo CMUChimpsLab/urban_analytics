@@ -65,5 +65,6 @@ if __name__ == "__main__":
     db['user'].ensure_index([('centroid', pymongo.GEOSPHERE)])
     db['tweet_pgh_good'].ensure_index([('coordinates', pymongo.GEOSPHERE)])
     print "indexes have all been created, starting app"
-    app.run(debug=True) # TODO remove this from anything deployed
+    app.run(host='0.0.0.0')
+    # 0.0.0.0 means "listen on all public IPs"
 

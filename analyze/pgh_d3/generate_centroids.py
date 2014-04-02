@@ -30,31 +30,29 @@ def generate_centroids():
         counter += 1
         if (counter % 1000) == 0:
             print counter
-        # print user_id
         # use tweet_pgh_good, not tweet_pgh
         users_tweets = db.tweet_pgh_good.find({'user.id':user_id})
         users_tweets_coords = []
         for tweet in users_tweets:
             screen_name = tweet['user']['screen_name']
             if tweet['coordinates'] is not None:
-                # print tweet['coordinates']
                 users_tweets_coords.append(tweet['coordinates']['coordinates'])
         if len(users_tweets_coords) == 0:
             continue # they don't really have any lon/lat points
         user_lon = sum([point[0] for point in users_tweets_coords])/len(users_tweets_coords)
         user_lat = sum([point[1] for point in users_tweets_coords])/len(users_tweets_coords)
 
-        user = {'_id': user_id, 'screen_name': screen_name, 'centroid': [user_lon, user_lat]} # TODO get screen name in there
-        # print user
-        cursor = db.user.find({'_id': user_id})
-        if (cursor.count() > 0):
-            db.user.update(cursor[0], user)
-        else:
-            db.user.insert(user)
+        # Creating points in this way makes them valid GeoJSON.
+        centroid = {'type': 'Point', 'coordinates': [user_lon, user_lat]}
+        user = {'_id': user_id, 'screen_name': screen_name, 'centroid': centroid}
+        db.user.update({'_id': user_id}, user, upsert=True)
 
 if __name__ == '__main__':
-    db.tweet_pgh_good.ensure_index("user.id")
-    print "generating centroids now"
+    print "generating centroids"
     generate_centroids()
+    print "creating indexes"
+    db['user'].ensure_index('_id')
+    db['user'].ensure_index([('centroid', pymongo.GEOSPHERE)])
+    print "done"
 
 

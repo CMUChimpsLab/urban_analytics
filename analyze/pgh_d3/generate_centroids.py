@@ -21,14 +21,14 @@ def find_all_user_ids():
         all_user_ids.append(tweet['user']['id'])
     return set(all_user_ids)
 
-def generate_centroids():
-    user_ids = find_all_user_ids() 
-    print "got all user ids"
 
+def generate_centroids():
+    user_ids = find_all_user_ids()
+    print "got all user ids"
     counter = 0
     for user_id in user_ids:
         counter += 1
-        if (counter % 100 == 0):
+        if (counter % 1000) == 0:
             print counter
         # use tweet_pgh_good, not tweet_pgh
         users_tweets = db.tweet_pgh_good.find({'user.id':user_id})

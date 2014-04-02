@@ -59,6 +59,38 @@ def user_centroid_query():
         
     return flask.json.jsonify({'results':tweets_to_return})
 
+@app.route('/user_here_once_query')
+def user_here_once_query():
+    print "user here once"
+    args = flask.request.args
+    tl_lon = float(args['top_left_lon'])
+    tl_lat = float(args['top_left_lat'])
+    br_lon = float(args['bottom_right_lon'])
+    br_lat = float(args['bottom_right_lat'])
+    tweets_to_return = []
+    search_rect = {'type': 'Polygon', 'coordinates': [[
+        [tl_lon, tl_lat],
+        [tl_lon, br_lat],
+        [br_lon, br_lat],
+        [br_lon, tl_lat],
+        [tl_lon, tl_lat]]]}
+    tweets_in_rect = db['tweet_pgh_good'].find(
+        {'coordinates':
+            {'$geoWithin':
+                {'$geometry': search_rect}
+            }
+        })
+    for tweet_in_rect in tweets_in_rect:
+        that_users_tweets = db['tweet_pgh_good'].find({
+            'user.id': tweet_in_rect['user']['id']
+        })
+        for tweet in that_users_tweets:
+            del tweet['_id'] # not serializable
+            tweets_to_return.append(tweet)
+
+    return flask.json.jsonify({'results':tweets_to_return})
+
+
 if __name__ == "__main__":
     print "ensuring indexes"
     db['user'].ensure_index('_id')

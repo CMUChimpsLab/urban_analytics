@@ -117,3 +117,14 @@ function userCentroidQuery() {
     });
 
 }
+
+// Gets all tweets from any users who have ever tweeted in the box you've drawn.
+function userHereOnceQuery() {
+    params = {"top_left_lon": bboxTopLeft[0], "top_left_lat":bboxTopLeft[1],
+        "bottom_right_lon": bboxBottomRight[0], "bottom_right_lat": bboxBottomRight[1]};
+    $.getJSON("/user_here_once_query", params, function(tweets) {
+        allTweets = tweets.results;
+        update();
+    });
+
+}

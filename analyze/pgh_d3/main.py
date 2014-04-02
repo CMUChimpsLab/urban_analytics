@@ -53,5 +53,6 @@ def user_centroid_query():
     return flask.json.jsonify({'results':tweets_to_return})
 
 if __name__ == "__main__":
-    app.run(debug=True) # TODO remove this from anything deployed
+    app.run(host='0.0.0.0')
+    # 0.0.0.0 means "listen on all public IPs"
 

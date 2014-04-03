@@ -2,7 +2,7 @@
 
 # Server side for plotting things around Pittsburgh.
 
-import flask, pymongo, json, urllib
+import flask, pymongo, json, urllib, random
 
 app = flask.Flask(__name__)
 dbclient = pymongo.MongoClient('localhost', 27017)
@@ -91,10 +91,14 @@ def user_here_once_query():
                 {'$geometry': search_rect}
             }
         })
+
+    all_user_ids = []
     for tweet_in_rect in tweets_in_rect:
-        that_users_tweets = db['tweet_pgh_good'].find({
-            'user.id': tweet_in_rect['user']['id']
-        })
+        all_user_ids.append(tweet_in_rect['user']['id'])
+    random.shuffle(all_user_ids)
+
+    for user_id in all_user_ids:
+        that_users_tweets = db['tweet_pgh_good'].find({'user.id': user_id})
         for tweet in that_users_tweets:
             del tweet['_id'] # not serializable
             tweets_to_return.append(tweet)

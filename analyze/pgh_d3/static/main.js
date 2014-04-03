@@ -77,19 +77,6 @@ function update() {
     tweetSelection.attr("d", tweetsPath); //TODO is this not right?
     tweetSelection.exit().remove();
 
-     
-    // var tweetLabelSelection = svg.selectAll(".tweet-label").data(tweetsToShow);
-    // tweetLabelSelection.enter().append("text")
-    //     .attr("class", "tweet-label");
-    // tweetLabelSelection
-    //     .attr("transform", function(d) {
-    //         if (d.coordinates)
-    //             return "translate(" + projection(d.coordinates.coordinates) + ")";
-    //         else
-    //             return null;
-    //     })
-    //     .text(function(d) {return d.text});
-    // tweetLabelSelection.exit().remove();
 }
 
 function storeBoundingBoxPoint(x, y) {
@@ -110,7 +97,8 @@ function storeBoundingBoxPoint(x, y) {
 // you've drawn.
 function userCentroidQuery() {
     params = {"top_left_lon": bboxTopLeft[0], "top_left_lat":bboxTopLeft[1],
-        "bottom_right_lon": bboxBottomRight[0], "bottom_right_lat": bboxBottomRight[1]};
+        "bottom_right_lon": bboxBottomRight[0], "bottom_right_lat": bboxBottomRight[1],
+        "limit": $("#limit").val()};
     $.getJSON("/user_centroid_query", params, function(tweets) {
         allTweets = tweets.results;
         update();
@@ -121,7 +109,8 @@ function userCentroidQuery() {
 // Gets all tweets from any users who have ever tweeted in the box you've drawn.
 function userHereOnceQuery() {
     params = {"top_left_lon": bboxTopLeft[0], "top_left_lat":bboxTopLeft[1],
-        "bottom_right_lon": bboxBottomRight[0], "bottom_right_lat": bboxBottomRight[1]};
+        "bottom_right_lon": bboxBottomRight[0], "bottom_right_lat": bboxBottomRight[1],
+        "limit": $("#limit").val()};
     $.getJSON("/user_here_once_query", params, function(tweets) {
         allTweets = tweets.results;
         update();

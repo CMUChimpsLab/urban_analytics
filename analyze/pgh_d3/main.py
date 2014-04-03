@@ -33,6 +33,10 @@ def user_centroid_query():
     tl_lat = float(args['top_left_lat'])
     br_lon = float(args['bottom_right_lon'])
     br_lat = float(args['bottom_right_lat'])
+    if args['limit']:
+        limit = int(args['limit'])
+    else:
+        limit = 0
     tweets_to_return = []
 
     search_rect = {'type': 'Polygon', 'coordinates': [[
@@ -56,6 +60,8 @@ def user_centroid_query():
         for tweet in that_users_tweets:
             del tweet['_id'] # b/c it's not serializable
             tweets_to_return.append(tweet)
+        if limit and len(tweets_to_return) >= limit:
+            break
         
     return flask.json.jsonify({'results':tweets_to_return})
 
@@ -67,6 +73,11 @@ def user_here_once_query():
     tl_lat = float(args['top_left_lat'])
     br_lon = float(args['bottom_right_lon'])
     br_lat = float(args['bottom_right_lat'])
+    if args['limit']:
+        limit = int(args['limit'])
+    else:
+        limit = 0
+    
     tweets_to_return = []
     search_rect = {'type': 'Polygon', 'coordinates': [[
         [tl_lon, tl_lat],
@@ -87,6 +98,8 @@ def user_here_once_query():
         for tweet in that_users_tweets:
             del tweet['_id'] # not serializable
             tweets_to_return.append(tweet)
+        if limit and len(tweets_to_return) >= limit:
+            break
 
     return flask.json.jsonify({'results':tweets_to_return})
 

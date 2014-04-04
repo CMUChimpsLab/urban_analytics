@@ -88,7 +88,7 @@ function update() {
         .attr("class", "tweet")
         .style("fill", generateTweetColor)
         .on("click", function(tweet) {
-            console.log(tweet.user.screen_name + ": " + tweet.text);
+            console.log(tweet.id + "\t " + tweet.user.screen_name + ": " + tweet.text);
         });
     tweetSelection.exit().remove();
 

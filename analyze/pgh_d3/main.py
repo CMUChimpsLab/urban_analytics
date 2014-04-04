@@ -104,13 +104,12 @@ def user_here_once_query():
             }
         })
 
-    all_user_ids = []
+    seen_user_ids = [] # don't use the same user ID twice
     for tweet_in_rect in tweets_in_rect:
         user_id = tweet_in_rect['user']['id']
-    #     all_user_ids.append(tweet_in_rect['user']['id'])
-    # random.shuffle(all_user_ids)
-
-    # for user_id in all_user_ids:
+        if user_id in seen_user_ids:
+            continue
+        
         that_users_tweets = db['tweet_pgh_good'].find({'user.id': user_id})
         that_user_tweet_counter = 0
         for tweet in that_users_tweets:
@@ -118,6 +117,7 @@ def user_here_once_query():
             tweets_to_return.append(tweet)
             that_user_tweet_counter += 1
             if per_user_limit and that_user_tweet_counter >= per_user_limit:
+                seen_user_ids.append(user_id)
                 break
             
         if limit and len(tweets_to_return) >= limit:

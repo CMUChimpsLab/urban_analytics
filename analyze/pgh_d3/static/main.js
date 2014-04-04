@@ -37,7 +37,8 @@ function loadNeighborhoods() {
         var neighborhoods = topojson.feature(nghds, nghds.objects.neighborhoods);
         svg.append("path")
             .datum(neighborhoods)
-            .attr("d", path);
+            .attr("d", path)
+            .attr("class", "neighborhood");
     });
 }
 
@@ -63,18 +64,32 @@ function runQuery() {
     });
  }
 
+// Returns a color, given a tweet. All tweets from the same user should have
+// the same color.
+function generateTweetColor(tweet) {
+    var id = tweet.user.id;
+    var hex = (id & 0xffffff).toString(16);
+    return '#' + hex;
+}
+
 function update() {
     tweetsToShow = filterDates(allTweets,
         $("#startDate").datepicker("getDate"),
         $("#endDate").datepicker("getDate"));
    
-    var tweetSelection = svg.selectAll(".tweet").data(tweetsToShow);
+    var tweetSelection = svg.selectAll(".tweet")
+        .data(tweetsToShow)
+        .style("fill", generateTweetColor);
+    // The result of data() is the "update" selector, so anything you put here
+    // will update when the backing data array (tweetsToShow here) changes.
+
     tweetSelection.enter().append("path") // .enter() means "if there's more data than dom elements, do this for each new one"
+        .attr("d", tweetsPath)
         .attr("class", "tweet")
+        .style("fill", generateTweetColor)
         .on("click", function(tweet) {
             console.log(tweet.user.screen_name + ": " + tweet.text);
         });
-    tweetSelection.attr("d", tweetsPath); //TODO is this not right?
     tweetSelection.exit().remove();
 
 }

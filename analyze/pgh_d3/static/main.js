@@ -79,7 +79,8 @@ function update() {
    
     var tweetSelection = svg.selectAll(".tweet")
         .data(tweetsToShow)
-        .style("fill", generateTweetColor);
+        .style("fill", generateTweetColor)
+        .attr("d", tweetsPath);
     // The result of data() is the "update" selector, so anything you put here
     // will update when the backing data array (tweetsToShow here) changes.
 

@@ -113,7 +113,8 @@ function storeBoundingBoxPoint(x, y) {
 function userCentroidQuery() {
     params = {"top_left_lon": bboxTopLeft[0], "top_left_lat":bboxTopLeft[1],
         "bottom_right_lon": bboxBottomRight[0], "bottom_right_lat": bboxBottomRight[1],
-        "limit": $("#limit").val()};
+        "limit": $("#limit").val(),
+        "per_user_limit": $("#per_user_limit").val()};
     $.getJSON("/user_centroid_query", params, function(tweets) {
         allTweets = tweets.results;
         update();
@@ -125,7 +126,8 @@ function userCentroidQuery() {
 function userHereOnceQuery() {
     params = {"top_left_lon": bboxTopLeft[0], "top_left_lat":bboxTopLeft[1],
         "bottom_right_lon": bboxBottomRight[0], "bottom_right_lat": bboxBottomRight[1],
-        "limit": $("#limit").val()};
+        "limit": $("#limit").val(),
+        "per_user_limit": $("#per_user_limit").val()};
     $.getJSON("/user_here_once_query", params, function(tweets) {
         allTweets = tweets.results;
         update();

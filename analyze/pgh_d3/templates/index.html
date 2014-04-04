@@ -43,8 +43,11 @@ textarea#query {
     <div>
         <button id="user_centroid_query">Only users with centroid within box</button>
         <button id="user_here_once_query">Only users who have tweeted in the box at least once</button>
-        Limit (0 for no limit):<input type="number" id="limit" min="1">
     </div>
+    <div>
+        Tweet Limit (0 for no limit):<input type="number" id="limit" value="1000" min="1">
+        Tweets per user limit:<input type="number" id="per_user_limit" value="10" min="1">
+    </div   
 </div>
 <svg id="mainSvg"></svg>
 

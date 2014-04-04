@@ -37,6 +37,11 @@ def user_centroid_query():
         limit = int(args['limit'])
     else:
         limit = 0
+    if args['per_user_limit']:
+        per_user_limit = int(args['per_user_limit'])
+    else:
+        per_user_limit = 0
+ 
     tweets_to_return = []
 
     search_rect = {'type': 'Polygon', 'coordinates': [[
@@ -57,9 +62,13 @@ def user_centroid_query():
         })
     for user in cursor:
         that_users_tweets = db['tweet_pgh_good'].find({'user.id': user['_id']})
+        that_user_tweet_counter = 0
         for tweet in that_users_tweets:
             del tweet['_id'] # b/c it's not serializable
             tweets_to_return.append(tweet)
+            that_user_tweet_counter += 1
+            if per_user_limit and that_user_tweet_counter >= per_user_limit:
+                break
         if limit and len(tweets_to_return) >= limit:
             break
         
@@ -67,7 +76,6 @@ def user_centroid_query():
 
 @app.route('/user_here_once_query')
 def user_here_once_query():
-    print "user here once"
     args = flask.request.args
     tl_lon = float(args['top_left_lon'])
     tl_lat = float(args['top_left_lat'])
@@ -77,7 +85,11 @@ def user_here_once_query():
         limit = int(args['limit'])
     else:
         limit = 0
-    
+    if args['per_user_limit']:
+        per_user_limit = int(args['per_user_limit'])
+    else:
+        per_user_limit = 0
+    # TODO: refactor some of this boilerplate between this and user_centroid_query    
     tweets_to_return = []
     search_rect = {'type': 'Polygon', 'coordinates': [[
         [tl_lon, tl_lat],
@@ -100,9 +112,14 @@ def user_here_once_query():
 
     # for user_id in all_user_ids:
         that_users_tweets = db['tweet_pgh_good'].find({'user.id': user_id})
+        that_user_tweet_counter = 0
         for tweet in that_users_tweets:
             del tweet['_id'] # not serializable
             tweets_to_return.append(tweet)
+            that_user_tweet_counter += 1
+            if per_user_limit and that_user_tweet_counter >= per_user_limit:
+                break
+            
         if limit and len(tweets_to_return) >= limit:
             break
 

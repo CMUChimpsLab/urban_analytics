@@ -2,7 +2,7 @@
 
 # Server side for plotting things around Pittsburgh.
 
-import flask, pymongo, json, urllib, random
+import flask, pymongo, json, urllib, random, datetime
 
 app = flask.Flask(__name__)
 dbclient = pymongo.MongoClient('localhost', 27017)
@@ -34,6 +34,8 @@ def user_centroid_query():
     tl_lat = float(args['top_left_lat'])
     br_lon = float(args['bottom_right_lon'])
     br_lat = float(args['bottom_right_lat'])
+    start_time = datetime.time(int(args['start_hour']))
+    end_time = datetime.time(int(args['end_hour']))
     if args['limit']:
         limit = int(args['limit'])
     else:
@@ -65,6 +67,9 @@ def user_centroid_query():
         that_users_tweets = db[collection_name].find({'user.id': user['_id']})
         that_user_tweet_counter = 0
         for tweet in that_users_tweets:
+            tweet_time = datetime.datetime.strptime(tweet['created_at'], '%a %b %d %H:%M:%S +0000 %Y').time()
+            if tweet_time < start_time or tweet_time > end_time:
+                continue
             del tweet['_id'] # b/c it's not serializable
             tweets_to_return.append(tweet)
             that_user_tweet_counter += 1
@@ -83,6 +88,8 @@ def user_here_once_query():
     tl_lat = float(args['top_left_lat'])
     br_lon = float(args['bottom_right_lon'])
     br_lat = float(args['bottom_right_lat'])
+    start_time = datetime.time(int(args['start_hour']))
+    end_time = datetime.time(int(args['end_hour']))
     if args['limit']:
         limit = int(args['limit'])
     else:
@@ -115,6 +122,10 @@ def user_here_once_query():
         that_users_tweets = db[collection_name].find({'user.id': user_id})
         that_user_tweet_counter = 0
         for tweet in that_users_tweets:
+            tweet_time = datetime.datetime.strptime(tweet['created_at'], '%a %b %d %H:%M:%S +0000 %Y').time()
+            if tweet_time < start_time or tweet_time > end_time:
+                continue
+
             del tweet['_id'] # not serializable
 
             # Only send back the essential part of the tweet. Reduces data sent

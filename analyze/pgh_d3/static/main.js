@@ -127,6 +127,8 @@ function getCollection() {
 function userCentroidQuery() {
     params = {"top_left_lon": bboxTopLeft[0], "top_left_lat":bboxTopLeft[1],
         "bottom_right_lon": bboxBottomRight[0], "bottom_right_lat": bboxBottomRight[1],
+        "start_hour": $("#startTime").val(),
+        "end_hour": $("#endTime").val(),
         "limit": $("#limit").val(),
         "per_user_limit": $("#per_user_limit").val(),
         "collection": getCollection()};
@@ -142,6 +144,8 @@ function userCentroidQuery() {
 function userHereOnceQuery() {
     params = {"top_left_lon": bboxTopLeft[0], "top_left_lat":bboxTopLeft[1],
         "bottom_right_lon": bboxBottomRight[0], "bottom_right_lat": bboxBottomRight[1],
+        "start_hour": $("#startTime").val(),
+        "end_hour": $("#endTime").val(),
         "limit": $("#limit").val(),
         "per_user_limit": $("#per_user_limit").val(),
         "collection": getCollection()};

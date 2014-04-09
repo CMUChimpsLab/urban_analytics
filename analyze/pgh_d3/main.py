@@ -116,7 +116,13 @@ def user_here_once_query():
         that_user_tweet_counter = 0
         for tweet in that_users_tweets:
             del tweet['_id'] # not serializable
-            tweets_to_return.append(tweet)
+
+            # Only send back the essential part of the tweet. Reduces data sent
+            # by about a factor of 10. Have to update this, though, if you want
+            # to use more parts of the tweet.
+            small_tweet = dict([(key, tweet[key]) for key in ['text', 'id','user','coordinates','created_at']])
+            small_tweet['user'] = dict([(key, tweet['user'][key]) for key in ['id', 'screen_name']])
+            tweets_to_return.append(small_tweet)
             that_user_tweet_counter += 1
             if per_user_limit and that_user_tweet_counter >= per_user_limit:
                 seen_user_ids.append(user_id)

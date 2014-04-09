@@ -118,7 +118,7 @@ function getCollection() {
     } else if ($("#useFoursquare").prop("checked")) {
         return "foursquare";
     } else {
-        alert("error: no table selected");
+        alert("error: no collection selected");
     }
 }
 

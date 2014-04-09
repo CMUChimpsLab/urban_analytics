@@ -159,3 +159,18 @@ function userHereOnceQuery() {
 
     $("#loading").show();
 }
+
+// Just get a bunch of tweets from the server. (You won't show them all at
+// the same time.)
+function getBunchOfTweets() {
+    params = {
+        "limit": $("#limit").val()
+    }
+    $.getJSON("/bunch_of_tweets", params, function(tweets) {
+        allTweets = tweets.results;
+        tweetsToShow = allTweets.slice(0,1000);
+        update();
+    });
+
+    $("#loading").show();
+}

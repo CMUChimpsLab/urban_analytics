@@ -26,6 +26,24 @@ def query():
     # has to be a dict, not array, "for security reasons", whatever that means
     return flask.json.jsonify({'results': results})
 
+@app.route('/bunch_of_tweets')
+def get_a_bunch_of_tweets():
+    limit = int(flask.request.args['limit'])
+    cursor = db['tweet_pgh_good'].find().limit(limit)
+    good_keys = ['text', 'id', 'user', 'coordinates', 'created_at']
+    good_user_keys = ['id', 'screen_name']
+    
+    tweets_to_return = []
+    for tweet in cursor:
+        small_tweet = dict([(key, tweet[key]) for key in good_keys])
+        small_tweet['user'] = dict([(key, tweet['user'][key]) for key in good_user_keys])
+        tweets_to_return.append(small_tweet)
+
+    # has to be a dict, not array, "for security reasons", whatever that means
+    return flask.json.jsonify({'results': tweets_to_return})
+
+
+
 @app.route('/user_centroid_query')
 def user_centroid_query():
     args = flask.request.args

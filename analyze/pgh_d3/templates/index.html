@@ -101,6 +101,7 @@ textarea#query {
     <div>
         <button id="user_centroid_query">Only users with centroid within box</button>
         <button id="user_here_once_query">Only users who have tweeted in the box at least once</button>
+        <button id="bunch_of_tweets_query">Just get some tweets</button>
         <img src="static/loading.gif" id="loading">
     </div>
     <div>
@@ -127,6 +128,9 @@ $("#user_centroid_query").click(function() {
 });
 $("#user_here_once_query").click(function() {
     userHereOnceQuery();
+});
+$("#bunch_of_tweets_query").click(function() {
+    getBunchOfTweets();
 });
 $("#mainSvg").click(function(clickEvent) {
     storeBoundingBoxPoint(clickEvent.offsetX, clickEvent.offsetY);

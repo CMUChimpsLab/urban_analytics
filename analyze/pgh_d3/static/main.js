@@ -74,9 +74,6 @@ function generateTweetColor(tweet) {
 }
 
 function update() {
-    tweetsToShow = filterDates(allTweets,
-        $("#startDate").datepicker("getDate"),
-        $("#endDate").datepicker("getDate"));
    
     var tweetSelection = svg.selectAll(".tweet")
         .data(tweetsToShow)
@@ -134,6 +131,9 @@ function userCentroidQuery() {
         "collection": getCollection()};
     $.getJSON("/user_centroid_query", params, function(tweets) {
         allTweets = tweets.results;
+        tweetsToShow = filterDates(allTweets,
+            $("#startDate").datepicker("getDate"),
+            $("#endDate").datepicker("getDate"));
         update();
     });
     $("#loading").show();
@@ -151,6 +151,9 @@ function userHereOnceQuery() {
         "collection": getCollection()};
     $.getJSON("/user_here_once_query", params, function(tweets) {
         allTweets = tweets.results;
+        tweetsToShow = filterDates(allTweets,
+            $("#startDate").datepicker("getDate"),
+            $("#endDate").datepicker("getDate"));
         update();
     });
 

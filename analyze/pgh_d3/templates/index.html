@@ -15,7 +15,7 @@ path.neighborhood {
 }
 textarea#query {
     width:300px;
-    height:100px;
+    height:50px;
 }
 
 </style>
@@ -47,8 +47,14 @@ textarea#query {
     <div>
         Tweet Limit (0 for no limit):<input type="number" id="limit" value="1000" min="1">
         Tweets per user limit:<input type="number" id="per_user_limit" value="10" min="1">
-    </div   
+    </div>
+    <div>
+        <input type="radio" name="whichCollection" id="useTweets" checked>All Tweets</input>
+        <input type="radio" name="whichCollection" id="useFoursquare">Only Foursquare checkin tweets</input>
+    </div>
+
 </div>
+
 <svg id="mainSvg"></svg>
 
 <script>

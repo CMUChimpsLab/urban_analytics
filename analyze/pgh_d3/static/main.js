@@ -109,13 +109,25 @@ function storeBoundingBoxPoint(x, y) {
     $("#bottomRightCoords").text(bboxBottomRight);
 }
 
+// returns the string name of the collection to query from
+function getCollection() {
+    if ($("#useTweets").prop("checked")) {
+        return "tweet_pgh_good";
+    } else if ($("#useFoursquare").prop("checked")) {
+        return "foursquare";
+    } else {
+        alert("error: no table selected");
+    }
+}
+
 // Gets all tweets from all users whose tweet-centroids are within the box
 // you've drawn.
 function userCentroidQuery() {
     params = {"top_left_lon": bboxTopLeft[0], "top_left_lat":bboxTopLeft[1],
         "bottom_right_lon": bboxBottomRight[0], "bottom_right_lat": bboxBottomRight[1],
         "limit": $("#limit").val(),
-        "per_user_limit": $("#per_user_limit").val()};
+        "per_user_limit": $("#per_user_limit").val(),
+        "collection": getCollection()};
     $.getJSON("/user_centroid_query", params, function(tweets) {
         allTweets = tweets.results;
         update();
@@ -128,7 +140,8 @@ function userHereOnceQuery() {
     params = {"top_left_lon": bboxTopLeft[0], "top_left_lat":bboxTopLeft[1],
         "bottom_right_lon": bboxBottomRight[0], "bottom_right_lat": bboxBottomRight[1],
         "limit": $("#limit").val(),
-        "per_user_limit": $("#per_user_limit").val()};
+        "per_user_limit": $("#per_user_limit").val(),
+        "collection": getCollection()};
     $.getJSON("/user_here_once_query", params, function(tweets) {
         allTweets = tweets.results;
         update();

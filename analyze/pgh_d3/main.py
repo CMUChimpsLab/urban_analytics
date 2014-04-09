@@ -16,7 +16,7 @@ def main():
 @app.route('/query')
 def query():
     # request.args.keys()[0] is a string representing the whole query
-    cursor = db.tweet_pgh_good.find(json.loads(flask.request.args.keys()[0]))
+    cursor = db['tweet_pgh_good'].find(json.loads(flask.request.args.keys()[0]))
     cursor.limit(2000) # TODO update this limit based on user input
     results = list(cursor)
 
@@ -29,6 +29,7 @@ def query():
 @app.route('/user_centroid_query')
 def user_centroid_query():
     args = flask.request.args
+    collection_name = args['collection']
     tl_lon = float(args['top_left_lon'])
     tl_lat = float(args['top_left_lat'])
     br_lon = float(args['bottom_right_lon'])
@@ -61,7 +62,7 @@ def user_centroid_query():
             }
         })
     for user in cursor:
-        that_users_tweets = db['tweet_pgh_good'].find({'user.id': user['_id']})
+        that_users_tweets = db[collection_name].find({'user.id': user['_id']})
         that_user_tweet_counter = 0
         for tweet in that_users_tweets:
             del tweet['_id'] # b/c it's not serializable
@@ -77,6 +78,7 @@ def user_centroid_query():
 @app.route('/user_here_once_query')
 def user_here_once_query():
     args = flask.request.args
+    collection_name = args['collection']
     tl_lon = float(args['top_left_lon'])
     tl_lat = float(args['top_left_lat'])
     br_lon = float(args['bottom_right_lon'])
@@ -97,7 +99,7 @@ def user_here_once_query():
         [br_lon, br_lat],
         [br_lon, tl_lat],
         [tl_lon, tl_lat]]]}
-    tweets_in_rect = db['tweet_pgh_good'].find(
+    tweets_in_rect = db[collection_name].find(
         {'coordinates':
             {'$geoWithin':
                 {'$geometry': search_rect}
@@ -110,7 +112,7 @@ def user_here_once_query():
         if user_id in seen_user_ids:
             continue
         
-        that_users_tweets = db['tweet_pgh_good'].find({'user.id': user_id})
+        that_users_tweets = db[collection_name].find({'user.id': user_id})
         that_user_tweet_counter = 0
         for tweet in that_users_tweets:
             del tweet['_id'] # not serializable
@@ -131,7 +133,8 @@ if __name__ == "__main__":
     db['user'].ensure_index('_id')
     db['user'].ensure_index([('centroid', pymongo.GEOSPHERE)])
     db['tweet_pgh_good'].ensure_index([('coordinates', pymongo.GEOSPHERE)])
+    db['foursquare'].ensure_index([('coordinates', pymongo.GEOSPHERE)])
     print "indexes have all been created, starting app"
-    app.run(host='0.0.0.0')
+    app.run(host='127.0.0.1', debug=True)
     # 0.0.0.0 means "listen on all public IPs"
 

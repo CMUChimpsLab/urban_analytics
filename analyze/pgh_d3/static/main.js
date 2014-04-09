@@ -62,7 +62,8 @@ function runQuery() {
         allTweets = tweets.results;
         update();
     });
- }
+    $("#loading").show();
+}
 
 // Returns a color, given a tweet. All tweets from the same user should have
 // the same color.
@@ -93,6 +94,7 @@ function update() {
         });
     tweetSelection.exit().remove();
 
+    $("#loading").hide()
 }
 
 function storeBoundingBoxPoint(x, y) {
@@ -132,6 +134,7 @@ function userCentroidQuery() {
         allTweets = tweets.results;
         update();
     });
+    $("#loading").show();
 
 }
 
@@ -147,4 +150,5 @@ function userHereOnceQuery() {
         update();
     });
 
+    $("#loading").show();
 }

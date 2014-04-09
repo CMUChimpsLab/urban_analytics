@@ -17,6 +17,9 @@ textarea#query {
     width:300px;
     height:50px;
 }
+#loading {
+    display:none;
+}
 
 </style>
 <link rel="stylesheet" href="//code.jquery.com/ui/1.10.4/themes/smoothness/jquery-ui.css">
@@ -43,6 +46,7 @@ textarea#query {
     <div>
         <button id="user_centroid_query">Only users with centroid within box</button>
         <button id="user_here_once_query">Only users who have tweeted in the box at least once</button>
+        <img src="static/loading.gif" id="loading">
     </div>
     <div>
         Tweet Limit (0 for no limit):<input type="number" id="limit" value="1000" min="1">

@@ -141,6 +141,6 @@ if __name__ == "__main__":
     db['tweet_pgh_good'].ensure_index([('coordinates', pymongo.GEOSPHERE)])
     db['foursquare'].ensure_index([('coordinates', pymongo.GEOSPHERE)])
     print "indexes have all been created, starting app"
-    app.run(host='127.0.0.1', debug=True)
+    app.run(host='0.0.0.0')
     # 0.0.0.0 means "listen on all public IPs"
 

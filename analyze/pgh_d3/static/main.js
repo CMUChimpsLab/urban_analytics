@@ -73,6 +73,29 @@ function generateTweetColor(tweet) {
     return '#' + hex;
 }
 
+function selectTweetsToShow() {
+    tweetsToShow = []
+    var startDate = $("#startDate").datepicker("getDate");
+    var endDate = $("#endDate").datepicker("getDate");
+    var startHour = $("#startTime").val();
+    var endHour = $("#endTime").val();
+
+    allTweets.forEach(function(tweet) {
+        var tweetDate = new Date(tweet['created_at']);
+        if (startDate != null && tweetDate < startDate) {
+            return;
+        }
+        if (endDate != null && tweetDate > endDate) {
+            return;
+        }
+        var tweetHour = tweetDate.getHours();
+        if (tweetHour >= endHour || tweetHour < startHour) {
+            return;
+        }
+        tweetsToShow.push(tweet);
+    });
+}
+
 function update() {
    
     var tweetSelection = svg.selectAll(".tweet")

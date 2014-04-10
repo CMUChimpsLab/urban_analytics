@@ -28,6 +28,7 @@ textarea#query {
 <script src="http://d3js.org/topojson.v1.min.js"></script>
 <script src="http://code.jquery.com/jquery-2.1.0.min.js"></script>
 <script src="http://code.jquery.com/ui/1.10.4/jquery-ui.min.js"></script>
+<script src="static/underscore-min.js"></script>
 
 <div id="arbitrary_query_box">
     <textarea id="query">{}</textarea> <br/>
@@ -107,8 +108,9 @@ textarea#query {
         <img src="static/loading.gif" id="loading">
     </div>
     <div>
-        Tweet Limit (0 for no limit):<input type="number" id="limit" value="1000" min="1">
+        Tweets from server limit:<input type="number" id="server_limit" value="10000" min="1">
         Tweets per user limit:<input type="number" id="per_user_limit" value="10" min="1">
+        Display limit:<input type="number" id="display_limit" value="1000" min="1">
     </div>
     <div>
         <input type="radio" name="whichCollection" id="useTweets" checked>All Tweets</input>

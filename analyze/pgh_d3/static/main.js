@@ -1,4 +1,6 @@
 
+// uses d3, underscore, topojson
+
 var startDate;
 var endDate;
 
@@ -74,26 +76,26 @@ function generateTweetColor(tweet) {
 }
 
 function selectTweetsToShow() {
-    tweetsToShow = []
     var startDate = $("#startDate").datepicker("getDate");
     var endDate = $("#endDate").datepicker("getDate");
     var startHour = $("#startTime").val();
     var endHour = $("#endTime").val();
 
-    allTweets.forEach(function(tweet) {
+    var goodTweets = _.filter(allTweets, function(tweet) {
         var tweetDate = new Date(tweet['created_at']);
         if (startDate != null && tweetDate < startDate) {
-            return;
+            return false;
         }
         if (endDate != null && tweetDate > endDate) {
-            return;
+            return false;
         }
         var tweetHour = tweetDate.getHours();
         if (tweetHour >= endHour || tweetHour < startHour) {
-            return;
+            return false;
         }
-        tweetsToShow.push(tweet);
+        return true;
     });
+    tweetsToShow = _.sample(goodTweets, $("#display_limit").val());
 }
 
 function update() {
@@ -153,7 +155,7 @@ function userCentroidQuery() {
         "bottom_right_lon": bboxBottomRight[0], "bottom_right_lat": bboxBottomRight[1],
         "start_hour": $("#startTime").val(),
         "end_hour": $("#endTime").val(),
-        "limit": $("#limit").val(),
+        "limit": $("#server_limit").val(),
         "per_user_limit": $("#per_user_limit").val(),
         "collection": getCollection()};
     $.getJSON("/user_centroid_query", params, function(tweets) {
@@ -173,7 +175,7 @@ function userHereOnceQuery() {
         "bottom_right_lon": bboxBottomRight[0], "bottom_right_lat": bboxBottomRight[1],
         "start_hour": $("#startTime").val(),
         "end_hour": $("#endTime").val(),
-        "limit": $("#limit").val(),
+        "limit": $("#server_limit").val(),
         "per_user_limit": $("#per_user_limit").val(),
         "collection": getCollection()};
     $.getJSON("/user_here_once_query", params, function(tweets) {
@@ -187,15 +189,16 @@ function userHereOnceQuery() {
     $("#loading").show();
 }
 
+
 // Just get a bunch of tweets from the server. (You won't show them all at
 // the same time.)
 function getBunchOfTweets() {
     params = {
-        "limit": $("#limit").val()
+        "limit": $("#server_limit").val()
     }
     $.getJSON("/bunch_of_tweets", params, function(tweets) {
         allTweets = tweets.results;
-        tweetsToShow = allTweets.slice(0,1000);
+        tweetsToShow = _.sample(allTweets, $("#display_limit").val());
         update();
     });
 

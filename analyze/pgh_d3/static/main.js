@@ -127,8 +127,12 @@ function storeBoundingBoxPoint(x, y) {
         bboxTopLeft = geoPoint;
         bboxBottomRight = [];
     }
-    $("#topLeftCoords").text(bboxTopLeft);
-    $("#bottomRightCoords").text(bboxBottomRight);
+    $("#topLeftCoords").text(bboxTopLeft[0].toFixed(4) + ", " + bboxTopLeft[1].toFixed(4));
+    if (bboxBottomRight.length > 0) {
+        $("#bottomRightCoords").text(bboxBottomRight[0].toFixed(4) + ", " + bboxBottomRight[1].toFixed(4));
+    } else {
+        $("#bottomRightCoords").text("");
+    }
 }
 
 // returns the string name of the collection to query from

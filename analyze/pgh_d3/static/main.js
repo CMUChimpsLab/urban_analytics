@@ -1,4 +1,6 @@
 
+// uses d3, underscore, topojson
+
 var startDate;
 var endDate;
 
@@ -74,26 +76,27 @@ function generateTweetColor(tweet) {
 }
 
 function selectTweetsToShow() {
-    tweetsToShow = []
     var startDate = $("#startDate").datepicker("getDate");
     var endDate = $("#endDate").datepicker("getDate");
     var startHour = $("#startTime").val();
     var endHour = $("#endTime").val();
 
-    allTweets.forEach(function(tweet) {
+    var goodTweets = _.filter(allTweets, function(tweet) {
         var tweetDate = new Date(tweet['created_at']);
         if (startDate != null && tweetDate < startDate) {
-            return;
+            return false;
         }
         if (endDate != null && tweetDate > endDate) {
-            return;
+            return false;
         }
         var tweetHour = tweetDate.getHours();
         if (tweetHour >= endHour || tweetHour < startHour) {
-            return;
+            return false;
         }
-        tweetsToShow.push(tweet);
+        return true;
     });
+    tweetsToShow = _.sample(goodTweets, $("#display_limit").val());
+    update();
 }
 
 function update() {
@@ -102,8 +105,6 @@ function update() {
         .data(tweetsToShow)
         .style("fill", generateTweetColor)
         .attr("d", tweetsPath);
-    // The result of data() is the "update" selector, so anything you put here
-    // will update when the backing data array (tweetsToShow here) changes.
 
     tweetSelection.enter().append("path") // .enter() means "if there's more data than dom elements, do this for each new one"
         .attr("d", tweetsPath)
@@ -121,6 +122,7 @@ function storeBoundingBoxPoint(x, y) {
     var geoPoint = projection.invert([x, y]);
     if (bboxTopLeft.length == 0) {
         bboxTopLeft = geoPoint;
+        
     } else if (bboxBottomRight.length == 0) {
         bboxBottomRight = geoPoint;
     } else { // top left and bottom right both already exist, start new ones
@@ -128,9 +130,14 @@ function storeBoundingBoxPoint(x, y) {
         bboxBottomRight = [];
     }
     $("#topLeftCoords").text(bboxTopLeft[0].toFixed(4) + ", " + bboxTopLeft[1].toFixed(4));
+
     if (bboxBottomRight.length > 0) {
         $("#bottomRightCoords").text(bboxBottomRight[0].toFixed(4) + ", " + bboxBottomRight[1].toFixed(4));
+        var width = x - d3.select("#select_box").attr("x");
+        var height = y - d3.select("#select_box").attr("y"); 
+        d3.select("#select_box").attr("width", width).attr("height", height);
     } else {
+        d3.select("#select_box").attr("x", x).attr("y", y).attr("width", 0).attr("height", 0);
         $("#bottomRightCoords").text("");
     }
 }
@@ -153,7 +160,7 @@ function userCentroidQuery() {
         "bottom_right_lon": bboxBottomRight[0], "bottom_right_lat": bboxBottomRight[1],
         "start_hour": $("#startTime").val(),
         "end_hour": $("#endTime").val(),
-        "limit": $("#limit").val(),
+        "limit": $("#server_limit").val(),
         "per_user_limit": $("#per_user_limit").val(),
         "collection": getCollection()};
     $.getJSON("/user_centroid_query", params, function(tweets) {
@@ -173,7 +180,7 @@ function userHereOnceQuery() {
         "bottom_right_lon": bboxBottomRight[0], "bottom_right_lat": bboxBottomRight[1],
         "start_hour": $("#startTime").val(),
         "end_hour": $("#endTime").val(),
-        "limit": $("#limit").val(),
+        "limit": $("#server_limit").val(),
         "per_user_limit": $("#per_user_limit").val(),
         "collection": getCollection()};
     $.getJSON("/user_here_once_query", params, function(tweets) {
@@ -187,15 +194,16 @@ function userHereOnceQuery() {
     $("#loading").show();
 }
 
+
 // Just get a bunch of tweets from the server. (You won't show them all at
 // the same time.)
 function getBunchOfTweets() {
     params = {
-        "limit": $("#limit").val()
+        "limit": $("#server_limit").val()
     }
     $.getJSON("/bunch_of_tweets", params, function(tweets) {
         allTweets = tweets.results;
-        tweetsToShow = allTweets.slice(0,1000);
+        tweetsToShow = _.sample(allTweets, $("#display_limit").val());
         update();
     });
 

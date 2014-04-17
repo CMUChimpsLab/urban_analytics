@@ -96,6 +96,7 @@ function selectTweetsToShow() {
         return true;
     });
     tweetsToShow = _.sample(goodTweets, $("#display_limit").val());
+    update();
 }
 
 function update() {
@@ -104,8 +105,6 @@ function update() {
         .data(tweetsToShow)
         .style("fill", generateTweetColor)
         .attr("d", tweetsPath);
-    // The result of data() is the "update" selector, so anything you put here
-    // will update when the backing data array (tweetsToShow here) changes.
 
     tweetSelection.enter().append("path") // .enter() means "if there's more data than dom elements, do this for each new one"
         .attr("d", tweetsPath)
@@ -123,6 +122,7 @@ function storeBoundingBoxPoint(x, y) {
     var geoPoint = projection.invert([x, y]);
     if (bboxTopLeft.length == 0) {
         bboxTopLeft = geoPoint;
+        
     } else if (bboxBottomRight.length == 0) {
         bboxBottomRight = geoPoint;
     } else { // top left and bottom right both already exist, start new ones
@@ -130,9 +130,14 @@ function storeBoundingBoxPoint(x, y) {
         bboxBottomRight = [];
     }
     $("#topLeftCoords").text(bboxTopLeft[0].toFixed(4) + ", " + bboxTopLeft[1].toFixed(4));
+
     if (bboxBottomRight.length > 0) {
         $("#bottomRightCoords").text(bboxBottomRight[0].toFixed(4) + ", " + bboxBottomRight[1].toFixed(4));
+        var width = x - d3.select("#select_box").attr("x");
+        var height = y - d3.select("#select_box").attr("y"); 
+        d3.select("#select_box").attr("width", width).attr("height", height);
     } else {
+        d3.select("#select_box").attr("x", x).attr("y", y).attr("width", 0).attr("height", 0);
         $("#bottomRightCoords").text("");
     }
 }

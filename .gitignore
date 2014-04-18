@@ -15,7 +15,8 @@ var
 sdist
 develop-eggs
 .installed.cfg
-lib
+#lib
+# allow lib because that's where I put js libraries
 lib64
 __pycache__
 

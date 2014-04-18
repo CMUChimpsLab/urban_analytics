@@ -1,3 +1,6 @@
+I guess I was trying to make a way to query tweet data here.
+To run it, source the env/bin/activate, then do ./main.py then go to
+localhost:5000/
 
 Neighborhood data from http://pittsburghpa.gov/dcp/gis/gis-data (Census Data link)
 

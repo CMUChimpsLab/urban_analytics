@@ -1,5 +1,5 @@
 
-// uses d3, underscore, topojson
+// uses backbone, underscore, d3, topojson
 
 var PublicModule = (function() {
     "use strict";

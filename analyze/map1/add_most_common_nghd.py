@@ -27,9 +27,15 @@ def get_neighborhood_name(nghds, lon, lat):
     return 'Outside Pittsburgh'
 
 if __name__ == '__main__':
+    print "building indexes"
+    db['tweet_pgh_good'].ensureIndex('user.id')
+    print "done, loading neighborhoods"
     nghds = load_nghds()
+    print "done"
     for user in db['user'].find():
+        print "user: " + str(user['screen_name'])
         tweets = db['tweet_pgh_good'].find({'user.id':user['_id']})
+        print len(tweets)
         user_nghds = collections.Counter()
         for tweet in tweets:
             user_nghd_name = get_neighborhood_name(nghds,
@@ -42,7 +48,7 @@ if __name__ == '__main__':
         else:
             user['most_common_neighborhood'] = 'Outside Pittsburgh'
         db['user'].save(user)
-        print user_nghds.most_common(1)[0][0]
+        print user['most_common_neighborhood']
 
     # for tweet in db['tweet_pgh_good'].find():
     #     print get_neighborhood_name(nghds,

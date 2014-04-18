@@ -127,25 +127,25 @@ textarea#query {
 $("#startDate").datepicker();
 $("#endDate").datepicker();
 $("#run_query").click(function() {
-    runQuery();
+    PublicModule.runQuery();
 });
 $("#user_centroid_query").click(function() {
-    userCentroidQuery();
+    PublicModule.userCentroidQuery();
 });
 $("#user_here_once_query").click(function() {
-    userHereOnceQuery();
+    PublicModule.userHereOnceQuery();
 });
 $("#bunch_of_tweets_query").click(function() {
-    getBunchOfTweets();
+    PublicModule.getBunchOfTweets();
 });
 $("#select_tweets_to_show").click(function() {
-    selectTweetsToShow();
+    PublicModule.selectTweetsToShow();
 });
 $("#update").click(function() {
-    update();
+    PublicModule.update();
 });
 $("#mainSvg").click(function(clickEvent) {
-    storeBoundingBoxPoint(clickEvent.offsetX, clickEvent.offsetY);
+    PublicModule.storeBoundingBoxPoint(clickEvent.offsetX, clickEvent.offsetY);
     // there's offsetX/Y, clientX/Y, screenX/Y, pageX/Y
     // client and screen = where you are on your monitor
     // offset looks like it's relative to the SVG
@@ -154,8 +154,7 @@ $("#mainSvg").click(function(clickEvent) {
 </script>
 <script src="static/main.js"></script>
 <script>
-loadNeighborhoods();
-update();
+PublicModule.loadNeighborhoods();
 </script>
 
 </body>

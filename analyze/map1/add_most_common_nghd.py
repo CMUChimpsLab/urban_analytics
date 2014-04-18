@@ -37,7 +37,10 @@ if __name__ == '__main__':
                 tweet['coordinates']['coordinates'][1])
             user_nghds[user_nghd_name] += 1
         
-        user['most_common_neighborhood'] = user_nghds.most_common(1)[0][0]
+        if len(user_nghds) > 0:
+            user['most_common_neighborhood'] = user_nghds.most_common(1)[0][0]
+        else:
+            user['most_common_neighborhood'] = 'Outside Pittsburgh'
         db['user'].save(user)
         print user_nghds.most_common(1)[0][0]
 

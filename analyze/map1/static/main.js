@@ -75,6 +75,7 @@ var PublicModule = (function() {
         $("#loading").hide()
     };
 
+
     var Module = {
 
         loadNeighborhoods: function() {
@@ -87,15 +88,13 @@ var PublicModule = (function() {
             });
         },
 
-        runQuery: function() {
-            params = $.parseJSON( $("#query").val() ); // TODO sanitize, obv
-            // takes about a second per 1k tweets. crashes on 100k.
-            $.getJSON("/query", JSON.stringify(params), function(tweets) {
-                allTweets = tweets.results;
-                update();
-            });
-            $("#loading").show();
+        storePoint: function(x, y) {
+            var geoPoint = projection.invert([x, y]);
+            bboxTopLeft = geoPoint;
+                
+            $("#topLeftCoords").text(bboxTopLeft[0].toFixed(4) + ", " + bboxTopLeft[1].toFixed(4));
         },
+
 
         selectTweetsToShow: function() {
             var startDate = $("#startDate").datepicker("getDate");
@@ -121,30 +120,6 @@ var PublicModule = (function() {
             update();
         },
 
-        storeBoundingBoxPoint: function(x, y) {
-            var geoPoint = projection.invert([x, y]);
-            if (bboxTopLeft.length == 0) {
-                bboxTopLeft = geoPoint;
-                
-            } else if (bboxBottomRight.length == 0) {
-                bboxBottomRight = geoPoint;
-            } else { // top left and bottom right both already exist, start new ones
-                bboxTopLeft = geoPoint;
-                bboxBottomRight = [];
-            }
-            $("#topLeftCoords").text(bboxTopLeft[0].toFixed(4) + ", " + bboxTopLeft[1].toFixed(4));
-
-            if (bboxBottomRight.length > 0) {
-                $("#bottomRightCoords").text(bboxBottomRight[0].toFixed(4) + ", " + bboxBottomRight[1].toFixed(4));
-                var width = x - d3.select("#select_box").attr("x");
-                var height = y - d3.select("#select_box").attr("y"); 
-                d3.select("#select_box").attr("width", width).attr("height", height);
-            } else {
-                d3.select("#select_box").attr("x", x).attr("y", y).attr("width", 0).attr("height", 0);
-                $("#bottomRightCoords").text("");
-            }
-        },
-
         // returns the string name of the collection to query from
         getCollection: function() {
             if ($("#useTweets").prop("checked")) {
@@ -156,47 +131,18 @@ var PublicModule = (function() {
             }
         },
 
-        // Gets all tweets from all users whose tweet-centroids are within the box
-        // you've drawn.
-        userCentroidQuery: function() {
-            params = {"top_left_lon": bboxTopLeft[0], "top_left_lat":bboxTopLeft[1],
-                "bottom_right_lon": bboxBottomRight[0], "bottom_right_lat": bboxBottomRight[1],
-                "start_hour": $("#startTime").val(),
-                "end_hour": $("#endTime").val(),
-                "limit": $("#server_limit").val(),
-                "per_user_limit": $("#per_user_limit").val(),
-                "collection": getCollection()};
-            $.getJSON("/user_centroid_query", params, function(tweets) {
+        // returns tweets by people who most commonly tweet in the
+        // neighborhood you've clicked on.
+        tweetsByThisNghdUsersQuery: function() {
+            params = {"limit": $("#server_limit").val(),
+                    "lon": bboxTopLeft[0], "lat": bboxTopLeft[1]};
+            $.getJSON("/tweets_by_this_nghd_users", params, function(tweets) {
                 allTweets = tweets.results;
-                tweetsToShow = filterDates(allTweets,
-                    $("#startDate").datepicker("getDate"),
-                    $("#endDate").datepicker("getDate"));
-                update();
-            });
-            $("#loading").show();
-
-        },
-
-        // Gets all tweets from any users who have ever tweeted in the box you've drawn.
-        userHereOnceQuery: function() {
-            params = {"top_left_lon": bboxTopLeft[0], "top_left_lat":bboxTopLeft[1],
-                "bottom_right_lon": bboxBottomRight[0], "bottom_right_lat": bboxBottomRight[1],
-                "start_hour": $("#startTime").val(),
-                "end_hour": $("#endTime").val(),
-                "limit": $("#server_limit").val(),
-                "per_user_limit": $("#per_user_limit").val(),
-                "collection": PublicModule.getCollection()};
-            $.getJSON("/user_here_once_query", params, function(tweets) {
-                allTweets = tweets.results;
-                tweetsToShow = filterDates(allTweets,
-                    $("#startDate").datepicker("getDate"),
-                    $("#endDate").datepicker("getDate"));
+                tweetsToShow = _.sample(allTweets, $("#display_limit").val());
                 update();
             });
 
-            $("#loading").show();
         },
-
 
         // Just get a bunch of tweets from the server. (You won't show them all at
         // the same time.)

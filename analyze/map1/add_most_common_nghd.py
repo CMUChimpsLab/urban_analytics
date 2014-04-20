@@ -28,14 +28,14 @@ def get_neighborhood_name(nghds, lon, lat):
 
 if __name__ == '__main__':
     print "building indexes"
-    db['tweet_pgh_good'].ensureIndex('user.id')
+    db['tweet_pgh_good'].ensure_index('user.id')
     print "done, loading neighborhoods"
     nghds = load_nghds()
     print "done"
     for user in db['user'].find():
         print "user: " + str(user['screen_name'])
         tweets = db['tweet_pgh_good'].find({'user.id':user['_id']})
-        print len(tweets)
+        print tweets.count()
         user_nghds = collections.Counter()
         for tweet in tweets:
             user_nghd_name = get_neighborhood_name(nghds,

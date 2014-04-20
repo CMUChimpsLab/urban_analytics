@@ -41,10 +41,6 @@ textarea#query {
 <script src="http://d3js.org/topojson.v1.js"></script>
 <script>window.topojson || document.write('<script src="static/lib/topojson.v1.js">\x3C/script>')</script>
 
-<div id="arbitrary_query_box">
-    <textarea id="query">{}</textarea> <br/>
-    <button id="run_query">Run Query</button>
-</div>
 <div id="controls">
     <div>
         Start date: <input type="text" id="startDate">
@@ -108,11 +104,10 @@ textarea#query {
             <option value="23" selected>11:00pm</option>
         </select>
     <div>
-        Bounding box (click map to choose top left and bottom right): <span id="topLeftCoords">(not selected)</span> to <span id="bottomRightCoords">(not selected)</span>
+        Click to choose the neighborhood you want: <span id="topLeftCoords">(not selected)</span>
     </div>
     <div>
-        <button id="user_centroid_query">Only users with centroid within box</button>
-        <button id="user_here_once_query">Only users who have tweeted in the box at least once</button>
+        <button id="tweets_by_this_nghd_users">Tweets by this neighborhood's users</button>
         <button id="bunch_of_tweets_query">Just get some tweets</button>
         <button id="select_tweets_to_show">Select tweets to show</button>
         <button id="update">Update</button>
@@ -123,28 +118,17 @@ textarea#query {
         Tweets per user limit:<input type="number" id="per_user_limit" value="10" min="1">
         Display limit:<input type="number" id="display_limit" value="1000" min="1">
     </div>
-    <div>
-        <input type="radio" name="whichCollection" id="useTweets" checked>All Tweets</input>
-        <input type="radio" name="whichCollection" id="useFoursquare">Only Foursquare checkin tweets</input>
-    </div>
 
 </div>
 
 <svg id="mainSvg">
-<rect id="select_box" x="0" y="0" width="0" height="0" fill="red"></svg>
 </svg>
 
 <script>
 $("#startDate").datepicker();
 $("#endDate").datepicker();
-$("#run_query").click(function() {
-    PublicModule.runQuery();
-});
-$("#user_centroid_query").click(function() {
-    PublicModule.userCentroidQuery();
-});
-$("#user_here_once_query").click(function() {
-    PublicModule.userHereOnceQuery();
+$("#tweets_by_this_nghd_users").click(function() {
+    PublicModule.tweetsByThisNghdUsersQuery();
 });
 $("#bunch_of_tweets_query").click(function() {
     PublicModule.getBunchOfTweets();
@@ -156,7 +140,7 @@ $("#update").click(function() {
     PublicModule.update();
 });
 $("#mainSvg").click(function(clickEvent) {
-    PublicModule.storeBoundingBoxPoint(clickEvent.offsetX, clickEvent.offsetY);
+    PublicModule.storePoint(clickEvent.offsetX, clickEvent.offsetY);
     // there's offsetX/Y, clientX/Y, screenX/Y, pageX/Y
     // client and screen = where you are on your monitor
     // offset looks like it's relative to the SVG

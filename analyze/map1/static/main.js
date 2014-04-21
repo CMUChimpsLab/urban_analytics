@@ -83,6 +83,12 @@ var PublicModule = (function() {
     // from https://github.com/substack/point-in-polygon
     // point is a pair of x, y; vs is the vertices of the polygon
     var pointInPolygon = function (point, vs) {
+        //TODO: This function as written was not made to work on MultiPolygons
+        // (which a few Pittsburgh neighborhoods are) so here's a hacky fix.
+        if (vs.length === 1 && vs[0].length > 1) {
+            return pointInPolygon(point, vs[0]);
+        }
+
         // ray-casting algorithm based on
         // http://www.ecse.rpi.edu/Homepages/wrf/Research/Short_Notes/pnpoly.html
         var x = point[0], y = point[1];
@@ -97,11 +103,24 @@ var PublicModule = (function() {
         }
         return inside; 
     };
+    // polygons is an array of arrays of vertices. (one array of vertices = one polygon)
+    // ugh, I mean, sometimes they are just [[v1,v2...]], sometimes:
+    // [[ [[v1,v2,...]], [[v10,v11,...]] ]] - I don't know why always double
+    // arrays. Anyway, there's a hacky fix up in pointInPolygon above too.
+    var pointInPolygons = function (point, polygons) {
+        for (var i = 0; i < polygons.length; i++) {
+            if (pointInPolygon(point, polygons[i])) {
+                return true;
+            }
+        }
+        return false;
+    };
 
     // returns the name of the neighborhood that contains this point.
     var neighborhoodName = function(point) {
         for (var i = 0; i < neighborhoods.features.length; i++) {
-            if (pointInPolygon(point, neighborhoods.features[i].geometry.coordinates[0])) {
+            // pointInPolygons because each Neighborhood can be made up of many polygons.
+            if (pointInPolygons(point, neighborhoods.features[i].geometry.coordinates)) {
                 return neighborhoodNames[i];
             }
         }
@@ -110,8 +129,8 @@ var PublicModule = (function() {
 
 
     var Module = {
-        printNghds: function() {
-            console.log(neighborhoods);
+        // TODO remove, this is for debugging
+        getNghds: function() {
             return neighborhoods;
         },
 

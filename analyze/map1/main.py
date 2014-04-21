@@ -33,7 +33,7 @@ def get_a_bunch_of_tweets():
     return flask.json.jsonify({'results': tweets_to_return})
 
 def load_nghds():
-    neighborhoods = geojson.load(open('neighborhoods.json'))
+    neighborhoods = geojson.load(open('static/neighborhoods.json'))
     nghd_features = neighborhoods['features']
     for nghd in nghd_features:
         nghd['shape'] = shapely.geometry.asShape(nghd.geometry)

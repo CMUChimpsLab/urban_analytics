@@ -71,8 +71,9 @@ var PublicModule = (function() {
                 console.log(tweet.id + "\t " + tweet.user.screen_name + ": " + tweet.text);
             });
         tweetSelection.exit().remove();
+        $("#status").text("Tweets: " + allTweets.length + ", Displaying: " + tweetsToShow.length);
 
-        $("#loading").hide()
+        $("#loading").hide();
     };
 
 
@@ -120,17 +121,6 @@ var PublicModule = (function() {
             update();
         },
 
-        // returns the string name of the collection to query from
-        getCollection: function() {
-            if ($("#useTweets").prop("checked")) {
-                return "tweet_pgh_good";
-            } else if ($("#useFoursquare").prop("checked")) {
-                return "foursquare";
-            } else {
-                alert("error: no collection selected");
-            }
-        },
-
         // returns tweets by people who most commonly tweet in the
         // neighborhood you've clicked on.
         tweetsByThisNghdUsersQuery: function() {
@@ -142,6 +132,7 @@ var PublicModule = (function() {
                 update();
             });
 
+            $("#loading").show();
         },
 
         // Just get a bunch of tweets from the server. (You won't show them all at

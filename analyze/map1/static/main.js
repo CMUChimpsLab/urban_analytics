@@ -23,6 +23,10 @@ var PublicModule = (function() {
     var bboxTopLeft = [];
     var bboxBottomRight = [];
 
+    // Two synced arrays; neighborhoods is the data, Names is just the names.
+    var neighborhoods = [];
+    var neighborhoodNames = [];
+
     // transforms a ... GeometryCollection?... object into a svg path 'd' string
     var path = d3.geo.path().projection(projection);
     // transforms a tweet object into a svg path 'd' string
@@ -76,16 +80,55 @@ var PublicModule = (function() {
         $("#loading").hide();
     };
 
+    // from https://github.com/substack/point-in-polygon
+    // point is a pair of x, y; vs is the vertices of the polygon
+    var pointInPolygon = function (point, vs) {
+        // ray-casting algorithm based on
+        // http://www.ecse.rpi.edu/Homepages/wrf/Research/Short_Notes/pnpoly.html
+        var x = point[0], y = point[1];
+        var inside = false;
+        for (var i = 0, j = vs.length - 1; i < vs.length; j = i++) {
+            var xi = vs[i][0], yi = vs[i][1];
+            var xj = vs[j][0], yj = vs[j][1];
+            
+            var intersect = ((yi > y) != (yj > y))
+                && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+            if (intersect) inside = !inside;
+        }
+        return inside; 
+    };
+
+    // returns the name of the neighborhood that contains this point.
+    var neighborhoodName = function(point) {
+        for (var i = 0; i < neighborhoods.features.length; i++) {
+            if (pointInPolygon(point, neighborhoods.features[i].geometry.coordinates[0])) {
+                return neighborhoodNames[i];
+            }
+        }
+        return "Outside Pittsburgh";
+    };
+
 
     var Module = {
+        printNghds: function() {
+            console.log(neighborhoods);
+            return neighborhoods;
+        },
 
         loadNeighborhoods: function() {
             d3.json("static/neighborhoodstopo.json", function(error, nghds) {
-                var neighborhoods = topojson.feature(nghds, nghds.objects.neighborhoods);
+                neighborhoods = topojson.feature(nghds, nghds.objects.neighborhoods);
                 svg.append("path")
                     .datum(neighborhoods)
                     .attr("d", path)
                     .attr("class", "neighborhood");
+            });
+            // load the geojson file, just for the names.
+            d3.json("static/neighborhoods.json", function(error, nghds) {
+                console.log(nghds);
+                for(var i = 0; i < nghds.features.length; i++) {
+                    neighborhoodNames[i] = nghds.features[i].properties.HOOD;
+                }
             });
         },
 
@@ -94,8 +137,8 @@ var PublicModule = (function() {
             bboxTopLeft = geoPoint;
                 
             $("#topLeftCoords").text(bboxTopLeft[0].toFixed(4) + ", " + bboxTopLeft[1].toFixed(4));
+            $("#status").text(neighborhoodName(geoPoint));
         },
-
 
         selectTweetsToShow: function() {
             var startDate = $("#startDate").datepicker("getDate");

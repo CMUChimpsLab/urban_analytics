@@ -26,6 +26,7 @@ var PublicModule = (function() {
     // Two synced arrays; neighborhoods is the data, Names is just the names.
     var neighborhoods = [];
     var neighborhoodNames = [];
+    var selectedNeighborhood = ''; // name; e.g. "Shadyside"
 
     // transforms a ... GeometryCollection?... object into a svg path 'd' string
     var path = d3.geo.path().projection(projection);
@@ -119,7 +120,6 @@ var PublicModule = (function() {
     // returns the name of the neighborhood that contains this point.
     var neighborhoodName = function(point) {
         for (var i = 0; i < neighborhoods.features.length; i++) {
-            // pointInPolygons because each Neighborhood can be made up of many polygons.
             if (pointInPolygons(point, neighborhoods.features[i].geometry.coordinates)) {
                 return neighborhoodNames[i];
             }
@@ -127,9 +127,39 @@ var PublicModule = (function() {
         return "Outside Pittsburgh";
     };
 
+    var selectTweetsToShow = function() {
+        var startDate = $("#startDate").datepicker("getDate");
+        var endDate = $("#endDate").datepicker("getDate");
+        var startHour = $("#startTime").val();
+        var endHour = $("#endTime").val();
+
+        var goodTweets = _.filter(allTweets, function(tweet) {
+            var tweetDate = new Date(tweet['created_at']);
+            if (startDate != null && tweetDate < startDate) {
+                return false;
+            }
+            if (endDate != null && tweetDate > endDate) {
+                return false;
+            }
+            var tweetHour = tweetDate.getHours();
+            if (tweetHour >= endHour || tweetHour < startHour) {
+                return false;
+            }
+            if (neighborhoodName(tweet.coordinates.coordinates) == selectedNeighborhood) {
+                return false;
+            }
+            return true;
+        });
+        tweetsToShow = _.sample(goodTweets, $("#display_limit").val());
+        update();
+    };
+
 
     var Module = {
         // TODO remove, this is for debugging
+        allTweets: function() { return allTweets; },
+        neighborhoodName: neighborhoodName,
+        selectedNeighborhood: function() { return selectedNeighborhood; },
         getNghds: function() {
             return neighborhoods;
         },
@@ -154,35 +184,14 @@ var PublicModule = (function() {
         storePoint: function(x, y) {
             var geoPoint = projection.invert([x, y]);
             bboxTopLeft = geoPoint;
-                
+ 
             $("#topLeftCoords").text(bboxTopLeft[0].toFixed(4) + ", " + bboxTopLeft[1].toFixed(4));
-            $("#status").text(neighborhoodName(geoPoint));
+            selectedNeighborhood = neighborhoodName(geoPoint);
+            $("#status").text(selectedNeighborhood);
         },
 
-        selectTweetsToShow: function() {
-            var startDate = $("#startDate").datepicker("getDate");
-            var endDate = $("#endDate").datepicker("getDate");
-            var startHour = $("#startTime").val();
-            var endHour = $("#endTime").val();
-
-            var goodTweets = _.filter(allTweets, function(tweet) {
-                var tweetDate = new Date(tweet['created_at']);
-                if (startDate != null && tweetDate < startDate) {
-                    return false;
-                }
-                if (endDate != null && tweetDate > endDate) {
-                    return false;
-                }
-                var tweetHour = tweetDate.getHours();
-                if (tweetHour >= endHour || tweetHour < startHour) {
-                    return false;
-                }
-                return true;
-            });
-            tweetsToShow = _.sample(goodTweets, $("#display_limit").val());
-            update();
-        },
-
+        selectTweetsToShow: selectTweetsToShow,
+ 
         // returns tweets by people who most commonly tweet in the
         // neighborhood you've clicked on.
         tweetsByThisNghdUsersQuery: function() {
@@ -190,7 +199,7 @@ var PublicModule = (function() {
                     "lon": bboxTopLeft[0], "lat": bboxTopLeft[1]};
             $.getJSON("/tweets_by_this_nghd_users", params, function(tweets) {
                 allTweets = tweets.results;
-                tweetsToShow = _.sample(allTweets, $("#display_limit").val());
+                selectTweetsToShow();
                 update();
             });
 
@@ -206,6 +215,8 @@ var PublicModule = (function() {
             $.getJSON("/bunch_of_tweets", params, function(tweets) {
                 allTweets = tweets.results;
                 tweetsToShow = _.sample(allTweets, $("#display_limit").val());
+                // not using selectTweetsToShow here b/c that filters by nghd.
+                // (filters out the "selected neighborhood".)
                 update();
             });
 

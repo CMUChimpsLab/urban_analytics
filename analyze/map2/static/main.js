@@ -62,21 +62,19 @@ var PublicModule = (function() {
         return '#' + hex;
     };
 
+    // No tweets = #fff (white).
+    // A lot of tweets = #000 (black).
     var generateNghdColor = function(nghd) {
         if (!nghd.properties.numTweets) {
             return "#fff";
         }
-        var lightness = (nghd.properties.numTweets / $("#display_limit").val());
+        var lightness = 1 - (nghd.properties.numTweets / $("#display_limit").val());
         var color = (Math.floor(lightness * 255)).toString(16);
         return '#' + color + color + color;
     };
 
     var update = function() {
-                 // svg.append("path")
-                 //    .datum(neighborhoods)
-                 //    .attr("d", path)
-                 //    .attr("class", "neighborhood");
-       
+      
         var nghdSelection = svg.selectAll(".neighborhood")
             .data(neighborhoods.features)
             .style("fill", generateNghdColor)

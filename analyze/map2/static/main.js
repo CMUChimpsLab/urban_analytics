@@ -85,19 +85,21 @@ var PublicModule = (function() {
             .attr("d", path);
         nghdSelection.exit().remove();
 
-        var tweetSelection = svg.selectAll(".tweet")
-            .data(tweetsToShow)
-            .style("fill", generateTweetColor)
-            .attr("d", tweetsPath);
+        if ($("#display_tweets").val() == "on") {
+            var tweetSelection = svg.selectAll(".tweet")
+                .data(tweetsToShow)
+                .style("fill", generateTweetColor)
+                .attr("d", tweetsPath);
 
-        tweetSelection.enter().append("path") // .enter() means "if there's more data than dom elements, do this for each new one"
-            .attr("d", tweetsPath)
-            .attr("class", "tweet")
-            .style("fill", generateTweetColor)
-            .on("click", function(tweet) {
-                console.log(tweet.id + "\t " + tweet.user.screen_name + ": " + tweet.text);
-            });
-        tweetSelection.exit().remove();
+            tweetSelection.enter().append("path") // .enter() means "if there's more data than dom elements, do this for each new one"
+                .attr("d", tweetsPath)
+                .attr("class", "tweet")
+                .style("fill", generateTweetColor)
+                .on("click", function(tweet) {
+                    console.log(tweet.id + "\t " + tweet.user.screen_name + ": " + tweet.text);
+                });
+            tweetSelection.exit().remove();
+        }
         $("#status").text("Tweets: " + allTweets.length + ", Displaying: " + tweetsToShow.length);
 
         $("#loading").hide();

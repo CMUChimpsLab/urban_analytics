@@ -85,7 +85,7 @@ var PublicModule = (function() {
             .attr("d", path);
         nghdSelection.exit().remove();
 
-        if ($("#display_tweets").val() == "on") {
+        if ($("#display_tweets").is(':checked')) {
             var tweetSelection = svg.selectAll(".tweet")
                 .data(tweetsToShow)
                 .style("fill", generateTweetColor)

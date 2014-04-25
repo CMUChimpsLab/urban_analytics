@@ -85,6 +85,17 @@ var PublicModule = (function() {
             .attr("d", path);
         nghdSelection.exit().remove();
 
+        var nghdLabels = svg.selectAll(".neighborhood-label")
+            .data(neighborhoods.features)
+          .enter().append("text")
+            .attr("transform", function(d) {
+                return "translate(" +projection(d.geometry.coordinates[0][0]) + ")";
+            })
+            .attr("dy", ".35em")
+            .text(function(d) {
+                return d.properties.numTweets;
+            });
+
         if ($("#display_tweets").is(':checked')) {
             var tweetSelection = svg.selectAll(".tweet")
                 .data(tweetsToShow)

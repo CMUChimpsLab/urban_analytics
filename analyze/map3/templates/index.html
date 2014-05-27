@@ -6,16 +6,12 @@ path.neighborhood {
     fill: none;
     stroke: black;
 }
-
+.user{
+    stroke:black;
+    fill:red;
+}
 .tweet{
     stroke: black;
-}
-#arbitrary_query_box {
-    float:left;
-}
-textarea#query {
-    width:300px;
-    height:50px;
 }
 #loading {
     display:none;
@@ -43,82 +39,12 @@ textarea#query {
 
 <div id="controls">
     <div>
-        Start date: <input type="text" id="startDate">
-    </div>
-    <div>
-        End date: <input type="text" id="endDate">
-    </div>
-    <div>
-        Start time of day:
-        <select id="startTime">
-            <option value="0">12:00am</option>
-            <option value="1">1:00am</option>
-            <option value="2">2:00am</option>
-            <option value="3">3:00am</option>
-            <option value="4">4:00am</option>
-            <option value="5">5:00am</option>
-            <option value="6">6:00am</option>
-            <option value="7">7:00am</option>
-            <option value="8">8:00am</option>
-            <option value="9">9:00am</option>
-            <option value="10">10:00am</option>
-            <option value="11">11:00am</option>
-            <option value="12">12:00pm</option>
-            <option value="13">1:00pm</option>
-            <option value="14">2:00pm</option>
-            <option value="15">3:00pm</option>
-            <option value="16">4:00pm</option>
-            <option value="17">5:00pm</option>
-            <option value="18">6:00pm</option>
-            <option value="19">7:00pm</option>
-            <option value="20">8:00pm</option>
-            <option value="21">9:00pm</option>
-            <option value="22">10:00pm</option>
-            <option value="23">11:00pm</option>
-        </select>
-        End time of day:
-        <select id="endTime">
-            <option value="0">12:00am</option>
-            <option value="1">1:00am</option>
-            <option value="2">2:00am</option>
-            <option value="3">3:00am</option>
-            <option value="4">4:00am</option>
-            <option value="5">5:00am</option>
-            <option value="6">6:00am</option>
-            <option value="7">7:00am</option>
-            <option value="8">8:00am</option>
-            <option value="9">9:00am</option>
-            <option value="10">10:00am</option>
-            <option value="11">11:00am</option>
-            <option value="12">12:00pm</option>
-            <option value="13">1:00pm</option>
-            <option value="14">2:00pm</option>
-            <option value="15">3:00pm</option>
-            <option value="16">4:00pm</option>
-            <option value="17">5:00pm</option>
-            <option value="18">6:00pm</option>
-            <option value="19">7:00pm</option>
-            <option value="20">8:00pm</option>
-            <option value="21">9:00pm</option>
-            <option value="22">10:00pm</option>
-            <option value="23">11:00pm</option>
-            <option value="24" selected>11:59pm</option>
-        </select>
-    <div>
         Click to choose the neighborhood you want: <span id="topLeftCoords">(not selected)</span>
     </div>
     <div>
-        <button id="tweets_by_this_nghd_users">Tweets by this neighborhood's users</button>
-        <button id="bunch_of_tweets_query">Just get some tweets</button>
-        <button id="select_tweets_to_show">Select tweets to show</button>
-        <button id="update">Update</button>
-        <input type="checkbox" id="display_tweets">Display Tweets</input>
         <img src="static/loading.gif" id="loading">
     </div>
     <div>
-        Tweets from server limit:<input type="number" id="server_limit" value="10000" min="1">
-        Tweets per user limit:<input type="number" id="per_user_limit" value="10" min="1">
-        Display limit:<input type="number" id="display_limit" value="1000" min="1">
         <span id="status"></span>
     </div>
 
@@ -128,22 +54,8 @@ textarea#query {
 </svg>
 
 <script>
-$("#startDate").datepicker();
-$("#endDate").datepicker();
-$("#tweets_by_this_nghd_users").click(function() {
-    PublicModule.tweetsByThisNghdUsersQuery();
-});
-$("#bunch_of_tweets_query").click(function() {
-    PublicModule.getBunchOfTweets();
-});
-$("#select_tweets_to_show").click(function() {
-    PublicModule.selectTweetsToShow();
-});
-$("#update").click(function() {
-    PublicModule.update();
-});
 $("#mainSvg").click(function(clickEvent) {
-    PublicModule.storePoint(clickEvent.offsetX, clickEvent.offsetY);
+    storePoint(clickEvent.offsetX, clickEvent.offsetY);
     // there's offsetX/Y, clientX/Y, screenX/Y, pageX/Y
     // client and screen = where you are on your monitor
     // offset looks like it's relative to the SVG
@@ -152,7 +64,7 @@ $("#mainSvg").click(function(clickEvent) {
 </script>
 <script src="static/main.js"></script>
 <script>
-PublicModule.loadNeighborhoods();
+loadNeighborhoods();
 </script>
 
 </body>

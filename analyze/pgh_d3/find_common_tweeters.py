@@ -2,6 +2,7 @@
 
 # Find all tweeters who have tweeted a lot, and how many times they've tweeted.
 # TODO make this happen along with generate_centroids; no reason to do this twice really.
+# Run once on 2014-09-29, tweaked it manually and ended up with common_tweeters.csv
 
 import pymongo
 

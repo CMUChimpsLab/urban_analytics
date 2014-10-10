@@ -12,12 +12,17 @@ PSWD = config.get('error_handling', 'password')
 COUNT_FILENAME = 'data_counts'
 
 client = MongoClient()
-db = client.tweet
-instagram_count = db.instagram.count()
-flickr_count = db.flickr.count()
+tweet_db = client.tweet
+flickr_db = client.flickr
+instagram_db = client.instagram
+
+instagram_count = db.instagram_pgh.count()
+flickr_count = db.flickr_pgh.count()
 tweet_pgh_count = db.tweet_pgh.count()
+tweet_sf_count = db.tweet_sf.count()
 
 current_counts = {'tweet_pgh_count': tweet_pgh_count, 
+                  'tweet_sf_count': tweet_sf_count, 
                   'flickr_count': flickr_count,
                   'instagram_count': instagram_count}
 
@@ -28,8 +33,9 @@ try:
   f.close()
 except:
   prev_counts = {'tweet_pgh_count': 0, 
-                  'flickr_count': 0,
-                  'instagram_count': 0}
+                 'tweet_sf_count': 0, 
+                 'flickr_count': 0,
+                 'instagram_count': 0}
   f = open(COUNT_FILENAME, 'w')
   f.write(json.dumps(prev_counts))
   f.close()
@@ -63,7 +69,9 @@ def email_error(data_name, prev_count, current_count):
 
 if data_not_updated('tweet_pgh_count'):
   email_error('tweet', prev_counts['tweet_pgh_count'], current_counts['tweet_pgh_count'])
-  del current_counts['tweet_pgh_count']
+if data_not_updated('tweet_sf_count'):
+  email_error('tweet', prev_counts['tweet_sf_count'], current_counts['tweet_sf_count'])
+  del current_counts['tweet_sf_count']
 if data_not_updated('instagram_count'):
   email_error('instagram', prev_counts['instagram_count'], current_counts['instagram_count'])
   del current_counts['instagram_count']

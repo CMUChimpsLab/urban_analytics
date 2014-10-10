@@ -1,17 +1,21 @@
 import smtplib
 import json
+import ConfigParser
 from pymongo import MongoClient
 
+config = ConfigParser.ConfigParser()
+config.read('config.txt')
+
+EMAIL = config.get('error_handling', 'email')
+PSWD = config.get('error_handling', 'password')
+
 COUNT_FILENAME = 'data_counts'
-EMAIL = 'cmu.urbananalytics@gmail.com'
-PSWD = 'chimpslab'
 
 client = MongoClient()
 db = client.tweet
 instagram_count = db.instagram.count()
 flickr_count = db.flickr.count()
 tweet_pgh_count = db.tweet_pgh.count()
-
 
 current_counts = {'tweet_pgh_count': tweet_pgh_count, 
                   'flickr_count': flickr_count,

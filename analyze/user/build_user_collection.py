@@ -128,6 +128,7 @@ def doAll():
         most_common_nghd = get_most_common_nghd(tweets)
         user['most_common_neighborhood'] = most_common_nghd
         print user
+        db.user.save(user)
 
     # for tweet in db['tweet_pgh_good'].find():
     #     print get_neighborhood_name(nghds,

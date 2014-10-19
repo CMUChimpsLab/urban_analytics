@@ -92,6 +92,14 @@ var PublicModule = (function() {
             // takes about a second per 1k tweets. crashes on 100k.
             $.getJSON("/query", JSON.stringify(params), function(tweets) {
                 allTweets = tweets.results;
+                tweetsToShow = allTweets;
+                // Add jitter.
+                for(var i = 0; i < tweetsToShow.length; i++) {
+                    var jitter1 = Math.random() * .01 - .005;
+                    var jitter2 = Math.random() * .01 - .005;
+                    tweetsToShow[i].coordinates.coordinates[0] += jitter1;
+                    tweetsToShow[i].coordinates.coordinates[1] += jitter2;
+                }
                 update();
             });
             $("#loading").show();

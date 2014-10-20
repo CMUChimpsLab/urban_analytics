@@ -62,26 +62,17 @@ def generate_centroids_and_radii(tweets):
     fifty_pct_radius = dist(coords[fifty_pct_index], centroid)
     ninety_pct_radius = dist(coords[ninety_pct_index], centroid)
     
-    screen_name = ''
-    user_id = -1
-    # got to find the name from somewhere, let's just pick one I guess
-    # for tweet in tweets:
-    #     user_id = tweet['user']['id']
-    #     screen_name = tweet['user']['screen_name']
-    
-    # user = db.user.find_one({'_id': user_id})
-    
     results = {}
-    # results['screen_name'] = screen_name
     results['centroid'] = centroid
     results['50%radius'] = fifty_pct_radius
     results['90%radius'] = ninety_pct_radius
     return results
-    # db.user.save(user)
- 
 
+# Given one user's tweets, returns a Counter of neighborhood name -> number of
+# times they tweeted in that neighborhood.
+def get_user_nghds(tweets):
 # Given one user's tweets, returns the name of their most common neighborhood.
-def get_most_common_nghd(tweets):
+# def get_most_common_nghd(tweets):
     user_nghds = collections.Counter()
     for tweet in tweets:
         # print [n.properties['HOOD'] for n in nghds[0:5]]
@@ -90,13 +81,7 @@ def get_most_common_nghd(tweets):
             tweet['coordinates']['coordinates'][1])
         user_nghds[user_nghd_name] += 1
     
-    if len(user_nghds) > 0:
-        # user['most_common_neighborhood'] = user_nghds.most_common(1)[0][0]
-        return user_nghds.most_common(1)[0][0]
-    else:
-        # user['most_common_neighborhood'] = 'Outside Pittsburgh'
-        return 'Outside Pittsburgh'
-    # db['user'].save(user)
+    return user_nghds
 
 # If all tweets are from the same user, returns the screen name of that user.
 # (don't call it if not all |tweets| are from the same user.)
@@ -125,15 +110,12 @@ def doAll():
         centroid_radii = generate_centroids_and_radii(tweets)
         user.update(centroid_radii)
 
-        most_common_nghd = get_most_common_nghd(tweets)
-        user['most_common_neighborhood'] = most_common_nghd
+        user_nghds = get_user_nghds(tweets)
+        user['neighborhoods'] = dict(user_nghds)
+        user['most_common_neighborhood'] = user_nghds.most_common(1)[0][0]
         print user
         db.user.save(user)
 
-    # for tweet in db['tweet_pgh_good'].find():
-    #     print get_neighborhood_name(nghds,
-    #         tweet['coordinates']['coordinates'][0],
-    #         tweet['coordinates']['coordinates'][1])
 if __name__ == '__main__':
     doAll()
     # cProfile.run("doAll()")    

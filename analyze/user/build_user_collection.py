@@ -3,8 +3,12 @@
 # Builds up the "user" collection.
 # Adds:
 # - most common neighborhood
+# - centroid (by averaging lat and lon)
+# - 50% radius (half their tweets are inside this circle)
+# - 90% radius (90% of their tweets are inside this circle)
 
-import geojson, shapely.geometry, pymongo, collections, cProfile, math
+import geojson, shapely.geometry, pymongo, collections, cProfile
+import earth_distance
 
 dbclient = pymongo.MongoClient('localhost', 27017)
 db = dbclient['tweet']
@@ -40,10 +44,10 @@ def get_neighborhood_name(nghds, lon, lat):
 def sum_coords(coords_1, coords_2):
     return [coords_1[0] + coords_2[0], coords_1[1] + coords_2[1]]
 
-# distance between two points, each is [x, y]
-# TODO sub in a real great-circle-distance function
+# distance between two points, each is [x, y], based on sphere earth
 def dist(c1, c2):
-    return math.sqrt(math.pow(c1[0] - c2[0], 2) + math.pow(c1[1] - c2[1], 2))
+    return earth_distance.earth_distance_m(c1[0], c1[1], c2[0], c2[1])
+    # return math.sqrt(math.pow(c1[0] - c2[0], 2) + math.pow(c1[1] - c2[1], 2))
 
 # given one user's tweets, return the centroid and radii
 def generate_centroids_and_radii(tweets):

@@ -6,4 +6,5 @@ map1: pick a neighborhood, then show tweets from people who most commonly tweet
 in that neighborhood. (individually.)
 map2: same, but aggregate by neighborhood and do grayscale
 map3: simpler output? not done yet.
-
+user:
+- not a map, but instead some scripts to analyze things about individual users.

@@ -34,7 +34,8 @@ def get_neighborhood_name(nghds, lon, lat):
             # Move this nghd to the front of the queue so it's checked first next time
             nghds.remove(nghd)
             nghds.insert(0, nghd)
-            return nghd.properties['HOOD']
+            nghd_name = nghd.properties['HOOD']
+            return nghd_name.replace(".", "_") # for BSON; can't have .s in keys
     return 'Outside Pittsburgh'
 
 def sum_coords(coords_1, coords_2):
@@ -117,5 +118,5 @@ def doAll():
         db.user.save(user)
 
 if __name__ == '__main__':
-    doAll()
-    # cProfile.run("doAll()")    
+    # doAll()
+    cProfile.run("doAll()")    

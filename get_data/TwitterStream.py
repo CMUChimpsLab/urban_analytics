@@ -26,6 +26,7 @@ import urllib
 import json
 import oauth2 as oauth
 import ConfigParser
+import requests
 from pymongo import Connection
 
 db = Connection('localhost',27017)['tweet']
@@ -40,6 +41,9 @@ OAUTH_KEYS = {'consumer_key': config.get('twitter', 'consumer_key'),
               'consumer_secret': config.get('twitter', 'consumer_secret'),
               'access_token_key': config.get('twitter', 'access_token_key'),
               'access_token_secret': config.get('twitter', 'access_token_secret')}
+FOURSQ_CREDENTIALS = {'client_id': config.get('4sq', 'client_id'),
+                   'client_secret': config.get('4sq', 'client_secret'),
+                   'api_version': '20140806'}
 
 # These values are posted when setting up the connection
 POST_PARAMS = {#'include_entities': 0,
@@ -135,6 +139,7 @@ class TwitterStream:
                 continue
             # HTTP Error
             sc = self.conn.getinfo(pycurl.HTTP_CODE)
+            print sc
             if sc == 420:
                 # Rate limit, use exponential back off starting with 1 minute and double each attempt
                 print '%d'%(time.time()) +getLineNo() + ':', 'Rate limit, waiting %s seconds' % backoff_rate_limit
@@ -165,6 +170,29 @@ class TwitterStream:
             else:
                 db.tweet_pgh.insert(dict(message))
                 print '%d'%(time.time()) +getLineNo() + ':', 'Got tweet with text: %s' % message.get('text').encode('utf-8')
+            entities = message.get('entities')
+            if entities and entities.get('urls'):
+                print entities
+                expanded_urls = [url.get('expanded_url') for url in entities.get('urls')]
+                for expanded_url in expanded_urls:
+                    if "swarmapp.com" in expanded_url or "4sq.com" in expanded_url or "foursquare.com" in expanded_url:
+                        try:
+                            get_url = "https://api.foursquare.com/v2/venues/search?ll=" \
+                                    + ",".join([str(f) for f in message['geo']['coordinates']]) \
+                                    + "&client_id=" + FOURSQ_CREDENTIALS['client_id'] \
+                                    + "&client_secret=" + FOURSQ_CREDENTIALS['client_secret'] \
+                                    + "&v=" + FOURSQ_CREDENTIALS['api_version'] 
+                            print get_url
+                            response = requests.get(get_url).json()
+                            if response['meta']['code'] == 200:
+                                foursq_data = response['response']
+                                print '%d'%(time.time()) +getLineNo() + ':', 'Added Foursquare Data: ' + str(foursq_data)
+                                message['foursquare_data'] = foursq_data
+                        except:
+                            print '%d'%(time.time()) +getLineNo() + ':', 'Failed to add Foursq data to the message.'
+                            pass
+                        db.foursquare_pgh.insert(message)
+
         sys.stdout.flush()
         sys.stderr.flush()
         return len(data)

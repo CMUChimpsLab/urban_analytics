@@ -8,3 +8,5 @@ map2: same, but aggregate by neighborhood and do grayscale
 map3: simpler output? not done yet.
 user:
 - not a map, but instead some scripts to analyze things about individual users.
+home_work:
+- stuff for the study where we try to find people's home and work addresses

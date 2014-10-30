@@ -9,6 +9,7 @@ import oauth2 as oauth
 config = ConfigParser.ConfigParser()
 config.read('config.txt')
 POST_URL = 'https://api.twitter.com/1.1/statuses/update.json'
+USERS_SHOW_URL = 'https://api.twitter.com/1.1/users/show.json'
 OAUTH_KEYS = {'consumer_key': config.get('twitter', 'consumer_key'),
               'consumer_secret': config.get('twitter', 'consumer_secret'),
               'access_token_key': config.get('twitter', 'access_token_key'),
@@ -19,7 +20,7 @@ OAUTH_KEYS = {'consumer_key': config.get('twitter', 'consumer_key'),
 # Returns True iff actually sent a tweet, false otherwise.
 def send_recruitment_tweet(screen_name, actually_send):
     params = {
-        'status': '@' + screen_name + ' Hi! Saw you tweeted in Pgh. Would you mind taking a voluntary 5min CMU survey? Must be 18+. https://docs.google.com/forms/d/1MtRdolCodDVPP9IWYKDmAUYRCHq2VL_Es_T7xglEP7A/viewform',
+        'status': '@' + screen_name + ' Hi! Saw you tweeted in Pgh. Would you take a voluntary 5min CMU survey for $5 Amazon? Must be 18+. https://docs.google.com/forms/d/1MtRdolCodDVPP9IWYKDmAUYRCHq2VL_Es_T7xglEP7A/viewform',
     }
     post_body=urllib.urlencode(params)
 
@@ -58,6 +59,14 @@ def get_tweeters(tweeters_filename):
         retval[row[1]] = int(row[2])
     return retval
 
+# Returns True iff there is a Twitter user with screen name |screen_name|.
+# (sometimes this will be false b/c people deleted their account since we
+# collected data.)
+def user_exists(screen_name):
+    url = USERS_SHOW_URL + '?screen_name=' + screen_name
+    resp, content = oauth_req(url, http_method="GET")
+    return 'errors' not in content
+        
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--tweeters_filename', '-f', default='common_tweeters.csv')
@@ -75,6 +84,7 @@ if __name__ == '__main__':
         if tweeter in tweeters:
             del tweeters[tweeter]
 
+
     # get a list of the top N tweeters
     tweeters = sorted(tweeters, key = tweeters.get, reverse=True)[0: args.number_to_recruit]
 
@@ -83,9 +93,12 @@ if __name__ == '__main__':
     print "Going to send to these tweeters: " + str(tweeters)
     time.sleep(10)
     for tweeter in tweeters:
-        tweet_worked = send_recruitment_tweet(tweeter, args.really_tweet)
-        if tweet_worked:
-            already_tweeted_file.write(tweeter + '\n')
+        if user_exists(tweeter):
+            tweet_worked = send_recruitment_tweet(tweeter, args.really_tweet)
+            if tweet_worked:
+                already_tweeted_file.write(tweeter + '\n')
+        else:
+            print "User doesn't exist anymore: " + tweeter
         time.sleep(60)
 
     already_tweeted_file.close()

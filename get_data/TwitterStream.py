@@ -27,6 +27,7 @@ import json
 import oauth2 as oauth
 import ConfigParser
 import requests
+import HTMLParser
 from pymongo import Connection
 
 db = Connection('localhost',27017)['tweet']
@@ -79,6 +80,7 @@ class TwitterStream:
         self.oauth_token = oauth.Token(key=OAUTH_KEYS['access_token_key'], secret=OAUTH_KEYS['access_token_secret'])
         self.oauth_consumer = oauth.Consumer(key=OAUTH_KEYS['consumer_key'], secret=OAUTH_KEYS['consumer_secret'])
         self.conn = None
+        self.html_parser = HTMLParser.HTMLParser()
         self.buffer = ''
         self.timeout = timeout
         # self.setup_connection()
@@ -186,11 +188,20 @@ class TwitterStream:
                             response = requests.get(get_url).json()
                             if response['meta']['code'] == 200:
                                 foursq_data = response['response']
-                                print '%d'%(time.time()) +getLineNo() + ':', 'Added Foursquare Data: ' + str(foursq_data)
-                                message['foursquare_data'] = foursq_data
+                                matching_venue = {}
+                                for place in foursq_data['venues']:
+                                    if place['name'].lower() in self.html_parser.unescape(message['text'].lower()) \
+                                        or ('twitter' in place['contact'] and place['contact']['twitter'].lower() in message['text'].lower()):
+                                        matching_venue = place
+                                        break
+                                if matching_venue:
+                                    message['foursquare_data'] = {"certain": True, "venues": [matching_venue]}
+                                else:
+                                    foursq_data['certain'] = False
+                                    message['foursquare_data'] = foursq_data
+                                print '%d'%(time.time()) +getLineNo() + ':', 'Added Foursquare Data: ' + str(message['foursquare_data'])
                         except:
                             print '%d'%(time.time()) +getLineNo() + ':', 'Failed to add Foursq data to the message.'
-                            pass
                         db.foursquare_pgh.insert(message)
 
         sys.stdout.flush()

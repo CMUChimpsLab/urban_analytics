@@ -86,6 +86,7 @@ while True:
         # print "Searching around: %s, %s since %s" % (payload['lat'], payload['lng'], payload['min_timestamp'])
         r = requests.get('https://api.instagram.com/v1/media/search', params=payload)
         if r.status_code != 200:
+            time.sleep(5)
             print 'Request not OK. Code: %d. Reason: %s' % (r.status_code, r.text)
             continue
 

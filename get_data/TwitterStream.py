@@ -19,6 +19,7 @@
 # From https://github.com/arngarden/TwitterStream/blob/master/TwitterStream.py
 
 import sys
+import getopt
 import inspect
 import time
 import pycurl
@@ -27,9 +28,8 @@ import json
 import oauth2 as oauth
 import ConfigParser
 import requests
+import HTMLParser
 from pymongo import Connection
-
-db = Connection('localhost',27017)['tweet']
 
 API_ENDPOINT_URL = 'https://stream.twitter.com/1.1/statuses/filter.json'
 #USER_AGENT = 'TwitterStream 1.0' # This can be anything really
@@ -37,20 +37,28 @@ API_ENDPOINT_URL = 'https://stream.twitter.com/1.1/statuses/filter.json'
 config = ConfigParser.ConfigParser()
 config.read('config.txt')
 
-OAUTH_KEYS = {'consumer_key': config.get('twitter', 'consumer_key'),
-              'consumer_secret': config.get('twitter', 'consumer_secret'),
-              'access_token_key': config.get('twitter', 'access_token_key'),
-              'access_token_secret': config.get('twitter', 'access_token_secret')}
-FOURSQ_CREDENTIALS = {'client_id': config.get('4sq', 'client_id'),
-                   'client_secret': config.get('4sq', 'client_secret'),
-                   'api_version': '20140806'}
+NUM_TWITTER_CREDENTIALS = 2
+MIN_NUM_RECONNECT = 2
+FOURSQUARE_API_VERSION = '20140806'
 
 # These values are posted when setting up the connection
-POST_PARAMS = {#'include_entities': 0,
+#POST_PARAMS = {#'include_entities': 0,
                #'stall_warning': 'true',
                #'track': 'iphone,ipad,ipod'}
                #'locations': '-122.5950,37.565,-122.295,37.865'}# San Francisco
-                'locations': '-80.2,40.241667,-79.8,40.641667'}# Pgh
+               #'locations': '-80.2,40.241667,-79.8,40.641667'}# Pgh
+
+CITY_LOCATIONS = {
+    'pgh':  { 'locations': '-80.2,40.241667,-79.8,40.641667' },
+    'sf':   { 'locations': '-122.5950,37.565,-122.295,37.865' },
+    'ny':   { 'locations': '-74.03095193,40.6815699768,-73.9130315074,40.8343765254' }
+}
+#  CITY_COLLECTIONS: city -> tweet_collection * foursquare_collection
+CITY_COLLECTIONS = {
+    'pgh':  ('tweet_pgh', 'foursquare_pgh'),
+    'sf':   ('tweet_sf', 'foursquare_sf'),
+    'ny':   ('tweet_ny', 'foursquare_ny'),
+}
 # Locations are lower left long, lower left lat, upper right long, upper right lat
 # This is a pretty arbitrarily chosen square roughly around Pittsburgh.
 # Center of Pittsburgh is 40.441667, -80.0 (exactly -80) so I went .2 deg long
@@ -75,13 +83,36 @@ def getLineNo():
   return ' line:' + str(info.lineno)
 
 class TwitterStream:
-    def __init__(self, timeout=False):
-        self.oauth_token = oauth.Token(key=OAUTH_KEYS['access_token_key'], secret=OAUTH_KEYS['access_token_secret'])
-        self.oauth_consumer = oauth.Consumer(key=OAUTH_KEYS['consumer_key'], secret=OAUTH_KEYS['consumer_secret'])
+    def __init__(self, city, timeout=False):
+        self.credential_num = 1
+        self.set_credentials()
+
         self.conn = None
+        self.html_parser = HTMLParser.HTMLParser()
         self.buffer = ''
         self.timeout = timeout
+        if not (city in CITY_LOCATIONS and city in CITY_COLLECTIONS):
+            raise Exception("city not valid")
+        self.city = city
+        self.post_params = CITY_LOCATIONS.get(self.city)
+        self.tweet_col, self.foursquare_col = CITY_COLLECTIONS.get(self.city)
+        self.num_reconnect = 0
         # self.setup_connection()
+
+    def set_credentials(self):
+        print '%d'%(time.time()) +getLineNo() + ':', 'setting api credentials num %s' % self.credential_num
+        twitter_cred_name = 'twitter-' + str(self.credential_num)
+        foursq_cred_name = '4sq-' + str(self.credential_num)
+        oauth_keys = {'consumer_key': config.get(twitter_cred_name, 'consumer_key'),
+                      'consumer_secret': config.get(twitter_cred_name, 'consumer_secret'),
+                      'access_token_key': config.get(twitter_cred_name, 'access_token_key'),
+                      'access_token_secret': config.get(twitter_cred_name, 'access_token_secret')}
+        self.foursq_credentials = {'client_id': config.get(foursq_cred_name, 'client_id'),
+                                   'client_secret': config.get(foursq_cred_name, 'client_secret'),
+                                   'api_version': FOURSQUARE_API_VERSION}
+        self.oauth_token = oauth.Token(key=oauth_keys['access_token_key'], secret=oauth_keys['access_token_secret'])
+        self.oauth_consumer = oauth.Consumer(key=oauth_keys['consumer_key'], secret=oauth_keys['consumer_secret'])
+        self.credential_num += 1
 
     def setup_connection(self):
         """ Create persistant HTTP connection to Streaming API endpoint using cURL.
@@ -99,7 +130,7 @@ class TwitterStream:
         # Using gzip is optional but saves us bandwidth.
         self.conn.setopt(pycurl.ENCODING, 'deflate, gzip')
         self.conn.setopt(pycurl.POST, 1)
-        self.conn.setopt(pycurl.POSTFIELDS, urllib.urlencode(POST_PARAMS))
+        self.conn.setopt(pycurl.POSTFIELDS, urllib.urlencode(self.post_params))
         self.conn.setopt(pycurl.HTTPHEADER, ['Host: stream.twitter.com',
                                              'Authorization: %s' % self.get_oauth_header()])
         # self.handle_tweet is the method that are called when new tweets arrive
@@ -114,7 +145,7 @@ class TwitterStream:
                   'oauth_nonce': oauth.generate_nonce(),
                   'oauth_timestamp': int(time.time())}
         req = oauth.Request(method='POST', parameters=params, url='%s?%s' % (API_ENDPOINT_URL,
-                                                                             urllib.urlencode(POST_PARAMS)))
+                                                                             urllib.urlencode(self.post_params)))
         req.sign_request(oauth.SignatureMethod_HMAC_SHA1(), self.oauth_consumer, self.oauth_token)
         return req.to_header()['Authorization'].encode('utf-8')
 
@@ -133,9 +164,13 @@ class TwitterStream:
                 # print '%d'%(time.time()) +getLineNo() + ':', e
                 # Network error, use linear back off up to 16 seconds
                 print '%d'%(time.time()) +getLineNo() + ':', 'Network error: %s' % self.conn.errstr()
-                print '%d'%(time.time()) +getLineNo() + ':', 'Waiting %s seconds before trying again' % backoff_network_error
+                print '%d'%(time.time()) +getLineNo() + ':', 'Waiting %s seconds before trying again. Num reconnect: %s' % (backoff_network_error, self.num_reconnect)
                 time.sleep(backoff_network_error)
                 backoff_network_error = min(backoff_network_error + 1, 16)
+                self.num_reconnect += 1
+                if self.num_reconnect > MIN_NUM_RECONNECT and self.credential_num <= NUM_TWITTER_CREDENTIALS:
+                    # try again with different twitter credentials
+                    self.set_credentials()
                 continue
             # HTTP Error
             sc = self.conn.getinfo(pycurl.HTTP_CODE)
@@ -168,7 +203,7 @@ class TwitterStream:
             elif message.get('warning'):
                 print '%d'%(time.time()) +getLineNo() + ':', 'Got warning: %s' % message['warning'].get('message')
             else:
-                db.tweet_pgh.insert(dict(message))
+                db[self.tweet_col].insert(dict(message))
                 print '%d'%(time.time()) +getLineNo() + ':', 'Got tweet with text: %s' % message.get('text').encode('utf-8')
             entities = message.get('entities')
             if entities and entities.get('urls'):
@@ -179,19 +214,28 @@ class TwitterStream:
                         try:
                             get_url = "https://api.foursquare.com/v2/venues/search?ll=" \
                                     + ",".join([str(f) for f in message['geo']['coordinates']]) \
-                                    + "&client_id=" + FOURSQ_CREDENTIALS['client_id'] \
-                                    + "&client_secret=" + FOURSQ_CREDENTIALS['client_secret'] \
-                                    + "&v=" + FOURSQ_CREDENTIALS['api_version'] 
+                                    + "&client_id=" + self.foursq_credentials['client_id'] \
+                                    + "&client_secret=" + self.foursq_credentials['client_secret'] \
+                                    + "&v=" + self.foursq_credentials['api_version'] 
                             print get_url
                             response = requests.get(get_url).json()
                             if response['meta']['code'] == 200:
                                 foursq_data = response['response']
-                                print '%d'%(time.time()) +getLineNo() + ':', 'Added Foursquare Data: ' + str(foursq_data)
-                                message['foursquare_data'] = foursq_data
+                                matching_venue = {}
+                                for place in foursq_data['venues']:
+                                    if place['name'].lower() in self.html_parser.unescape(message['text'].lower()) \
+                                        or ('twitter' in place['contact'] and place['contact']['twitter'].lower() in message['text'].lower()):
+                                        matching_venue = place
+                                        break
+                                if matching_venue:
+                                    message['foursquare_data'] = {"certain": True, "venues": [matching_venue]}
+                                else:
+                                    foursq_data['certain'] = False
+                                    message['foursquare_data'] = foursq_data
+                                print '%d'%(time.time()) +getLineNo() + ':', 'Added Foursquare Data: ' + str(message['foursquare_data'])
                         except:
                             print '%d'%(time.time()) +getLineNo() + ':', 'Failed to add Foursq data to the message.'
-                            pass
-                        db.foursquare_pgh.insert(message)
+                        db[self.foursquare_col].insert(message)
 
         sys.stdout.flush()
         sys.stderr.flush()
@@ -203,8 +247,41 @@ if __name__ == '__main__':
     timestamp = time.time()
     errFile = open('twitter_error_%d.log'%(timestamp), 'w')
     outFile = open('twitter_output_%d.log'%(timestamp), 'w')
+
+    # get command line arguments
+    argv = sys.argv[1:]
+    try:
+        opts, args = getopt.getopt(argv, "c:p:", ["city=", "port="])
+    except getopt.GetoptError:
+        print 'TwitterStream.py -c <city>'
+        print 'TwitterStream.py --city=<city>'
+        print '<city> ::= pgh | sf | ny'
+        sys.exit(2)
+
+    city = ""
+    port = -1
+    for opt, arg in opts:
+        if opt == '-h':
+            print 'TwitterStream.py -c <city>'
+            print 'TwitterStream.py --city=<city>'
+            print '<city> ::= pgh | sf | ny'
+            sys.exit()
+        elif opt in ("-c", "--city"):
+            city = arg
+        elif opt in ("-p", "--port"):
+            port = int(arg)
+    if not city:
+        raise Exception("city is not given")
+    if port == -1:
+        port = 27017
+
+    db = Connection('localhost', port)['tweet']
+
+    print "Getting stream in " + city + " on port " + str(port)
+
     sys.stdout = outFile
     sys.stderr = errFile
-    ts = TwitterStream()
+
+    ts = TwitterStream(city)
     ts.setup_connection()
     ts.start()

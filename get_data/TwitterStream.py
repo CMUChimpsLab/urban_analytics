@@ -51,13 +51,27 @@ FOURSQUARE_API_VERSION = '20140806'
 CITY_LOCATIONS = {
     'pgh':  { 'locations': '-80.2,40.241667,-79.8,40.641667' },
     'sf':   { 'locations': '-122.5950,37.565,-122.295,37.865' },
-    'ny':   { 'locations': '-74.03095193,40.6815699768,-73.9130315074,40.8343765254' }
+    'ny':   { 'locations': '-74.03095193,40.6815699768,-73.9130315074,40.8343765254' },
+    'houston': { 'locations': '-95.592778, 29.550556, -95.138056, 29.958333' },
+    'detroit': { 'locations': '-83.2458, 42.1314, -82.8458, 42.5314' },
+    'chicago': { 'locations': '-87.9847, 41.6369, -87.5847, 42.0369' },
+    'cleveland': { 'locations': '-81.9697, 41.1822, -81.4697, 41.5822' },
+    'seattle': { 'locations': '-122.5331, 47.4097, -121.9331, 47.8097' },
+    'miami': { 'locations': '-80.4241, 25.5877, -80.0641, 26.2877' },
+    'london': { 'locations': '-0.4275, 51.3072, 0.2525, 51.7072' }
 }
 #  CITY_COLLECTIONS: city -> tweet_collection * foursquare_collection
 CITY_COLLECTIONS = {
     'pgh':  ('tweet_pgh', 'foursquare_pgh'),
     'sf':   ('tweet_sf', 'foursquare_sf'),
     'ny':   ('tweet_ny', 'foursquare_ny'),
+    'houston': ('tweet_houston','foursquare_houston'),
+    'detroit': ('tweet_detroit','foursquare_detroit'),
+    'chicago': ('tweet_chicago','foursquare_chicago'),
+    'cleveland':('tweet_cleveland','foursquare_cleveland'),
+    'seattle': ('tweet_seattle','foursquare_seattle'),
+    'miami': ('tweet_miami','foursquare_miami'),
+    'london': ('tweet_london','foursquare_london')
 }
 # Locations are lower left long, lower left lat, upper right long, upper right lat
 # This is a pretty arbitrarily chosen square roughly around Pittsburgh.

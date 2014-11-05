@@ -18,17 +18,9 @@
 
 # From https://github.com/arngarden/TwitterStream/blob/master/TwitterStream.py
 
-import sys
-import getopt
-import inspect
-import time
-import pycurl
-import urllib
-import json
+import sys, getopt, inspect, time, pycurl, urllib, json, ConfigParser
+import requests, HTMLParser, traceback
 import oauth2 as oauth
-import ConfigParser
-import requests
-import HTMLParser
 from pymongo import Connection
 
 API_ENDPOINT_URL = 'https://stream.twitter.com/1.1/statuses/filter.json'
@@ -87,15 +79,20 @@ CITY_COLLECTIONS = {
 # More info: https://dev.twitter.com/docs/streaming-apis/parameters#locations
 # Can use -180,-90,180,90 to get all geotagged tweets.
 
-def getLineNo():
-  callerframerecord = inspect.stack()[1]    # 0 represents this line
-                                            # 1 represents line at caller
-  frame = callerframerecord[0]
-  info = inspect.getframeinfo(frame)
-  #pass#print info.filename                       # __FILE__     -> Test.py
-  #pass#print info.function                       # __FUNCTION__ -> Main
-  return ' line:' + str(info.lineno)
+   
+# Prints out a log including the stack trace, time, and a message, when an
+# exception has occurred.
+def log_exception(message):
+    traceback.print_exc()
 
+# Prints out a log including the time and a message.
+def log(message):
+    callerframerecord = inspect.stack()[1] # 0=this line, 1=line at caller
+    frame = callerframerecord[0]
+    info = inspect.getframeinfo(frame)
+    line_no = int(info.lineno)
+    print '%d, line %d: %s\n' % (time.time(), line_no, message)
+ 
 class TwitterStream:
     def __init__(self, city, timeout=False):
         self.credential_num = 1
@@ -111,10 +108,10 @@ class TwitterStream:
         self.post_params = CITY_LOCATIONS.get(self.city)
         self.tweet_col, self.foursquare_col = CITY_COLLECTIONS.get(self.city)
         self.num_reconnect = 0
-        # self.setup_connection()
+        self.setup_connection()
 
     def set_credentials(self):
-        print '%d'%(time.time()) +getLineNo() + ':', 'setting api credentials num %s' % self.credential_num
+        log('setting api credentials num %s' % self.credential_num)
         twitter_cred_name = 'twitter-' + str(self.credential_num)
         foursq_cred_name = '4sq-' + str(self.credential_num)
         oauth_keys = {'consumer_key': config.get(twitter_cred_name, 'consumer_key'),
@@ -175,10 +172,9 @@ class TwitterStream:
             try:
                 self.conn.perform()
             except Exception as e:
-                # print '%d'%(time.time()) +getLineNo() + ':', e
                 # Network error, use linear back off up to 16 seconds
-                print '%d'%(time.time()) +getLineNo() + ':', 'Network error: %s' % self.conn.errstr()
-                print '%d'%(time.time()) +getLineNo() + ':', 'Waiting %s seconds before trying again. Num reconnect: %s' % (backoff_network_error, self.num_reconnect)
+                log('Network error: %s' % self.conn.errstr())
+                log('Waiting %s seconds before trying again. Num reconnect: %s' % (backoff_network_error, self.num_reconnect))
                 time.sleep(backoff_network_error)
                 backoff_network_error = min(backoff_network_error + 1, 16)
                 self.num_reconnect += 1
@@ -191,13 +187,13 @@ class TwitterStream:
             print sc
             if sc == 420:
                 # Rate limit, use exponential back off starting with 1 minute and double each attempt
-                print '%d'%(time.time()) +getLineNo() + ':', 'Rate limit, waiting %s seconds' % backoff_rate_limit
+                log('Rate limit, waiting %s seconds' % backoff_rate_limit)
                 time.sleep(backoff_rate_limit)
                 backoff_rate_limit *= 2
             else:
                 # HTTP error, use exponential back off up to 320 seconds
-                print '%d'%(time.time()) +getLineNo() + ':', 'HTTP error %s, %s' % (sc, self.conn.errstr())
-                print '%d'%(time.time()) +getLineNo() + ':', 'Waiting %s seconds' % backoff_http_error
+                log('HTTP error %s, %s' % (sc, self.conn.errstr()))
+                log('Waiting %s seconds' % backoff_http_error)
                 time.sleep(backoff_http_error)
                 backoff_http_error = min(backoff_http_error * 2, 320)
 
@@ -211,14 +207,16 @@ class TwitterStream:
             self.buffer = ''
             msg = ''
             if message.get('limit'):
-                print '%d'%(time.time()) +getLineNo() + ':', 'Rate limiting caused us to miss %s tweets' % (message['limit'].get('track'))
+                log('Rate limiting caused us to miss %s tweets' % (message['limit'].get('track')))
             elif message.get('disconnect'):
                 raise Exception('Got disconnect: %s' % message['disconnect'].get('reason'))
             elif message.get('warning'):
-                print '%d'%(time.time()) +getLineNo() + ':', 'Got warning: %s' % message['warning'].get('message')
+                log('Got warning: %s' % message['warning'].get('message'))
             else:
                 db[self.tweet_col].insert(dict(message))
-                print '%d'%(time.time()) +getLineNo() + ':', 'Got tweet with text: %s' % message.get('text').encode('utf-8')
+                log('Got tweet with text: %s' % message.get('text').encode('utf-8'))
+
+            # Check for Foursquare post and save to foursquare table if so.
             entities = message.get('entities')
             if entities and entities.get('urls'):
                 print entities
@@ -246,9 +244,9 @@ class TwitterStream:
                                 else:
                                     foursq_data['certain'] = False
                                     message['foursquare_data'] = foursq_data
-                                print '%d'%(time.time()) +getLineNo() + ':', 'Added Foursquare Data: ' + str(message['foursquare_data'])
+                                log('Added Foursquare Data: ' + str(message['foursquare_data']))
                         except:
-                            print '%d'%(time.time()) +getLineNo() + ':', 'Failed to add Foursq data to the message.'
+                            log_exception('Failed to add Foursq data to the message.')
                         db[self.foursquare_col].insert(message)
 
         sys.stdout.flush()

@@ -18,7 +18,7 @@
 
 # From https://github.com/arngarden/TwitterStream/blob/master/TwitterStream.py
 
-import sys, getopt, inspect, time, pycurl, urllib, json, ConfigParser
+import sys, argparse, inspect, time, pycurl, urllib, json, ConfigParser
 import requests, HTMLParser, traceback
 import oauth2 as oauth
 from pymongo import Connection
@@ -258,43 +258,25 @@ class TwitterStream:
 
 
 if __name__ == '__main__':
-    # get command line arguments
-    argv = sys.argv[1:]
-    try:
-        opts, args = getopt.getopt(argv, "c:p:", ["city=", "port="])
-    except getopt.GetoptError:
-        print 'TwitterStream.py -c <city>'
-        print 'TwitterStream.py --city=<city>'
-        print '<city> ::= pgh | sf | ny'
-        sys.exit(2)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--city', '-c', required=True,
+        help='Which city to get data from.',
+        choices=['pgh', 'sf', 'ny', 'chicago', 'houston', 'detroit', 'miami',
+            'cleveland', 'seattle', 'london'])
+    parser.add_argument('--mongo_port', '-m', default=27017, type=int,
+        help='Which port MongoDB is on.')
+    args = parser.parse_args()
 
-    city = ""
-    port = -1
-    for opt, arg in opts:
-        if opt == '-h':
-            print 'TwitterStream.py -c <city>'
-            print 'TwitterStream.py --city=<city>'
-            print '<city> ::= pgh | sf | ny'
-            sys.exit()
-        elif opt in ("-c", "--city"):
-            city = arg
-        elif opt in ("-p", "--port"):
-            port = int(arg)
-    if not city:
-        raise Exception("city is not given")
-    if port == -1:
-        port = 27017
+    db = Connection('localhost', args.mongo_port)['tweet']
 
-    db = Connection('localhost', port)['tweet']
-
-    print "Getting stream in " + city + " on port " + str(port)
+    print "Getting stream in " + args.city + " on port " + str(args.mongo_port)
 
     timestamp = time.time()
-    errFile = open('logs/twitter_error_%s_%d.log'%(city, timestamp), 'w')
-    outFile = open('logs/twitter_output_%s_%d.log'%(city, timestamp), 'w')
+    errFile = open('logs/twitter_error_%s_%d.log'%(args.city, timestamp), 'w')
+    outFile = open('logs/twitter_output_%s_%d.log'%(args.city, timestamp), 'w')
     sys.stdout = outFile
     sys.stderr = errFile
 
-    ts = TwitterStream(city)
+    ts = TwitterStream(args.city)
     ts.setup_connection()
     ts.start()

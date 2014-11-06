@@ -258,10 +258,6 @@ class TwitterStream:
 
 
 if __name__ == '__main__':
-    timestamp = time.time()
-    errFile = open('twitter_error_%d.log'%(timestamp), 'w')
-    outFile = open('twitter_output_%d.log'%(timestamp), 'w')
-
     # get command line arguments
     argv = sys.argv[1:]
     try:
@@ -293,6 +289,9 @@ if __name__ == '__main__':
 
     print "Getting stream in " + city + " on port " + str(port)
 
+    timestamp = time.time()
+    errFile = open('twitter_error_%s_%d.log'%(city, timestamp), 'w')
+    outFile = open('twitter_output_%s_%d.log'%(city, timestamp), 'w')
     sys.stdout = outFile
     sys.stderr = errFile
 

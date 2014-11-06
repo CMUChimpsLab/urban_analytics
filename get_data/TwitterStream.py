@@ -24,7 +24,6 @@ import oauth2 as oauth
 from pymongo import Connection
 
 API_ENDPOINT_URL = 'https://stream.twitter.com/1.1/statuses/filter.json'
-#USER_AGENT = 'TwitterStream 1.0' # This can be anything really
 
 config = ConfigParser.ConfigParser()
 config.read('config.txt')
@@ -32,13 +31,6 @@ config.read('config.txt')
 NUM_TWITTER_CREDENTIALS = 2
 MIN_NUM_RECONNECT = 2
 FOURSQUARE_API_VERSION = '20140806'
-
-# These values are posted when setting up the connection
-#POST_PARAMS = {#'include_entities': 0,
-               #'stall_warning': 'true',
-               #'track': 'iphone,ipad,ipod'}
-               #'locations': '-122.5950,37.565,-122.295,37.865'}# San Francisco
-               #'locations': '-80.2,40.241667,-79.8,40.641667'}# Pgh
 
 CITY_LOCATIONS = {
     'pgh':  { 'locations': '-80.2,40.241667,-79.8,40.641667' },
@@ -52,6 +44,18 @@ CITY_LOCATIONS = {
     'miami': { 'locations': '-80.4241, 25.5877, -80.0641, 26.2877' },
     'london': { 'locations': '-0.4275, 51.3072, 0.2525, 51.7072' }
 }
+# Locations are lower left long, lower left lat, upper right long, upper right lat.
+# Mostly pretty arbitrarily chosen.
+#
+# Note! If there is a |coordinates| field in the tweet, that will be tested
+# against our parameters here. If not, the |place.bounding_box| will be tested,
+# and ANY overlap will match. This means we'll get a ton of tweets that are
+# not in Pittsburgh, just because they're very inaccuate and so have a huge
+# bounding box.
+#
+# More info: https://dev.twitter.com/docs/streaming-apis/parameters#locations
+# Can use -180,-90,180,90 to get all geotagged tweets.
+
 #  CITY_COLLECTIONS: city -> tweet_collection * foursquare_collection
 CITY_COLLECTIONS = {
     'pgh':  ('tweet_pgh', 'foursquare_pgh'),
@@ -65,19 +69,6 @@ CITY_COLLECTIONS = {
     'miami': ('tweet_miami','foursquare_miami'),
     'london': ('tweet_london','foursquare_london')
 }
-# Locations are lower left long, lower left lat, upper right long, upper right lat
-# This is a pretty arbitrarily chosen square roughly around Pittsburgh.
-# Center of Pittsburgh is 40.441667, -80.0 (exactly -80) so I went .2 deg long
-# and .2 deg lat. Captures most of Pittsburgh and suburbs.
-#
-# Note! If there is a |coordinates| field in the tweet, that will be tested
-# against our parameters here. If not, the |place.bounding_box| will be tested,
-# and ANY overlap will match. This means we'll get a ton of tweets that are
-# not in Pittsburgh, just because they're very inaccuate and so have a huge
-# bounding box.
-#
-# More info: https://dev.twitter.com/docs/streaming-apis/parameters#locations
-# Can use -180,-90,180,90 to get all geotagged tweets.
 
    
 # Prints out a log including the stack trace, time, and a message, when an
@@ -91,7 +82,7 @@ def log(message):
     frame = callerframerecord[0]
     info = inspect.getframeinfo(frame)
     line_no = int(info.lineno)
-    print '%d, line %d: %s\n' % (time.time(), line_no, message)
+    print '%d, line %d: %s' % (time.time(), line_no, message)
  
 class TwitterStream:
     def __init__(self, city, timeout=False):
@@ -106,6 +97,8 @@ class TwitterStream:
             raise Exception("city not valid")
         self.city = city
         self.post_params = CITY_LOCATIONS.get(self.city)
+        coords = CITY_LOCATIONS[self.city]['locations'].split(',')
+        self.min_lon, self.min_lat, self.max_lon, self.max_lat = map(float, coords)
         self.tweet_col, self.foursquare_col = CITY_COLLECTIONS.get(self.city)
         self.num_reconnect = 0
         self.setup_connection()
@@ -212,42 +205,49 @@ class TwitterStream:
                 raise Exception('Got disconnect: %s' % message['disconnect'].get('reason'))
             elif message.get('warning'):
                 log('Got warning: %s' % message['warning'].get('message'))
+            elif message['coordinates'] == None:
+                pass # message with no actual coordinates, just a bounding box
             else:
-                db[self.tweet_col].insert(dict(message))
-                log('Got tweet with text: %s' % message.get('text').encode('utf-8'))
+                lon = message['coordinates']['coordinates'][0]
+                lat = message['coordinates']['coordinates'][1]
+                if lon >= self.min_lon and lon <= self.max_lon and \
+                        lat >= self.min_lat and lat <= self.max_lat:
+                    db[self.tweet_col].insert(dict(message))
+                    log('Got tweet with text: %s' % message.get('text').encode('utf-8'))
 
-            # Check for Foursquare post and save to foursquare table if so.
-            entities = message.get('entities')
-            if entities and entities.get('urls'):
-                print entities
-                expanded_urls = [url.get('expanded_url') for url in entities.get('urls')]
-                for expanded_url in expanded_urls:
-                    if "swarmapp.com" in expanded_url or "4sq.com" in expanded_url or "foursquare.com" in expanded_url:
-                        try:
-                            get_url = "https://api.foursquare.com/v2/venues/search?ll=" \
-                                    + ",".join([str(f) for f in message['geo']['coordinates']]) \
-                                    + "&client_id=" + self.foursq_credentials['client_id'] \
-                                    + "&client_secret=" + self.foursq_credentials['client_secret'] \
-                                    + "&v=" + self.foursq_credentials['api_version'] 
-                            print get_url
-                            response = requests.get(get_url).json()
-                            if response['meta']['code'] == 200:
-                                foursq_data = response['response']
-                                matching_venue = {}
-                                for place in foursq_data['venues']:
-                                    if place['name'].lower() in self.html_parser.unescape(message['text'].lower()) \
-                                        or ('twitter' in place['contact'] and place['contact']['twitter'].lower() in message['text'].lower()):
-                                        matching_venue = place
-                                        break
-                                if matching_venue:
-                                    message['foursquare_data'] = {"certain": True, "venues": [matching_venue]}
-                                else:
-                                    foursq_data['certain'] = False
-                                    message['foursquare_data'] = foursq_data
-                                log('Added Foursquare Data: ' + str(message['foursquare_data']))
-                        except:
-                            log_exception('Failed to add Foursq data to the message.')
-                        db[self.foursquare_col].insert(message)
+                    # Check for Foursquare post and save to foursquare table if so.
+                    # TODO refactor this into its own method
+                    entities = message.get('entities')
+                    if entities and entities.get('urls'):
+                        print entities
+                        expanded_urls = [url.get('expanded_url') for url in entities.get('urls')]
+                        for expanded_url in expanded_urls:
+                            if "swarmapp.com" in expanded_url or "4sq.com" in expanded_url or "foursquare.com" in expanded_url:
+                                try:
+                                    get_url = "https://api.foursquare.com/v2/venues/search?ll=" \
+                                            + ",".join([str(f) for f in message['geo']['coordinates']]) \
+                                            + "&client_id=" + self.foursq_credentials['client_id'] \
+                                            + "&client_secret=" + self.foursq_credentials['client_secret'] \
+                                            + "&v=" + self.foursq_credentials['api_version'] 
+                                    print get_url
+                                    response = requests.get(get_url).json()
+                                    if response['meta']['code'] == 200:
+                                        foursq_data = response['response']
+                                        matching_venue = {}
+                                        for place in foursq_data['venues']:
+                                            if place['name'].lower() in self.html_parser.unescape(message['text'].lower()) \
+                                                or ('twitter' in place['contact'] and place['contact']['twitter'].lower() in message['text'].lower()):
+                                                matching_venue = place
+                                                break
+                                        if matching_venue:
+                                            message['foursquare_data'] = {"certain": True, "venues": [matching_venue]}
+                                        else:
+                                            foursq_data['certain'] = False
+                                            message['foursquare_data'] = foursq_data
+                                        log('Added Foursquare Data: ' + str(message['foursquare_data']))
+                                except:
+                                    log_exception('Failed to add Foursq data to the message.')
+                            db[self.foursquare_col].insert(message)
 
         sys.stdout.flush()
         sys.stderr.flush()

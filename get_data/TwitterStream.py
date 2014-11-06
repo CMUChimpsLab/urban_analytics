@@ -290,8 +290,8 @@ if __name__ == '__main__':
     print "Getting stream in " + city + " on port " + str(port)
 
     timestamp = time.time()
-    errFile = open('twitter_error_%s_%d.log'%(city, timestamp), 'w')
-    outFile = open('twitter_output_%s_%d.log'%(city, timestamp), 'w')
+    errFile = open('logs/twitter_error_%s_%d.log'%(city, timestamp), 'w')
+    outFile = open('logs/twitter_output_%s_%d.log'%(city, timestamp), 'w')
     sys.stdout = outFile
     sys.stderr = errFile
 

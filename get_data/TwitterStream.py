@@ -190,6 +190,41 @@ class TwitterStream:
                 time.sleep(backoff_http_error)
                 backoff_http_error = min(backoff_http_error * 2, 320)
 
+    # Check if this is a Foursquare post and save to foursquare table if so.
+    def save_foursquare_data_if_present(self, message):
+        entities = message.get('entities')
+        if entities and entities.get('urls'):
+            print entities
+            expanded_urls = [url.get('expanded_url') for url in entities.get('urls')]
+            for expanded_url in expanded_urls:
+                if "swarmapp.com" in expanded_url or "4sq.com" in expanded_url or "foursquare.com" in expanded_url:
+                    try:
+                        get_url = "https://api.foursquare.com/v2/venues/search?ll=" \
+                                + ",".join([str(f) for f in message['geo']['coordinates']]) \
+                                + "&client_id=" + self.foursq_credentials['client_id'] \
+                                + "&client_secret=" + self.foursq_credentials['client_secret'] \
+                                + "&v=" + self.foursq_credentials['api_version'] 
+                        print get_url
+                        response = requests.get(get_url).json()
+                        if response['meta']['code'] == 200:
+                            foursq_data = response['response']
+                            matching_venue = {}
+                            for place in foursq_data['venues']:
+                                if place['name'].lower() in self.html_parser.unescape(message['text'].lower()) \
+                                    or ('twitter' in place['contact'] and place['contact']['twitter'].lower() in message['text'].lower()):
+                                    matching_venue = place
+                                    break
+                            if matching_venue:
+                                message['foursquare_data'] = {"certain": True, "venues": [matching_venue]}
+                            else:
+                                foursq_data['certain'] = False
+                                message['foursquare_data'] = foursq_data
+                            log('Added Foursquare Data: ' + str(message['foursquare_data']))
+                    except:
+                        log_exception('Failed to add Foursq data to the message.')
+                    db[self.foursquare_col].insert(message)
+
+
     def handle_tweet(self, data):
         """ This method is called when data is received through Streaming endpoint.
         """
@@ -214,40 +249,7 @@ class TwitterStream:
                         lat >= self.min_lat and lat <= self.max_lat:
                     db[self.tweet_col].insert(dict(message))
                     log('Got tweet with text: %s' % message.get('text').encode('utf-8'))
-
-                    # Check for Foursquare post and save to foursquare table if so.
-                    # TODO refactor this into its own method
-                    entities = message.get('entities')
-                    if entities and entities.get('urls'):
-                        print entities
-                        expanded_urls = [url.get('expanded_url') for url in entities.get('urls')]
-                        for expanded_url in expanded_urls:
-                            if "swarmapp.com" in expanded_url or "4sq.com" in expanded_url or "foursquare.com" in expanded_url:
-                                try:
-                                    get_url = "https://api.foursquare.com/v2/venues/search?ll=" \
-                                            + ",".join([str(f) for f in message['geo']['coordinates']]) \
-                                            + "&client_id=" + self.foursq_credentials['client_id'] \
-                                            + "&client_secret=" + self.foursq_credentials['client_secret'] \
-                                            + "&v=" + self.foursq_credentials['api_version'] 
-                                    print get_url
-                                    response = requests.get(get_url).json()
-                                    if response['meta']['code'] == 200:
-                                        foursq_data = response['response']
-                                        matching_venue = {}
-                                        for place in foursq_data['venues']:
-                                            if place['name'].lower() in self.html_parser.unescape(message['text'].lower()) \
-                                                or ('twitter' in place['contact'] and place['contact']['twitter'].lower() in message['text'].lower()):
-                                                matching_venue = place
-                                                break
-                                        if matching_venue:
-                                            message['foursquare_data'] = {"certain": True, "venues": [matching_venue]}
-                                        else:
-                                            foursq_data['certain'] = False
-                                            message['foursquare_data'] = foursq_data
-                                        log('Added Foursquare Data: ' + str(message['foursquare_data']))
-                                except:
-                                    log_exception('Failed to add Foursq data to the message.')
-                            db[self.foursquare_col].insert(message)
+                    self.save_foursquare_data_if_present(message)
 
         sys.stdout.flush()
         sys.stderr.flush()

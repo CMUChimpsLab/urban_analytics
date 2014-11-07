@@ -16,7 +16,7 @@ def main():
 @app.route('/query')
 def query():
     # request.args.keys()[0] is a string representing the whole query
-    cursor = db['tweet_pgh_good'].find(json.loads(flask.request.args.keys()[0]))
+    cursor = db['tweet_pgh'].find(json.loads(flask.request.args.keys()[0]))
     cursor.limit(2000) # TODO update this limit based on user input
     results = list(cursor)
 
@@ -29,7 +29,7 @@ def query():
 @app.route('/bunch_of_tweets')
 def get_a_bunch_of_tweets():
     limit = int(flask.request.args['limit'])
-    cursor = db['tweet_pgh_good'].find().limit(limit)
+    cursor = db['tweet_pgh'].find().limit(limit)
     good_keys = ['text', 'id', 'user', 'coordinates', 'created_at']
     good_user_keys = ['id', 'screen_name']
     
@@ -167,7 +167,7 @@ if __name__ == "__main__":
     print "ensuring indexes"
     db['user'].ensure_index('_id')
     db['user'].ensure_index([('centroid', pymongo.GEOSPHERE)])
-    db['tweet_pgh_good'].ensure_index([('coordinates', pymongo.GEOSPHERE)])
+    db['tweet_pgh'].ensure_index([('coordinates', pymongo.GEOSPHERE)])
     db['foursquare'].ensure_index([('coordinates', pymongo.GEOSPHERE)])
     print "indexes have all been created, starting app"
     app.run(host='0.0.0.0')

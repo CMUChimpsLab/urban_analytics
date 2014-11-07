@@ -36,7 +36,7 @@ if __name__ == "__main__":
     db['user'].ensure_index('_id')
     db['user'].ensure_index('most_common_neighborhood')
     db['user'].ensure_index([('centroid', pymongo.GEOSPHERE)])
-    db['tweet_pgh_good'].ensure_index([('coordinates', pymongo.GEOSPHERE)])
+    db['tweet_pgh'].ensure_index([('coordinates', pymongo.GEOSPHERE)])
     db['foursquare'].ensure_index([('coordinates', pymongo.GEOSPHERE)])
     print "indexes have all been created, starting app"
     nghds = load_nghds()

@@ -43,13 +43,13 @@ def get_neighborhood_name(nghds, lon, lat):
 
 def doAll():
     print "building indexes"
-    db['tweet_pgh_good'].ensure_index('user.id')
+    db['tweet_pgh'].ensure_index('user.id')
     print "done, loading neighborhoods"
     nghds = load_nghds()
     print "done"
     for user in db['user'].find().batch_size(100):
         print "user: " + str(user['screen_name'])
-        tweets = db['tweet_pgh_good'].find({'user.id':user['_id']})
+        tweets = db['tweet_pgh'].find({'user.id':user['_id']})
         print tweets.count()
         user_nghds = collections.Counter()
         for tweet in tweets:
@@ -66,7 +66,7 @@ def doAll():
         db['user'].save(user)
         print user['most_common_neighborhood']
 
-    # for tweet in db['tweet_pgh_good'].find():
+    # for tweet in db['tweet_pgh'].find():
     #     print get_neighborhood_name(nghds,
     #         tweet['coordinates']['coordinates'][0],
     #         tweet['coordinates']['coordinates'][1])

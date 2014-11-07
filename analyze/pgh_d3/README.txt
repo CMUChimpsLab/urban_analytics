@@ -21,6 +21,3 @@ on this query so we don't have to do the "head" thing, but Mongo 2.4 doesn't.)
 Anyway, then I did:
 ./join_json.py < 1ktweets.json > 1ktweetsarray.json
 
-Not-actually-pgh tweets filtered out by filter_non_pgh_tweets.py.
-Good tweets stored in mongodb['tweet']['tweet_pgh_good'].
-

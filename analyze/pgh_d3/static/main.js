@@ -156,7 +156,7 @@ var PublicModule = (function() {
         // returns the string name of the collection to query from
         getCollection: function() {
             if ($("#useTweets").prop("checked")) {
-                return "tweet_pgh_good";
+                return "tweet_pgh";
             } else if ($("#useFoursquare").prop("checked")) {
                 return "foursquare";
             } else {

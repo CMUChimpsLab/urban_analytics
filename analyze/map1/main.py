@@ -19,7 +19,7 @@ def main():
 @app.route('/bunch_of_tweets')
 def get_a_bunch_of_tweets():
     limit = int(flask.request.args['limit'])
-    cursor = db['tweet_pgh_good'].find().limit(limit)
+    cursor = db['tweet_pgh'].find().limit(limit)
     good_keys = ['text', 'id', 'user', 'coordinates', 'created_at']
     good_user_keys = ['id', 'screen_name']
     
@@ -60,7 +60,7 @@ def get_tweets_by_this_nghd_users():
     users = db['user'].find({'most_common_neighborhood': nghd_name})
     tweets_to_return = []
     for user in users:
-        tweets = db['tweet_pgh_good'].find({'user.id': user['_id']})
+        tweets = db['tweet_pgh'].find({'user.id': user['_id']})
         for tweet in tweets:
             small_tweet = dict([(key, tweet[key]) for key in good_keys])
             small_tweet['user'] = dict([(key, tweet['user'][key]) for key in good_user_keys])
@@ -75,7 +75,7 @@ if __name__ == "__main__":
     db['user'].ensure_index('_id')
     db['user'].ensure_index('most_common_neighborhood')
     db['user'].ensure_index([('centroid', pymongo.GEOSPHERE)])
-    db['tweet_pgh_good'].ensure_index([('coordinates', pymongo.GEOSPHERE)])
+    db['tweet_pgh'].ensure_index([('coordinates', pymongo.GEOSPHERE)])
     db['foursquare'].ensure_index([('coordinates', pymongo.GEOSPHERE)])
     print "indexes have all been created, starting app"
     nghds = load_nghds()

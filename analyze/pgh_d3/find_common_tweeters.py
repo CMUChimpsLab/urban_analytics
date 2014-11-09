@@ -13,8 +13,7 @@ db = dbclient['tweet']
 # returns a set of all unique user ids
 def find_all_user_ids():
     all_user_ids = []
-    # use tweet_pgh_good, not tweet_pgh
-    all_tweets = db.tweet_pgh_good.find()
+    all_tweets = db.tweet_pgh.find()
     counter = 0
     for tweet in all_tweets:
         counter += 1
@@ -33,8 +32,7 @@ def find_frequent_tweeters():
         # counter += 1
         # if (counter % 1000) == 0:
         #     print counter
-        # use tweet_pgh_good, not tweet_pgh
-        users_tweets = list(db.tweet_pgh_good.find({'user.id':user_id}))
+        users_tweets = list(db.tweet_pgh.find({'user.id':user_id}))
         screen_name = users_tweets[0]['user']['screen_name']
         user = {'_id': user_id, 'screen_name': screen_name, 'num_tweets': len(users_tweets)}
         # TODO oops this wipes out whatever the user already had, like centroid, oops

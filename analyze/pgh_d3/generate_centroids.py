@@ -15,8 +15,7 @@ db = dbclient['tweet']
 # returns a set of all unique user ids
 def find_all_user_ids():
     all_user_ids = []
-    # use tweet_pgh_good, not tweet_pgh
-    all_tweets = db.tweet_pgh_good.find()
+    all_tweets = db.tweet_pgh.find()
     counter = 0
     for tweet in all_tweets:
         counter += 1
@@ -34,8 +33,7 @@ def generate_centroids():
         counter += 1
         if (counter % 1000) == 0:
             print counter
-        # use tweet_pgh_good, not tweet_pgh
-        users_tweets = db.tweet_pgh_good.find({'user.id':user_id})
+        users_tweets = db.tweet_pgh.find({'user.id':user_id})
         users_tweets_coords = []
         for tweet in users_tweets:
             screen_name = tweet['user']['screen_name']

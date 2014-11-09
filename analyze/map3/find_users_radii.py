@@ -10,8 +10,7 @@ db = pymongo.MongoClient('localhost', 27017)['tweet']
 # returns a set of all unique user ids
 def find_all_user_ids():
     all_user_ids = set()
-    # use tweet_pgh_good, not tweet_pgh
-    all_tweets = db.tweet_pgh_good.find()
+    all_tweets = db.tweet_pgh.find()
     counter = 0
     for tweet in all_tweets:
         counter += 1
@@ -35,7 +34,7 @@ def generate_centroids_and_radii(user_ids):
         counter += 1
         if counter % 1000 == 0:
             print 'users complete: ' + str(counter) 
-        tweets = db.tweet_pgh_good.find({'user.id': user_id})
+        tweets = db.tweet_pgh.find({'user.id': user_id})
         
         coords = [tweet['coordinates']['coordinates'] for tweet in tweets]
         # flexing functional chops, not sure if this is even a good idea

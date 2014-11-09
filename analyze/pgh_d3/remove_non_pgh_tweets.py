@@ -50,6 +50,5 @@ if __name__ == '__main__':
     
     print "count after: " + str(db.tweet_pgh.count())
     # print "ensuring indexes"
-    # db['tweet_pgh_good'].ensure_index([('coordinates', pymongo.GEOSPHERE)])
     print "done"
 

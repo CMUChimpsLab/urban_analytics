@@ -97,13 +97,13 @@ def get_screen_name(tweets):
  
 def doAll():
     print "building indexes"
-    db['tweet_pgh_good'].ensure_index('user.id')
+    db['tweet_pgh'].ensure_index('user.id')
     print "done, loading neighborhoods"
     global nghds # TODO ugh
     nghds = load_nghds()
     print "done"
     for user in db['user'].find().batch_size(100):
-        tweets = db['tweet_pgh_good'].find({'user.id':user['_id']})
+        tweets = db['tweet_pgh'].find({'user.id':user['_id']})
         tweets = list(tweets)
         screen_name = get_screen_name(tweets)
         print "user: " + screen_name

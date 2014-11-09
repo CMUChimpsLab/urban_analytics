@@ -28,7 +28,8 @@ API_ENDPOINT_URL = 'https://stream.twitter.com/1.1/statuses/filter.json'
 config = ConfigParser.ConfigParser()
 config.read('config.txt')
 
-NUM_TWITTER_CREDENTIALS = 2
+# TODO: read the number of credentials from the file, avoid having to set this here.
+NUM_TWITTER_CREDENTIALS = 6
 MIN_NUM_RECONNECT = 2
 FOURSQUARE_API_VERSION = '20140806'
 

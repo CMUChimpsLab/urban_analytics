@@ -75,11 +75,6 @@ if __name__ == '__main__':
     flickr_db = client.flickr
     instagram_db = client.instagram
 
-    instagram_count = instagram_db.instagram_pgh.count()
-    flickr_count = flickr_db.flickr_pgh.count()
-    tweet_pgh_count = tweet_db.tweet_pgh.count()
-    tweet_sf_count = tweet_db.tweet_sf.count()
-
     current_counts = {}
     for db in COLLECTIONS:
         cols = COLLECTIONS[db]
@@ -102,6 +97,7 @@ if __name__ == '__main__':
         f.write(json.dumps(prev_counts))
         f.close()
 
+    # Check each collection, send an email if it's not updated.
     for db in COLLECTIONS:
         cols = COLLECTIONS[db]
         for col in cols:

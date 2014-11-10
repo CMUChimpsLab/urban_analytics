@@ -28,8 +28,8 @@ API_ENDPOINT_URL = 'https://stream.twitter.com/1.1/statuses/filter.json'
 config = ConfigParser.ConfigParser()
 config.read('config.txt')
 
-NUM_TWITTER_CREDENTIALS = 2
-MIN_NUM_RECONNECT = 2
+NUM_TWITTER_CREDENTIALS = int(config.get('num_twitter_credentials', 'num'))
+MIN_NUM_RECONNECT = 1
 FOURSQUARE_API_VERSION = '20140806'
 
 CITY_LOCATIONS = {
@@ -117,6 +117,10 @@ class TwitterStream:
         self.oauth_token = oauth.Token(key=oauth_keys['access_token_key'], secret=oauth_keys['access_token_secret'])
         self.oauth_consumer = oauth.Consumer(key=oauth_keys['consumer_key'], secret=oauth_keys['consumer_secret'])
         self.credential_num += 1
+        if self.credential_num > NUM_TWITTER_CREDENTIALS:
+            self.credential_num = self.credential_num % NUM_TWITTER_CREDENTIALS
+            if self.credential_num == 0: self.credential_num = 1
+        self.num_reconnect = 0
 
     def setup_connection(self):
         """ Create persistant HTTP connection to Streaming API endpoint using cURL.
@@ -171,7 +175,7 @@ class TwitterStream:
                 time.sleep(backoff_network_error)
                 backoff_network_error = min(backoff_network_error + 1, 16)
                 self.num_reconnect += 1
-                if self.num_reconnect > MIN_NUM_RECONNECT and self.credential_num <= NUM_TWITTER_CREDENTIALS:
+                if self.num_reconnect > MIN_NUM_RECONNECT:
                     # try again with different twitter credentials
                     self.set_credentials()
                 continue

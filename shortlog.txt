@@ -1,0 +1,2 @@
+date,tweet_pgh,tweet_sf,tweet_ny,tweet_houston,tweet_cleveland,tweet_seattle,tweet_miami,tweet_detroit,tweet_chicago,tweet_london,flickr_pgh,instagram_pgh
+Fri Nov 14 2014 19:04:41 GMT+0000 (UTC),2733399,1772031,136180,95650,82050,60174,121150,97644,82900,337120,151550,211598

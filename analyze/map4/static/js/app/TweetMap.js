@@ -113,8 +113,8 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=drawing,p
             },
 
             plotTweet: function (tweet) {
-                latJitter = Math.random() * .001 - .0005;
-                lngJitter = Math.random() * .001 - .0005;
+                var latJitter = Math.random() * .005 - .0025;
+                var lngJitter = Math.random() * .005 - .0025;
                 if(tweet != null && tweet["geo"] != null && tweet["geo"]["coordinates"] != null) {
                     var userGeoCoordData = tweet["geo"]["coordinates"];
                     var userMarker = new google.maps.Marker({

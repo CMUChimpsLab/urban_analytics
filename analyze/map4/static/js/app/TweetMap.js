@@ -113,15 +113,19 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=drawing,p
             },
 
             plotTweet: function (tweet) {
+                latJitter = Math.random() * .001 - .0005;
+                lngJitter = Math.random() * .001 - .0005;
                 if(tweet != null && tweet["geo"] != null && tweet["geo"]["coordinates"] != null) {
                     var userGeoCoordData = tweet["geo"]["coordinates"];
                     var userMarker = new google.maps.Marker({
-                        position: {lat: userGeoCoordData[0], lng: userGeoCoordData[1]},
+                        position: {lat: userGeoCoordData[0] + latJitter,
+                                   lng: userGeoCoordData[1] + lngJitter},
                         map: map,
                         icon: redDotImg
                     });
                     var userText = "<b>" + tweet["user"]["screen_name"] + "</b>: " + tweet["text"]
-                                 + "<br /> (" + prettyPrint(userGeoCoordData[0]) + ", " + prettyPrint(userGeoCoordData[1]) + ")";
+                                 + "<br /> (" + prettyPrint(userGeoCoordData[0]) + ", "
+                                 + prettyPrint(userGeoCoordData[1]) + ")";
                     attachTextToMarker(userMarker, userText);
                     google.maps.event.addListener(userMarker, 'mouseover', function() {
                         userMarker.setIcon(blueDotImg);

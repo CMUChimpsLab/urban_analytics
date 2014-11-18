@@ -1,3 +1,10 @@
+// Here's where we're calling the google maps API. No API key needed yet, b/c
+// we're not using it very much. If we started using it enough that we wanted
+// to track our usage, we should get an API key. More info:
+// https://developers.google.com/maps/documentation/javascript/tutorial#api_key
+//
+// And that "async!" is from the async plugin.
+// https://github.com/millermedeiros/requirejs-plugins
 define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=drawing,places,visualization'], function () {
     return function (canvas, dataPanel) {
         var latitude = 40.4417, // default pittsburgh downtown center

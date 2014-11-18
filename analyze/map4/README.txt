@@ -9,9 +9,14 @@ app/TweetMap.js and jquery, and so on. Then TweetMap depends on the Google Maps
 API, which is how you get that in there.
 
 How does Google Maps know who we are? Hmm...
+Short answer: it doesn't. While we're under the usage limits, they don't care
+who we are. To deploy to the public, though, we should use an API key. More:
+https://developers.google.com/maps/documentation/javascript/tutorial#api_key
 
 
-If you get:
+To run this: run ./main.py, then go to localhost:5000 in a browser.
+
+Troubleshooting: If on startup you get:
 - ImportError: no module named flask (or something): make sure you're in the
 virtualenv (source ../env/bin/activate)
 - pymongo.errors.ConnectionFailure: could not connect to localhost:27017: make

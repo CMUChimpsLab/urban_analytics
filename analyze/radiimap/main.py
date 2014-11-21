@@ -57,6 +57,13 @@ def get_user_tweet_range():
     print cursor
     return jsonify(tweet_range=cursor)
 
+# Returns list of tweet ranges of 10 users who tweet the most
+@app.route('/get-top-10-user-tweet-range', methods=['GET'])
+def get_top_10_user_tweet_range():
+    cursor = db['user'].find().sort("num_tweets", -1).limit(10)
+    for v in range(0,3):
+        print cursor[v]
+    return jsonify(tweet_ranges=to_serializable_list(cursor))
 
 # Returns tweets from people who have tweeted in that area.
 @app.route('/get-user-tweets-from-area', methods=['GET'])

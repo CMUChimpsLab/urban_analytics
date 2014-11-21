@@ -4,6 +4,11 @@ html, body, #map-canvas {
     padding: 0;
 }
 
+a {
+  cursor: pointer;
+  color: black;
+}
+
 #controller-panel {
     height: 100%;
 }
@@ -40,7 +45,7 @@ input:focus {
   border: solid 1px #707070;
   box-shadow: 0 0 5px 1px #969696;
 }
-/*
+
 button {
     font-size: 100%;
     padding: .5em 1em;
@@ -58,8 +63,13 @@ button {
     vertical-align: baseline;
     text-align: center;
     cursor: pointer;
-}*/
+}
 
-#controlDiv {
-    padding-top: 15px;
+#userSearchDiv, #functionsDiv {
+    padding: 15px;
+}
+
+.remove_icon {
+    width: 15px;
+    margin-left: 20px;
 }

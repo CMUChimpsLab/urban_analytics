@@ -9,7 +9,6 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=drawing,p
     return function (canvas, dataPanel) {
         var latitude = 40.4417, // default pittsburgh downtown center
             longitude = -80.0000;
-        var centerMarker;
         var markers = [];
         var circles = [];
         var redDotImg = 'static/images/maps_measle_red.png';
@@ -47,16 +46,6 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=drawing,p
                 latitude = position.coords.latitude;
                 longitude = position.coords.longitude;
                 map.setCenter({lat: latitude, lng: longitude});
-
-                centerMarker = new google.maps.Marker({
-                    position: map.getCenter(),
-                    map: map,
-                    animation: google.maps.Animation.DROP,
-                    title: 'Center of Map'
-                });
-                google.maps.event.addListener(centerMarker, 'click', function () {
-                    map.setCenter(centerMarker.getPosition());
-                });
 
                 selectedArea.setBounds(getDefaultBounds(latitude, longitude));
             },

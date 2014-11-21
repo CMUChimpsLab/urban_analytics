@@ -44,5 +44,10 @@ define(['jquery', 'app/TweetMap'], function ($, TweetMap) {
                 }
             });
         });
+        $("#user-screen-name-input").keyup(function(event){
+            if(event.keyCode == 13){
+                $("#get-user-tweet-range-btn").click();
+            }   
+        });
     });
 });

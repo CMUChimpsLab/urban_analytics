@@ -18,7 +18,7 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=drawing,p
             zoom: 14,
         };
         var map = new google.maps.Map(canvas, mapOptions);
-
+        
         // get the default bounds for a google.maps.Rectangle
         function getDefaultBounds(latitude, longitude) {
             return new google.maps.LatLngBounds(
@@ -45,7 +45,7 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=drawing,p
             setCenter: function (position) {
                 latitude = position.coords.latitude;
                 longitude = position.coords.longitude;
-                map.setCenter({lat: latitude, lng: longitude});
+                //map.setCenter({lat: latitude, lng: longitude});
 
                 selectedArea.setBounds(getDefaultBounds(latitude, longitude));
             },
@@ -122,6 +122,12 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=drawing,p
                     var radius_90 = tweet_range["90%radius"];
                     var centroid = tweet_range["centroid"];
                     var center = {lat: centroid[1], lng: centroid[0]};
+
+                    //zoom bounds
+                    var southwest = new google.maps.LatLng(centroid[1]-radius_90/50000, centroid[0]-radius_90/50000);
+                    var northeast = new google.maps.LatLng(centroid[1]+radius_90/50000, centroid[0]+radius_90/50000);
+                    var bounds = new google.maps.LatLngBounds();
+
                     console.log(radius_50 + ", " + radius_90 + ", " + centroid + ", " + center);
                     //Put marker at centroid
                     var marker = new google.maps.Marker({
@@ -153,6 +159,10 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=drawing,p
                     markers.push(marker);
                     circles.push(Circle50);
                     circles.push(Circle90);
+                    map.setCenter(center);
+                    bounds.extend(southwest);
+                    bounds.extend(northeast);
+                    map.fitBounds(bounds);
                 }
             },
 

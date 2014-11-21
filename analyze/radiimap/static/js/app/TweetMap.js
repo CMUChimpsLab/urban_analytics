@@ -17,7 +17,6 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=drawing,p
         var mapOptions = {
             center: {lat: latitude, lng: longitude},
             zoom: 14,
-            disableDefaultUI: true
         };
         var map = new google.maps.Map(canvas, mapOptions);
 

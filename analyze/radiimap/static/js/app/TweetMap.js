@@ -10,7 +10,8 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=drawing,p
         var latitude = 40.4417, // default pittsburgh downtown center
             longitude = -80.0000;
         var centerMarker;
-        var queriedUsersMarkers = [];
+        var markers = [];
+        var circles = [];
         var redDotImg = 'static/images/maps_measle_red.png';
         var blueDotImg = 'static/images/maps_measle_blue.png';
         var mapOptions = {
@@ -63,11 +64,17 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=drawing,p
 
             clearMap: function () {
                 // remove previous markers from map and empty queriedUsersMarkers
-                if(queriedUsersMarkers.length > 0) {
-                    for(var i = 0; i < queriedUsersMarkers.length; i++) {
-                        queriedUsersMarkers[i].setMap(null);
+                if(markers.length > 0) {
+                    for(var i = 0; i < markers.length; i++) {
+                        markers[i].setMap(null);
                     }
-                    queriedUsersMarkers.length = 0;
+                    markers.length = 0;
+                }
+                if(circles.length > 0) {
+                    for(var j = 0; j < circles.length; j++) {
+                        circles[j].setMap(null);
+                    }
+                    circles.length = 0;
                 }
             },
 
@@ -111,25 +118,25 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=drawing,p
                     google.maps.event.addListener(userMarker, 'mouseout', function() {
                         userMarker.setIcon(redDotImg);
                     });
-                    queriedUsersMarkers.push(userMarker);
+                    markers.push(userMarker);
                 }
             },
 
             plotRange : function (tweet_range) {
                 console.log("plotting range!");
                 console.log(tweet_range);
-                console.log(tweet_range != null);
-                console.log(tweet_range["50%radius"] != null); 
-                console.log(tweet_range["90%radius"] != null);
-                console.log(tweet_range["centroid"] != null);
-                if(tweet_range != null && tweet_range["50%radius"] != null && tweet_range["90%radius"] != null && tweet_range["centroid"] != null) {
+                console.log(tweet_range !== null);
+                console.log(tweet_range["50%radius"] !== null);
+                console.log(tweet_range["90%radius"] !== null);
+                console.log(tweet_range["centroid"] !== null);
+                if(tweet_range !== null && tweet_range["50%radius"] !== null && tweet_range["90%radius"] !== null && tweet_range["centroid"] !== null) {
                     var radius_50 = tweet_range["50%radius"];
                     var radius_90 = tweet_range["90%radius"];
                     var centroid = tweet_range["centroid"];
                     var center = {lat: centroid[1], lng: centroid[0]};
                     console.log(radius_50 + ", " + radius_90 + ", " + centroid + ", " + center);
                     //Put marker at centroid
-                    var centroid = new google.maps.Marker({
+                    var marker = new google.maps.Marker({
                         position: center,
                         map: map,
                     });
@@ -155,6 +162,9 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=drawing,p
                         center: center,
                         radius: radius_90 //in meters
                     });
+                    markers.push(marker);
+                    circles.push(Circle50);
+                    circles.push(Circle90);
                 }
             },
 

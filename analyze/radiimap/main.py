@@ -80,7 +80,8 @@ def to_serializable_list(mongodb_cursor):
     return data
 
 def to_serializable(mongodb_cursor):
-    del mongodb_cursor['_id']
+    if mongodb_cursor:
+        del mongodb_cursor['_id']
     return mongodb_cursor
 
 def get_tweets_from_user(user_screen_name):

@@ -18,7 +18,54 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=drawing,p
             zoom: 14,
         };
         var map = new google.maps.Map(canvas, mapOptions);
-        
+
+        // add UI
+        var controlDiv = document.createElement('div');
+        controlDiv.setAttribute("id", "controlDiv");
+        var input = document.createElement('input');
+        input.setAttribute("id", "user-screen-name-input");
+        input.setAttribute("placeholder", "Twitter Screen Name");
+        // var btn = document.createElement('button');
+        // btn.setAttribute("id", "get-user-tweet-range-btn");
+        // btn.innerText = "Create Map";
+        controlDiv.appendChild(input);
+        // controlDiv.appendChild(btn);
+        controlDiv.index = 1;
+        map.controls[google.maps.ControlPosition.TOP_LEFT].push(controlDiv);
+
+        // bind events
+        // google.maps.event.addDomListener(btn, 'click', function() {
+        //     $.ajax({
+        //         type: "get",
+        //         data: {user_screen_name: $("#user-screen-name-input").val()},
+        //         url: $SCRIPT_ROOT + "/get-user-tweet-range",
+        //         success: function (response) {
+        //             api.clearMap();
+        //             api.plotRange(response["tweet_range"]);
+        //         },
+        //         error: function () {
+        //             console.log("ajax request failed for " + this.url);
+        //         }
+        //     });
+        // });
+        google.maps.event.addDomListener(input, 'keyup', function() {
+            if(event.keyCode == 13){
+                // $("#get-user-tweet-range-btn").click();
+                $.ajax({
+                    type: "get",
+                    data: {user_screen_name: $("#user-screen-name-input").val()},
+                    url: $SCRIPT_ROOT + "/get-user-tweet-range",
+                    success: function (response) {
+                        api.clearMap();
+                        api.plotRange(response["tweet_range"]);
+                    },
+                    error: function () {
+                        console.log("ajax request failed for " + this.url);
+                    }
+                });
+            }
+        });
+
         // get the default bounds for a google.maps.Rectangle
         function getDefaultBounds(latitude, longitude) {
             return new google.maps.LatLngBounds(
@@ -47,7 +94,7 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=drawing,p
                 longitude = position.coords.longitude;
                 //map.setCenter({lat: latitude, lng: longitude});
 
-                selectedArea.setBounds(getDefaultBounds(latitude, longitude));
+                // selectedArea.setBounds(getDefaultBounds(latitude, longitude));
             },
 
             clearMap: function () {
@@ -67,7 +114,7 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=drawing,p
             },
 
             plotUsers: function (users) {
-                if(users != null) {
+                if(users !== null) {
                     for(var user in users) {
                         var tweetsFromUser = users[user];
                         for(var i = 0; i < tweetsFromUser.length; i++) {
@@ -113,10 +160,6 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=drawing,p
             plotRange : function (tweet_range) {
                 console.log("plotting range!");
                 console.log(tweet_range);
-                console.log(tweet_range !== null);
-                console.log(tweet_range["50%radius"] !== null);
-                console.log(tweet_range["90%radius"] !== null);
-                console.log(tweet_range["centroid"] !== null);
                 if(tweet_range !== null && tweet_range["50%radius"] !== null && tweet_range["90%radius"] !== null && tweet_range["centroid"] !== null) {
                     var radius_50 = tweet_range["50%radius"];
                     var radius_90 = tweet_range["90%radius"];

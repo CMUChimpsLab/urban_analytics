@@ -103,23 +103,32 @@ def doAll():
     nghds = load_nghds()
     print "done"
     for user in db['user'].find().batch_size(100):
-        tweets = db['tweet_pgh'].find({'user.id':user['_id']})
-        tweets = list(tweets)
-        screen_name = get_screen_name(tweets)
-        print "user: " + screen_name
-        user['screen_name'] = screen_name
+        try:
+            tweets = db['tweet_pgh'].find({'user.id':user['_id']})
+            tweets = list(tweets)
+            screen_name = get_screen_name(tweets)
+            if screen_name:
+                print "user: " + screen_name
+            user['screen_name'] = screen_name
 
-        num_tweets = len(tweets)
-        user['num_tweets'] = num_tweets
+            num_tweets = len(tweets)
+            user['num_tweets'] = num_tweets
 
-        centroid_radii = generate_centroids_and_radii(tweets)
-        user.update(centroid_radii)
+            centroid_radii = generate_centroids_and_radii(tweets)
+            user.update(centroid_radii)
 
-        user_nghds = get_user_nghds(tweets)
-        user['neighborhoods'] = dict(user_nghds)
-        user['most_common_neighborhood'] = user_nghds.most_common(1)[0][0]
-        print user
-        db.user.save(user)
+            user_nghds = get_user_nghds(tweets)
+            user['neighborhoods'] = dict(user_nghds)
+            if len(user_nghds) > 0:
+                user['most_common_neighborhood'] = user_nghds.most_common(1)[0][0]
+            else:
+                user['most_common_neighborhood'] = 'Outside Pittsburgh'
+                print 'Huh? User has zero tweets in neighborhoods?' + screen_name
+            print user
+            db.user.save(user)
+        except Exception as e:
+            print 'Exception.'
+            print e
 
 if __name__ == '__main__':
     # doAll()

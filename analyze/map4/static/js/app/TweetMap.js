@@ -22,16 +22,16 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=drawing,p
         var map = new google.maps.Map(canvas, mapOptions);
 
         // Define the rectangle.
-        var selectedAreaNE,
-            selectedAreaSW;
-        var selectedArea = new google.maps.Rectangle({
-            bounds: getDefaultBounds(latitude, longitude),
-            editable: true,
-            draggable: true
-        });
+        // var selectedAreaNE,
+        //     selectedAreaSW;
+        // var selectedArea = new google.maps.Rectangle({
+        //     bounds: getDefaultBounds(latitude, longitude),
+        //     editable: true,
+        //     draggable: true
+        // });
         // Put the rectangle on our map, I guess?
-        selectedArea.setMap(map);
-        google.maps.event.addListener(selectedArea, 'bounds_changed', updateDataPanel);
+        // selectedArea.setMap(map);
+        // google.maps.event.addListener(selectedArea, 'bounds_changed', updateDataPanel);
         updateDataPanel();
 
         var drawLine = function(lat1, lng1, lat2, lng2) {
@@ -65,10 +65,10 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=drawing,p
         }
 
         function updateDataPanel() {
-            selectedAreaNE = selectedArea.getBounds().getNorthEast();
-            selectedAreaSW = selectedArea.getBounds().getSouthWest();
-            var contentString = '<b>NorthEast Corner:</b> ' + prettyPrint(selectedAreaNE.lat()) + ', ' + prettyPrint(selectedAreaNE.lng()) + '<br>' +
-                '<b>SouthWest Corner:</b> ' + prettyPrint(selectedAreaSW.lat()) + ', ' + prettyPrint(selectedAreaSW.lng());
+            // selectedAreaNE = selectedArea.getBounds().getNorthEast();
+            // selectedAreaSW = selectedArea.getBounds().getSouthWest();
+            // var contentString = '<b>NorthEast Corner:</b> ' + prettyPrint(selectedAreaNE.lat()) + ', ' + prettyPrint(selectedAreaNE.lng()) + '<br>' +
+            //     '<b>SouthWest Corner:</b> ' + prettyPrint(selectedAreaSW.lat()) + ', ' + prettyPrint(selectedAreaSW.lng());
 
             // dataPanel.innerHTML = contentString;
         }
@@ -103,7 +103,7 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=drawing,p
                     map.setCenter(centerMarker.getPosition());
                 });
 
-                selectedArea.setBounds(getDefaultBounds(latitude, longitude));
+                // selectedArea.setBounds(getDefaultBounds(latitude, longitude));
             },
 
             clearMap: function () {
@@ -186,13 +186,13 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=drawing,p
                 }
             },
 
-            getSelectedArea: function () {
-                return {ne_lat: selectedAreaNE.lat(),
-                        ne_lng: selectedAreaNE.lng(),
-                        sw_lat: selectedAreaSW.lat(),
-                        sw_lng: selectedAreaSW.lng()
-                };
-            }
+            // getSelectedArea: function () {
+            //     return {ne_lat: selectedAreaNE.lat(),
+            //             ne_lng: selectedAreaNE.lng(),
+            //             sw_lat: selectedAreaSW.lat(),
+            //             sw_lng: selectedAreaSW.lng()
+            //     };
+            // }
         };
 
         return api;

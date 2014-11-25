@@ -13,6 +13,7 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=drawing,p
         var queriedUsersMarkers = [];
         var redDotImg = 'static/images/maps_measle_red.png';
         var blueDotImg = 'static/images/maps_measle_blue.png';
+        var greenDotImg = 'static/images/maps_measle_green.png';
         var mapOptions = {
             center: {lat: latitude, lng: longitude},
             zoom: 14,
@@ -32,6 +33,28 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=drawing,p
         selectedArea.setMap(map);
         google.maps.event.addListener(selectedArea, 'bounds_changed', updateDataPanel);
         updateDataPanel();
+
+        var drawLine = function(lat1, lng1, lat2, lng2) {
+           var line1Coordinates = [
+              new google.maps.LatLng(lat1, lng1),
+              new google.maps.LatLng(lat2, lng2)
+            ];
+            var line1 = new google.maps.Polyline({
+              path: line1Coordinates,
+              geodesic: true,
+              strokeColor: '#000000',
+              strokeOpacity: 0.3,
+              strokeWeight: 1
+            });
+            line1.setMap(map);
+        }
+        // Draw grid lines for our rectangular bins.
+        for (var lat = 40.2417; lat < 40.6417; lat += .001) {
+            drawLine(lat, -80.2, lat, -78.8);
+        }
+        for (var lng = -80.2; lng < -78.8; lng += .001) {
+            drawLine(40.2417, lng, 40.6417, lng);
+        }
 
         // get the default bounds for a google.maps.Rectangle
         function getDefaultBounds(latitude, longitude) {
@@ -112,20 +135,44 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=drawing,p
                 }
             },
 
+            plotHome: function(user_home) {
+              var lat = user_home[0];
+              var lon = user_home[1];
+              var marker = new google.maps.Marker({
+                        position: {lat: lat, lng: lon},
+                        map: map,
+                        icon: greenDotImg
+                    });
+              queriedUsersMarkers.push(marker);
+            },
+
+            plotPrediction: function(prediction) {
+              var lat = prediction[0];
+              var lon = prediction[1];
+              var marker = new google.maps.Marker({
+                        position: {lat: lat, lng: lon},
+                        map: map,
+                        icon: blueDotImg
+                    });
+              queriedUsersMarkers.push(marker);
+            },
+
             plotTweet: function (tweet) {
-                var latJitter = Math.random() * .005 - .0025;
-                var lngJitter = Math.random() * .005 - .0025;
-                if(tweet != null && tweet["geo"] != null && tweet["geo"]["coordinates"] != null) {
-                    var userGeoCoordData = tweet["geo"]["coordinates"];
+                var latJitter = Math.random() * .002 - .001;
+                var lngJitter = Math.random() * .002 - .001;
+                // console.log(tweet);
+                if(tweet != null && tweet["coordinates"] != null && tweet["coordinates"]["coordinates"] != null) {
+                    var userGeoCoordData = tweet["coordinates"]["coordinates"];
+                    // console.log("plotting: " + userGeoCoordData);
                     var userMarker = new google.maps.Marker({
-                        position: {lat: userGeoCoordData[0] + latJitter,
-                                   lng: userGeoCoordData[1] + lngJitter},
+                        position: {lat: userGeoCoordData[1] + latJitter,
+                                   lng: userGeoCoordData[0] + lngJitter},
                         map: map,
                         icon: redDotImg
                     });
                     var userText = "<b>" + tweet["user"]["screen_name"] + "</b>: " + tweet["text"]
-                                 + "<br /> (" + prettyPrint(userGeoCoordData[0]) + ", "
-                                 + prettyPrint(userGeoCoordData[1]) + ")";
+                                 + "<br /> (" + prettyPrint(userGeoCoordData[1]) + ", "
+                                 + prettyPrint(userGeoCoordData[0]) + ")";
                     attachTextToMarker(userMarker, userText);
                     google.maps.event.addListener(userMarker, 'mouseover', function() {
                         userMarker.setIcon(blueDotImg);

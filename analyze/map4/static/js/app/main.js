@@ -67,6 +67,8 @@ define(['jquery', 'app/TweetMap'], function ($, TweetMap) {
                 success: function (response) {
                     tweetMap.clearMap();
                     tweetMap.plotTweets(response["tweets"]);
+                    tweetMap.plotHome(response["user_home"]);
+                    tweetMap.plotPrediction(response["prediction"]);
                 },
                 error: function () {
                     console.log("ajax request failed for " + this.url);

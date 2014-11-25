@@ -138,6 +138,7 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=drawing,p
             plotHome: function(user_home) {
               var lat = user_home[0];
               var lon = user_home[1];
+              console.log("reported home: lat " + lat + ", lon " + lon);
               var marker = new google.maps.Marker({
                         position: {lat: lat, lng: lon},
                         map: map,
@@ -149,6 +150,7 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=drawing,p
             plotPrediction: function(prediction) {
               var lat = prediction[0];
               var lon = prediction[1];
+              console.log("predicting: lat " + lat + ", lon " + lon);
               var marker = new google.maps.Marker({
                         position: {lat: lat, lng: lon},
                         map: map,

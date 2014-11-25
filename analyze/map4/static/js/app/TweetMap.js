@@ -70,7 +70,7 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=drawing,p
             var contentString = '<b>NorthEast Corner:</b> ' + prettyPrint(selectedAreaNE.lat()) + ', ' + prettyPrint(selectedAreaNE.lng()) + '<br>' +
                 '<b>SouthWest Corner:</b> ' + prettyPrint(selectedAreaSW.lat()) + ', ' + prettyPrint(selectedAreaSW.lng());
 
-            dataPanel.innerHTML = contentString;
+            // dataPanel.innerHTML = contentString;
         }
 
         function prettyPrint(num) {
@@ -148,8 +148,8 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=drawing,p
             },
 
             plotPrediction: function(prediction) {
-              var lat = prediction[0];
-              var lon = prediction[1];
+              var lat = prediction[1];
+              var lon = prediction[0]; // TODO why are these backward
               console.log("predicting: lat " + lat + ", lon " + lon);
               var marker = new google.maps.Marker({
                         position: {lat: lat, lng: lon},

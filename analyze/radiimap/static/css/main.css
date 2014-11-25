@@ -1,0 +1,75 @@
+html, body, #map-canvas {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+a {
+  cursor: pointer;
+  color: black;
+}
+
+#controller-panel {
+    height: 100%;
+}
+
+.loading-modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    background: rgba( 255, 255, 255, .8 )
+                url('http://i.stack.imgur.com/FhHRx.gif')
+                50% 50%
+                no-repeat;
+}
+
+body.loading {
+    overflow: hidden;
+}
+
+body.loading .loading-modal {
+    display: block;
+}
+
+input {
+    padding : 10px;
+    border : solid 1px #dcdcdc;
+    transition: box-shadow 0.3s, border 0.3s;
+}
+
+input:focus {
+  border: solid 1px #707070;
+  box-shadow: 0 0 5px 1px #969696;
+}
+
+button {
+    font-size: 100%;
+    padding: .5em 1em;
+    color: #444;
+    color: rgba(0,0,0,.8);
+    border: 1px solid #999;
+    border: 0 rgba(0,0,0,0);
+    background-color: #E6E6E6;
+    text-decoration: none;
+    border-radius: 2px;
+    display: inline-block;
+    zoom: 1;
+    line-height: normal;
+    white-space: nowrap;
+    vertical-align: baseline;
+    text-align: center;
+    cursor: pointer;
+}
+
+#userSearchDiv, #functionsDiv {
+    padding: 15px;
+}
+
+.remove_icon {
+    width: 15px;
+    margin-left: 20px;
+}

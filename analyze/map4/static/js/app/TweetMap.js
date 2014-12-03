@@ -21,8 +21,6 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=drawing,p
         };
         var map = new google.maps.Map(canvas, mapOptions);
 
-        updateDataPanel();
-
         var drawLine = function(lat1, lng1, lat2, lng2) {
            var line1Coordinates = [
               new google.maps.LatLng(lat1, lng1),
@@ -39,9 +37,9 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=drawing,p
         }
         // Draw grid lines for our rectangular bins.
         for (var lat = 40.2417; lat < 40.6417; lat += .001) {
-            drawLine(lat, -80.2, lat, -78.8);
+            drawLine(lat, -80.2, lat, -79.8);
         }
-        for (var lng = -80.2; lng < -78.8; lng += .001) {
+        for (var lng = -80.2; lng < -79.8; lng += .001) {
             drawLine(40.2417, lng, 40.6417, lng);
         }
 
@@ -51,15 +49,6 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=drawing,p
                 new google.maps.LatLng(latitude - 0.002, longitude - 0.004),
                 new google.maps.LatLng(latitude + 0.002, longitude + 0.004)
             );
-        }
-
-        function updateDataPanel() {
-            // selectedAreaNE = selectedArea.getBounds().getNorthEast();
-            // selectedAreaSW = selectedArea.getBounds().getSouthWest();
-            // var contentString = '<b>NorthEast Corner:</b> ' + prettyPrint(selectedAreaNE.lat()) + ', ' + prettyPrint(selectedAreaNE.lng()) + '<br>' +
-            //     '<b>SouthWest Corner:</b> ' + prettyPrint(selectedAreaSW.lat()) + ', ' + prettyPrint(selectedAreaSW.lng());
-
-            // dataPanel.innerHTML = contentString;
         }
 
         function prettyPrint(num) {

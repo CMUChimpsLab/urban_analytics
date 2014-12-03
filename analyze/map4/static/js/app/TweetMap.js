@@ -21,17 +21,6 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=drawing,p
         };
         var map = new google.maps.Map(canvas, mapOptions);
 
-        // Define the rectangle.
-        // var selectedAreaNE,
-        //     selectedAreaSW;
-        // var selectedArea = new google.maps.Rectangle({
-        //     bounds: getDefaultBounds(latitude, longitude),
-        //     editable: true,
-        //     draggable: true
-        // });
-        // Put the rectangle on our map, I guess?
-        // selectedArea.setMap(map);
-        // google.maps.event.addListener(selectedArea, 'bounds_changed', updateDataPanel);
         updateDataPanel();
 
         var drawLine = function(lat1, lng1, lat2, lng2) {

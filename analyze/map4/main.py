@@ -19,10 +19,6 @@ db_client = pymongo.MongoClient('localhost', 27017)
 db = db_client['tweet']
 users = {} # ugh global. screen names in here are lowercase.
 
-# TODO here is the twitter_home_work_clean responses file
-# survey_responses = csv.reader(open('../home_work/twitter_home_work_clean.csv', 'r'))
-# tweets = json.load(open('../home_work/tweets.json'))
-
 # Creates a dict of user: {bunch of info including tweets:[...]}
 def init_tweets_and_responses():
     survey_responses = csv.reader(open('../home_work/twitter_home_work_clean.csv', 'rU'))
@@ -34,12 +30,6 @@ def init_tweets_and_responses():
             users[screen_name] = {'home_lat': float(row[6]), 'home_lon': float(row[7])}
         except ValueError as ve:
             continue
-
-        # users[screen_name]['tweets'] = []
-    # for tweet in tweets:
-    #     screen_name = tweet['user']['screen_name']
-    #     if screen_name in users:
-    #         users[screen_name]['tweets'].append(tweet)
 
 # This call kicks off all the main page rendering.
 @app.route('/')
@@ -95,14 +85,14 @@ def get_tweets_from_user(user_screen_name):
     cursor = db['tweet_pgh'].find({'$query': {'user.screen_name': user_screen_name},
                                         # '$orderBy': 'created_at',
                                         '$maxTimeMS': 10000}).limit(2000)
-    # data = db['tweet_pgh'].find({'$query': {'user.screen_name': {'$in': tweets_by_users}},
-    #                                   '$maxTimeMS': 10000}).limit(2000)
     return cursor
 
 if __name__ == '__main__':
+    print 'ensuring indexes...'
     db['tweet_pgh'].ensure_index('_id')
     db['tweet_pgh'].ensure_index('coordinates.coordinates.0')
     db['tweet_pgh'].ensure_index('coordinates.coordinates.1')
     db['tweet_pgh'].ensure_index('user.screen_name')
     init_tweets_and_responses()
-    app.run(host='0.0.0.0')  # listen on all public IPs
+    print 'indexes done, starting server'
+    app.run(host='127.0.0.1', debug=True)  # listen on localhost only (for local testing)

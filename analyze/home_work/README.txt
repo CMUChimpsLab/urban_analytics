@@ -15,3 +15,9 @@ up data, and geocoding it (done w/ clean_add_geocodes.py).
 
 pull_out_tweets.py took all the users from twitter_home_work_clean from the db,
 got all their tweets, and stuck them in a json file (tweets.json).
+
+fix_caps.py just goes through everyone in twitter_home_work_clean.csv and looks
+up their username so we can find the correct capitalization of it.
+
+get_bins.py pulls out a histogram of each user's tweets, binned into 3 lat/lon
+digit bins.

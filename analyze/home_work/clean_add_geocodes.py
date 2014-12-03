@@ -75,6 +75,7 @@ if __name__ == '__main__':
             'commute']
         outwriter.writerow(headers)
 
+    # TODO csv.DictReader is nicer, use that.
     reader = csv.reader(open('twitter_home_work_responses.csv'))
     next(reader) # to skip header row
     for line in reader:

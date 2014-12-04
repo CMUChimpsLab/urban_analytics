@@ -1,0 +1,10 @@
+---
+title: "Untitled"
+output: html_document
+---
+```{r}
+library(jsonlite)
+jsondata <- fromJSON('/Users/dtasse/src/urban_analytics/analyze/home_work/users_plus_bins.json')
+
+```
+

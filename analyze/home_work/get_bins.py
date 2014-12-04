@@ -16,6 +16,9 @@ def round_latlon(lat, lon):
     return (round(float(lat), 3), round(float(lon), 3))
  
 if __name__ == '__main__':
+    print 'ensuring indices'
+    db['tweet_pgh'].ensure_index('user.screen_name')
+    print 'ok, ensured indices'
 
     for line in csv.DictReader(open('twitter_home_work_clean.csv', 'rU')):
         screen_name = line['screen_name']
@@ -26,6 +29,7 @@ if __name__ == '__main__':
         work2_lat = line['work2_lat']
         work2_lon = line['work2_lon']
         bins = Counter()
+        print screen_name
         tweets_cursor = db['tweet_pgh'].find({'user.screen_name':screen_name})
         for tweet in tweets_cursor:
             coords = tweet['coordinates']['coordinates']

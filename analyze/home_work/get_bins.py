@@ -31,7 +31,6 @@ if __name__ == '__main__':
         work2_lat = line['work2_lat']
         work2_lon = line['work2_lon']
         bins = Counter()
-        print screen_name
         tweets_cursor = db['tweet_pgh'].find({'user.screen_name':screen_name})
         for tweet in tweets_cursor:
             coords = tweet['coordinates']['coordinates']
@@ -42,12 +41,18 @@ if __name__ == '__main__':
         line['bins_hist'] = bins.values()
         predictions = bins.most_common(2)
         if len(predictions) >= 1:
-            # there is a home prediction
-            home_prediction = predictions[0][0]
-            line['home_prediction_error_m'] = earth_distance_m(float(home_lat), float(home_lon), home_prediction[0], home_prediction[1])
+            try:
+                # there is a home prediction
+                home_prediction = predictions[0][0]
+                line['home_prediction_error_m'] = earth_distance_m(float(home_lat), float(home_lon), home_prediction[0], home_prediction[1])
+            except ValueError as e:
+                pass
         if len(predictions) >= 2:
-            work1_prediction = predictions[1][0]
-            line['work1_prediction_error_m'] = earth_distance_m(float(home_lat), float(home_lon), home_prediction[0], home_prediction[1])
+            try:
+                work1_prediction = predictions[1][0]
+                line['work1_prediction_error_m'] = earth_distance_m(float(home_lat), float(home_lon), home_prediction[0], home_prediction[1])
+            except ValueError as e:
+                pass
 
         output_lines.append(line)
 

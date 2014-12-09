@@ -50,7 +50,7 @@ if __name__ == '__main__':
         if len(predictions) >= 2:
             try:
                 work1_prediction = predictions[1][0]
-                line['work1_prediction_error_m'] = earth_distance_m(float(home_lat), float(home_lon), home_prediction[0], home_prediction[1])
+                line['work1_prediction_error_m'] = earth_distance_m(float(work1_lat), float(work1_lon), work1_prediction[0], work1_prediction[1])
             except ValueError as e:
                 pass
 

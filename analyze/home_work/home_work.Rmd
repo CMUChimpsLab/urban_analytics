@@ -4,7 +4,18 @@ output: html_document
 ---
 ```{r}
 library(jsonlite)
-jsondata <- fromJSON('/Users/dtasse/src/urban_analytics/analyze/home_work/users_plus_bins.json')
+library(ggplot2)
+users <- fromJSON('/Users/dtasse/src/urban_analytics/analyze/home_work/users_plus_bins.json')
+names(users)
 
+ggplot(users, aes(x=home_prediction_error_m)) +
+  geom_histogram(binwidth=0.2) +
+  scale_x_log10(breaks=c(1,10,100,1000,5000))
+
+nrow(jsondata[users$home_prediction_error_m > 500, ])
+nrow(jsondata[users$home_prediction_error_m <= 500, ])
 ```
-
+So for about 2/3 of people, we're already within 500m.
+TODO
+work prediction error
+look at which people had high home prediction error

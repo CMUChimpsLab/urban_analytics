@@ -42,7 +42,6 @@ def get_user_tweets():
         return jsonify([])
 
     tweets = to_serializable_list(get_tweets_from_user(user_screen_name))
-    print tweets
     return jsonify(tweets=tweets)
 
 # Returns given user's tweet range.

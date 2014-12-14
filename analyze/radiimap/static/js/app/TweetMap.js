@@ -5,13 +5,13 @@
 //
 // And that "async!" is from the async plugin.
 // https://github.com/millermedeiros/requirejs-plugins
-define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=drawing,places,visualization'], function () {
+define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=geometry,drawing,places,visualization'], function () {
     return function (canvas, dataPanel) {
+
         var latitude = 40.4417, // default pittsburgh downtown center
             longitude = -80.0000;
         var marks = {};
-        // var markers = [];
-        // var circles = [];
+        var dots = {};
         var redDotImg = 'static/images/maps_measle_red.png';
         var blueDotImg = 'static/images/maps_measle_blue.png';
         var mapOptions = {
@@ -26,11 +26,18 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=drawing,p
         input.setAttribute("placeholder", "Twitter Screen Name");
         var userSearchDiv = document.createElement('div');
         userSearchDiv.setAttribute("id", "userSearchDiv");
-        // var btn = document.createElement('button');
-        // btn.setAttribute("id", "get-user-tweet-range-btn");
-        // btn.innerText = "Create Map";
+
+        var ellipse_btn = document.createElement('button');
+        ellipse_btn.setAttribute("id", "get-user-tweet-range-btn");
+        ellipse_btn.innerText = "Ellipse";
+
+        var twt_btn = document.createElement('button');
+        twt_btn.setAttribute("id", "get-user-tweets-btn");
+        twt_btn.innerText = "Tweets";
+
         userSearchDiv.appendChild(input);
-        // userSearchDiv.appendChild(btn);
+        userSearchDiv.appendChild(ellipse_btn);
+        userSearchDiv.appendChild(twt_btn);
         userSearchDiv.index = 1;
         map.controls[google.maps.ControlPosition.TOP_LEFT].push(userSearchDiv);
 
@@ -43,6 +50,45 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=drawing,p
         most_tweets_link.index = 1;
         functionsDiv.appendChild(most_tweets_link);
         map.controls[google.maps.ControlPosition.BOTTOM_LEFT].push(functionsDiv);
+
+        // Draw Ellipse: Stolen from https://github.com/monkeyherder/v3-eshapes/blob/master/eshapes.js
+        function make_shape(point, r1, r2, r3, r4, rotation, vertexCount, strokeColour, strokeWeight, Strokepacity, fillColour, fillOpacity, opts, tilt) {
+            var rot = -rotation * Math.PI / 180;
+            var points = [];
+            var latConv =  google.maps.geometry.spherical.computeDistanceBetween(point, new google.maps.LatLng(point.lat() + 0.1, point.lng())) * 10;
+            var lngConv =  google.maps.geometry.spherical.computeDistanceBetween(point, new google.maps.LatLng(point.lat(), point.lng() + 0.1)) * 10;
+            var step = (360/vertexCount)||10;
+                
+            var flop = -1;
+            if (tilt) {
+                var I1 = 180 / vertexCount;
+            } else {
+                var  I1 = 0;
+            }
+            for(var i = I1; i <= 360.001 + I1; i += step) {
+                var r1a = flop ? r1 : r3;
+                var r2a = flop ? r2 : r4;
+                flop = -1 - flop;
+                var y = r1a * Math.cos(i * Math.PI/180);
+                var x = r2a * Math.sin(i * Math.PI/180);
+                var lng = (x * Math.cos(rot) - y * Math.sin(rot)) / lngConv;
+                var lat = (y * Math.cos(rot) + x * Math.sin(rot)) / latConv;
+
+                points.push(new google.maps.LatLng(point.lat() + lat, point.lng() + lng));
+            }
+            return (new google.maps.Polygon({paths: points,
+               strokeColor: strokeColour,
+               strokeWeight: strokeWeight,
+               strokeOpacity: Strokepacity,
+               fillColor: fillColour,
+               fillOpacity: fillOpacity}));
+        }
+
+
+        function make_ellipse(point, r1, r2, rotation, strokeColour, strokeWeight, Strokepacity, fillColour, fillOpacity, opts) {
+            rotation = rotation || 0;
+            return make_shape(point, r1, r2, r1, r2, rotation, 100, strokeColour, strokeWeight, Strokepacity, fillColour, fillOpacity, opts);
+        }
 
         // bind events
         google.maps.event.addDomListener(most_tweets_link, 'click', function() {
@@ -73,6 +119,34 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=drawing,p
                     }
                 });
             }
+        });
+        google.maps.event.addDomListener(ellipse_btn, 'click', function() {
+            $.ajax({
+                type: "get",
+                data: {user_screen_name: $("#user-screen-name-input").val()},
+                url: $SCRIPT_ROOT + "/get-user-tweet-range",
+                success: function (response) {
+                    // api.clearMap();
+                    api.addRange(response["tweet_range"]);
+                },
+                error: function () {
+                    console.log("ajax request failed for " + this.url);
+                }
+            });
+        });
+        google.maps.event.addDomListener(twt_btn, 'click', function() {
+            $.ajax({
+                type: "get",
+                data: {user_screen_name: $("#user-screen-name-input").val()},
+                url: $SCRIPT_ROOT + "/get-user-tweets",
+                success: function (response) {
+                    // api.clearMap();
+                    api.plotTweets(response["tweets"]);
+                },
+                error: function () {
+                    console.log("ajax request failed for " + this.url);
+                }
+            });
         });
 
         // get the default bounds for a google.maps.Rectangle
@@ -119,13 +193,29 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=drawing,p
             }
         }
 
+        function removeDots(key) {
+            if (key in marks) {
+                var dot_set = dots[key];
+                if (dot_set.length > 0) {
+                    for(var i = 0; i < dot_set.length; i++) {
+                        dot_set[i].setMap(null);
+                    }
+                }
+
+                delete dots[key];
+                console.log("removed " + key);
+                console.log(dots);
+            }
+        }
+
         function plotRange(tweet_range, zoom) {
             console.log("plotting range!");
             console.log(tweet_range);
 
             if(tweet_range !== null &&
-              tweet_range["50%radius"] !== null &&
-              tweet_range["90%radius"] !== null &&
+              tweet_range["sd_x"] !== null &&
+              tweet_range["sd_y"] !== null &&
+              tweet_range["angle"] !== null &&
               tweet_range["centroid"] !== null &&
               tweet_range["screen_name"] !== null &&
               tweet_range["most_common_neighborhood"] !== null) {
@@ -137,6 +227,11 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=drawing,p
                 var radius_50 = tweet_range["50%radius"];
                 var radius_90 = tweet_range["90%radius"];
                 var centroid = tweet_range["centroid"];
+
+                var sd_x = tweet_range["sd_x"];
+                var sd_y = tweet_range["sd_y"];
+                var angle = tweet_range["angle"];
+
                 var center = {lat: centroid[1], lng: centroid[0]};
 
                 //Put marker at centroid
@@ -149,7 +244,8 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=drawing,p
                                 prettyPrint(centroid[0]) + ")" +
                                 "<br /> 50%: " + radius_50 + ", 90%: " + radius_90;
                 attachTextToMarker(marker, userText);
-                //Construct the 50% circle
+
+                // Construct the 50% circle
                 var Circle50 = new google.maps.Circle({
                     strokeColor: '#FF0000',
                     strokeOpacity: 0.8,
@@ -172,12 +268,40 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=drawing,p
                     radius: radius_90 //in meters
                 });
 
-                marks[username] = {'markers': [marker], 'circles': [Circle50, Circle90]};
+                var point = new google.maps.LatLng(centroid[1], centroid[0]);
+                var ellipse1SD = make_ellipse(point, sd_x, sd_y, -angle, "#FF0000", 2, 0.8, "#FF0000", 0.5);
+                var ellipse2SD = make_ellipse(point, 2 * sd_x, 2 * sd_y, -angle, "#99FFFF", 2, 0.9, "#99FFFF", 0.5);
+                ellipse1SD.setMap(map);
+                ellipse2SD.setMap(map);
+
+                // var Circle1SD = new google.maps.Circle({
+                //     strokeColor: '#FF0000',
+                //     strokeOpacity: 0.8,
+                //     strokeWeight: 2,
+                //     fillColor: '#FF0000',
+                //     fillOpacity: 0.35,
+                //     map: map,
+                //     center: center,
+                //     radius: radius_50 //in meters
+                // });
+                // //Construct the 90% circle
+                // var Circle2SD = new google.maps.Circle({
+                //     strokeColor: '#99FFFF',
+                //     strokeOpacity: 0.9,
+                //     strokeWeight: 2,
+                //     fillColor: '#99FFFF',
+                //     fillOpacity: 0.2,
+                //     map: map,
+                //     center: center,
+                //     radius: radius_90 //in meters
+                // });
+
+                marks[username] = {'markers': [marker], 'circles': [Circle50, Circle90, ellipse1SD, ellipse2SD]};
 
                 if (zoom) {
                     //zoom bounds
-                    var southwest = new google.maps.LatLng(centroid[1]-radius_90/50000, centroid[0]-radius_90/50000);
-                    var northeast = new google.maps.LatLng(centroid[1]+radius_90/50000, centroid[0]+radius_90/50000);
+                    var southwest = new google.maps.LatLng(centroid[1]-2 * sd_x/50000, centroid[0]-2 * sd_x/50000);
+                    var northeast = new google.maps.LatLng(centroid[1]+2 * sd_x/50000, centroid[0]+2 * sd_x/50000);
                     var bounds = new google.maps.LatLngBounds();
 
                     map.setCenter(center);
@@ -194,6 +318,7 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=drawing,p
         function removeRange (username) {
             if (username !== null) {
                 removeMark(username);
+                removeDots(username);
                 $("#" + username + ".user-label").remove();
             }
         }
@@ -232,6 +357,9 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=drawing,p
                 for (var key in marks) {
                     removeMark(key);
                 }
+                for (var dotkey in dots) {
+                    removeDots(dotkey);
+                }
             },
 
             plotUsers: function (users) {
@@ -246,7 +374,7 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=drawing,p
             },
 
             plotTweets: function (tweets) {
-                if(tweets != null) {
+                if(tweets !== null) {
                     for (var i = 0; i < tweets.length; i++) {
                         api.plotTweet(tweets[i]);
                     }
@@ -254,9 +382,9 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=drawing,p
             },
 
             plotTweet: function (tweet) {
-                var latJitter = Math.random() * .005 - .0025;
-                var lngJitter = Math.random() * .005 - .0025;
-                if(tweet != null && tweet["geo"] != null && tweet["geo"]["coordinates"] != null) {
+                var latJitter = Math.random() * 0.005 - 0.0025;
+                var lngJitter = Math.random() * 0.005 - 0.0025;
+                if(tweet !== null && tweet["geo"] !== null && tweet["geo"]["coordinates"] !== null) {
                     var userGeoCoordData = tweet["geo"]["coordinates"];
                     var userMarker = new google.maps.Marker({
                         position: {lat: userGeoCoordData[0] + latJitter,
@@ -264,7 +392,8 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=drawing,p
                         map: map,
                         icon: redDotImg
                     });
-                    var userText = "<b>" + tweet["user"]["screen_name"] + "</b>: " + tweet["text"]
+                    var username = tweet["user"]["screen_name"];
+                    var userText = "<b>" + username + "</b>: " + tweet["text"]
                                  + "<br /> (" + prettyPrint(userGeoCoordData[0]) + ", "
                                  + prettyPrint(userGeoCoordData[1]) + ")";
                     attachTextToMarker(userMarker, userText);
@@ -274,7 +403,11 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=drawing,p
                     google.maps.event.addListener(userMarker, 'mouseout', function() {
                         userMarker.setIcon(redDotImg);
                     });
-                    markers.push(userMarker);
+                    if(username in dots) {
+                        dots[username].push(userMarker);
+                    } else {
+                        dots[username] = [userMarker];
+                    }
                 }
             },
 

@@ -101,8 +101,8 @@ def doAll():
     print "building indexes"
     db['tweet_pgh'].ensure_index('user.id')
 
-    user = db['user'].find({'_id': 1858933022})[0]
-    tweets = db['tweet_pgh'].find({'user.id':1858933022})
+    user = db['user_SDE'].find({'_id': 281296515})[0]
+    tweets = db['tweet_pgh'].find({'user.id':281296515})
     tweets = list(tweets)
     screen_name = get_screen_name(tweets)
     print "user: " + screen_name
@@ -114,7 +114,7 @@ def doAll():
     centroid_sd = generate_centroids_and_sd(tweets)
     user.update(centroid_sd)
     print user
-    db.user.save(user)
+    db.user_SDE.save(user)
     '''
     for user in db['user'].find().batch_size(100):
         tweets = db['tweet_pgh'].find({'user.id':user['_id']})

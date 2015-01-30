@@ -51,7 +51,7 @@ def get_user_tweet_range():
     if user_screen_name == '':
         return jsonify([])
 
-    cursor = db['user'].find_one({'screen_name': user_screen_name})
+    cursor = db['user_SDE'].find_one({'screen_name': user_screen_name})
     cursor = to_serializable(cursor)
     print cursor
     return jsonify(tweet_range=cursor)

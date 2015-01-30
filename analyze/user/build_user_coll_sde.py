@@ -8,7 +8,7 @@
 # - 90% radius (90% of their tweets are inside this circle)
 
 import geojson, pymongo, collections, cProfile, math
-from earth_distance import earth_delta_lat
+from earth_distance import earth_delta_lat, earth_delta_long
 import earth_distance
 
 dbclient = pymongo.MongoClient('localhost', 27017)
@@ -25,8 +25,10 @@ def dist(c1, c2):
 # given one user's tweets, return the centroid and radii
 def generate_centroids_and_sd(tweets):
     coords = []
+    # (long, lat)
     for tweet in tweets:
         if tweet and tweet['coordinates'] and tweet['coordinates']['coordinates']:
+            print tweet['text']
             coords += [tweet['coordinates']['coordinates']]
 
     if len(coords) == 0:
@@ -44,8 +46,8 @@ def generate_centroids_and_sd(tweets):
     N = len(coords)
     print coords
     print centroid
-    delta_x = [earth_delta_lat(coord[0], mean_x) for coord in coords]
-    delta_y = [earth_delta_lat(coord[1], mean_y) for coord in coords] # TODO: use earth_delta_long after fixing bug
+    delta_x = [earth_delta_long(coord[0], mean_x) for coord in coords]
+    delta_y = [earth_delta_lat(coord[1], mean_y) for coord in coords]
     print delta_x, delta_y
     sum_delta_squares_x = sum([x ** 2 for x in delta_x])
     sum_delta_squares_y = sum([y ** 2 for y in delta_y])
@@ -63,12 +65,14 @@ def generate_centroids_and_sd(tweets):
 
     cos_angle = math.cos(angle)
     sin_angle = math.sin(angle)
-    '''
     sd_x = [(delta_x[i] * cos_angle - delta_y[i] * sin_angle) ** 2 for i in range(0, N)]
     sd_y = [(delta_x[i] * sin_angle - delta_y[i] * cos_angle) ** 2 for i in range(0, N)]
+    print "new delta X: ", [(delta_x[i] * cos_angle - delta_y[i] * sin_angle) for i in range(0, N)]
+    print "new delta Y: ", [(delta_x[i] * sin_angle - delta_y[i] * cos_angle) for i in range(0, N)]
+    print "sd sums:", sum(sd_x), sum(sd_y)
 
-    sd_x = math.sqrt(2 * sum(sd_x) / (N-2))
-    sd_y = math.sqrt(2 * sum(sd_y) / (N-2))
+    sd_x = math.sqrt(sum(sd_x) / N)
+    sd_y = math.sqrt(sum(sd_y) / N)
     '''
     sum_xy = [delta_x[i] * delta_y[i] for i in range(0, N)]
     sum_xy = sum(sum_xy)
@@ -76,6 +80,7 @@ def generate_centroids_and_sd(tweets):
     sd_x = math.sqrt(sd_x / N)
     sd_y = (cos_angle ** 2) * sum_delta_squares_y + (sin_angle ** 2) * sum_delta_squares_x + math.sin(2 * angle) * sum_xy
     sd_y = math.sqrt(sd_y / N)
+    '''
     print sd_x, sd_y, angle
 
     results = {}
@@ -96,8 +101,8 @@ def doAll():
     print "building indexes"
     db['tweet_pgh'].ensure_index('user.id')
 
-    user = db['user'].find({'_id': 2194548046})[0]
-    tweets = db['tweet_pgh'].find({'user.id':2194548046})
+    user = db['user'].find({'_id': 1858933022})[0]
+    tweets = db['tweet_pgh'].find({'user.id':1858933022})
     tweets = list(tweets)
     screen_name = get_screen_name(tweets)
     print "user: " + screen_name

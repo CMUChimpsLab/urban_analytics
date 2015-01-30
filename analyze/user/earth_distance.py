@@ -6,16 +6,17 @@ import math
 # Returns the distance between 2 points in meters, based on a spherical earth.
 # Sphere earth radius = 6371 km, from http://en.wikipedia.org/wiki/Earth_radius
 def earth_distance_m(lat1, long1, lat2, long2):
-    return distance_on_unit_sphere(lat1, long2, lat2, long2) * 6371 * 1000
+    return distance_on_unit_sphere(lat1, long1, lat2, long2) * 6371 * 1000
 
 def earth_delta_lat(lat1, lat2):
     if lat1 < lat2:
         return -(earth_distance_m(lat1, 0, lat2, 0))
     return earth_distance_m(lat1, 0, lat2, 0)
 
-# TODO: this function is buggy. Always return 0.
-#def earth_dist_long(long1, long2):
-#    return earth_distance_m(0, long1, 0, long2)
+def earth_delta_long(long1, long2):
+    if long1 < long2:
+        return -(earth_distance_m(0, long1, 0, long2))
+    return earth_distance_m(0, long1, 0, long2)
 
 # Returns the distance between two points, based on a spherical earth, in units
 # of "earth radii".

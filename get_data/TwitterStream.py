@@ -276,8 +276,8 @@ if __name__ == '__main__':
     print "Getting stream in " + args.city + " on port " + str(args.mongo_port)
 
     timestamp = time.time()
-    errFile = open('logs/twitter_error_%s_%d.log'%(args.city, timestamp), 'w')
-    outFile = open('logs/twitter_output_%s_%d.log'%(args.city, timestamp), 'w')
+    errFile = open('/data/twitter_logs/error_%s_%d.log'%(args.city, timestamp), 'w')
+    outFile = open('/data/twitter_logs/output_%s_%d.log'%(args.city, timestamp), 'w')
     sys.stdout = outFile
     sys.stderr = errFile
 

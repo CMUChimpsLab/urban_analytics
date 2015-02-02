@@ -38,7 +38,7 @@ def index():
 
 @app.route('/get-all-tweets', methods=['GET'])
 def get_all_tweets():
-    cursor = db['tweet_pgh'].find({'$query': {}, '$maxTimeMS': 10000}).limit(2000)
+    cursor = db['tweet_pgh'].find({'$query': {}, '$maxTimeMS': 100000}).limit(2000)
     tweets=to_serializable_list(cursor)
     for tweet in tweets:
         tweet['coordinates']['coordinates'] = round_latlon(tweet['coordinates']['coordinates'])
@@ -84,7 +84,7 @@ def to_serializable_list(mongodb_cursor):
 def get_tweets_from_user(user_screen_name):
     cursor = db['tweet_pgh'].find({'$query': {'user.screen_name': user_screen_name},
                                         # '$orderBy': 'created_at',
-                                        '$maxTimeMS': 10000}).limit(2000)
+                                        '$maxTimeMS': 100000}).limit(2000)
     return cursor
 
 if __name__ == '__main__':
@@ -95,4 +95,4 @@ if __name__ == '__main__':
     db['tweet_pgh'].ensure_index('user.screen_name')
     init_tweets_and_responses()
     print 'indexes done, starting server'
-    app.run(host='127.0.0.1', debug=True)  # listen on localhost only (for local testing)
+    app.run(host='0.0.0.0')

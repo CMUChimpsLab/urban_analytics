@@ -28,7 +28,6 @@ def generate_centroids_and_sd(tweets):
     # (long, lat)
     for tweet in tweets:
         if tweet and tweet['coordinates'] and tweet['coordinates']['coordinates']:
-            print tweet['text']
             coords += [tweet['coordinates']['coordinates']]
 
     if len(coords) == 0:
@@ -44,19 +43,14 @@ def generate_centroids_and_sd(tweets):
     # http://onlinelibrary.wiley.com/store/10.1111/j.1538-4632.2002.tb01082.x/asset/j.1538-4632.2002.tb01082.x.pdf;jsessionid=36C968AA032165BEF026659D0D9E0E7B.f01t02?v=1&t=i3m3hyxt&s=48d9fe847096d8af0acc37302fd1780c12dab77e
     mean_x, mean_y = centroid
     N = len(coords)
-    print coords
-    print centroid
     delta_x = [earth_delta_long(coord[0], mean_x) for coord in coords]
     delta_y = [earth_delta_lat(coord[1], mean_y) for coord in coords]
-    print delta_x, delta_y
     sum_delta_squares_x = sum([x ** 2 for x in delta_x])
     sum_delta_squares_y = sum([y ** 2 for y in delta_y])
-    print sum_delta_squares_x, sum_delta_squares_y, N
     angle_A = sum_delta_squares_x - sum_delta_squares_y
     angle_B = (sum_delta_squares_x - sum_delta_squares_y) ** 2 + 4 * ((sum([delta_x[i] * delta_y[i] for i in range(0, N)])) ** 2)
     angle_B = math.sqrt(angle_B)
     angle_C = 2 * (sum([delta_x[i] * delta_y[i] for i in range(0, len(delta_x))]))
-    print angle_A, angle_B, angle_C
     if angle_C == 0:
         angle = 0 # TODO: or pi/2 ...
     else:
@@ -67,9 +61,6 @@ def generate_centroids_and_sd(tweets):
     sin_angle = math.sin(angle)
     sd_x = [(delta_x[i] * cos_angle - delta_y[i] * sin_angle) ** 2 for i in range(0, N)]
     sd_y = [(delta_x[i] * sin_angle - delta_y[i] * cos_angle) ** 2 for i in range(0, N)]
-    print "new delta X: ", [(delta_x[i] * cos_angle - delta_y[i] * sin_angle) for i in range(0, N)]
-    print "new delta Y: ", [(delta_x[i] * sin_angle - delta_y[i] * cos_angle) for i in range(0, N)]
-    print "sd sums:", sum(sd_x), sum(sd_y)
 
     sd_x = math.sqrt(sum(sd_x) / N)
     sd_y = math.sqrt(sum(sd_y) / N)
@@ -81,7 +72,6 @@ def generate_centroids_and_sd(tweets):
     sd_y = (cos_angle ** 2) * sum_delta_squares_y + (sin_angle ** 2) * sum_delta_squares_x + math.sin(2 * angle) * sum_xy
     sd_y = math.sqrt(sd_y / N)
     '''
-    print sd_x, sd_y, angle
 
     results = {}
     results['centroid'] = centroid
@@ -101,6 +91,7 @@ def doAll():
     print "building indexes"
     db['tweet_pgh'].ensure_index('user.id')
 
+    '''
     user = db['user_SDE'].find({'_id': 281296515})[0]
     tweets = db['tweet_pgh'].find({'user.id':281296515})
     tweets = list(tweets)
@@ -116,11 +107,10 @@ def doAll():
     print user
     db.user_SDE.save(user)
     '''
-    for user in db['user'].find().batch_size(100):
+    for user in db['user_SDE'].find().batch_size(100):
         tweets = db['tweet_pgh'].find({'user.id':user['_id']})
         tweets = list(tweets)
         screen_name = get_screen_name(tweets)
-        print "user: " + screen_name
         user['screen_name'] = screen_name
 
         num_tweets = len(tweets)
@@ -128,9 +118,7 @@ def doAll():
 
         centroid_sd = generate_centroids_and_sd(tweets)
         user.update(centroid_sd)
-        print user
-        db.user.save(user)
-    '''
+        db.user_SDE.save(user)
 
 if __name__ == '__main__':
     doAll()

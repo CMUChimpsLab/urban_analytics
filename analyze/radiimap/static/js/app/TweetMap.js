@@ -19,7 +19,7 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=geometry,
             zoom: 14,
         };
         var map = new google.maps.Map(canvas, mapOptions);
-
+        var heatmap;
         // add user search UI
         var input = document.createElement('input');
         input.setAttribute("id", "user-screen-name-input");
@@ -44,11 +44,19 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=geometry,
         // add function UI
         var functionsDiv = document.createElement('div');
         functionsDiv.setAttribute("id", "functionsDiv");
+
         var most_tweets_link = document.createElement('a');
         most_tweets_link.setAttribute("id", "most_tweets_link");
         most_tweets_link.innerText = "Get 10 Users Who Tweet The Most";
         most_tweets_link.index = 1;
         functionsDiv.appendChild(most_tweets_link);
+        functionsDiv.appendChild(document.createElement('br'));
+
+        var heatmap_link = document.createElement('a');
+        heatmap_link.setAttribute("id", "heatmap_link");
+        heatmap_link.innerText = "Heatmap";
+        heatmap_link.index = 1;
+        functionsDiv.appendChild(heatmap_link);
         map.controls[google.maps.ControlPosition.BOTTOM_LEFT].push(functionsDiv);
 
         // Draw Ellipse: Stolen from https://github.com/monkeyherder/v3-eshapes/blob/master/eshapes.js
@@ -97,6 +105,18 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=geometry,
                 url: $SCRIPT_ROOT + "/get-top-10-user-tweet-range",
                 success: function (response) {
                     api.addRanges(response["tweet_ranges"]);
+                },
+                error: function () {
+                    console.log("ajax request failed for " + this.url);
+                }
+            });
+        });
+        google.maps.event.addDomListener(heatmap_link, 'click', function() {
+            $.ajax({
+                type: "get",
+                url: $SCRIPT_ROOT + "/get-all-tweets",
+                success: function (response) {
+                    api.makeHeatMap(response["tweets"]);
                 },
                 error: function () {
                     console.log("ajax request failed for " + this.url);
@@ -436,6 +456,23 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=geometry,
                         sw_lat: selectedAreaSW.lat(),
                         sw_lng: selectedAreaSW.lng()
                 };
+            },
+
+            makeHeatMap: function (tweets) {
+                var tweetData = [];
+                for (var tweet in tweets) {
+                    if (tweets[tweet]["geo"] !== null && tweets[tweet]["geo"]["coordinates"] !== null) {
+                         tweetData.push( new google.maps.LatLng(tweets[tweet]["geo"]["coordinates"][0], tweets[tweet]["geo"]["coordinates"][1]) );
+                    }
+                }
+                console.log(tweetData.length);
+                var pointArray = new google.maps.MVCArray(tweetData);
+                heatmap = new google.maps.visualization.HeatmapLayer({
+                    data: pointArray,
+                });
+                heatmap.set('opacity', 1);
+                heatmap.set('radius', 20);
+                heatmap.setMap(map);
             }
         };
 

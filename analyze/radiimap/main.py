@@ -27,7 +27,7 @@ def index():
 
 @app.route('/get-all-tweets', methods=['GET'])
 def get_all_tweets():
-    cursor = db['tweet_pgh'].find({'$query': {}, '$maxTimeMS': 10000}).limit(2000)
+    cursor = db['tweet_pgh'].find({'$query': {}, '$maxTimeMS': 10000}).limit(10000)
     return jsonify(tweets=to_serializable_list(cursor))
 
 @app.route('/get-all-tweets-from-area', methods=['GET'])

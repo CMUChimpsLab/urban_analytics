@@ -181,10 +181,10 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=geometry,
                     }
                 }
 
-                var circles = mark['circles'];
-                if(circles.length > 0) {
-                    for(var j = 0; j < circles.length; j++) {
-                        circles[j].setMap(null);
+                var ellipses = mark['ellipses'];
+                if(ellipses.length > 0) {
+                    for(var j = 0; j < ellipses.length; j++) {
+                        ellipses[j].setMap(null);
                     }
                 }
                 delete marks[key];
@@ -244,7 +244,8 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=geometry,
                                 prettyPrint(centroid[0]) + ")" +
                                 "<br /> 50%: " + radius_50 + ", 90%: " + radius_90;
                 attachTextToMarker(marker, userText);
-
+               
+                /* don't need circles anymore - using ellipses instead
                 // Construct the 50% circle
                 var Circle50 = new google.maps.Circle({
                     strokeColor: '#FF0000',
@@ -267,6 +268,7 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=geometry,
                     center: center,
                     radius: radius_90 //in meters
                 });
+               */
 
                 var point = new google.maps.LatLng(centroid[1], centroid[0]);
                 var ellipse1SD = make_ellipse(point, sd_x, sd_y, -angle, "#FF0000", 2, 0.8, "#FF0000", 0.5);
@@ -274,29 +276,8 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=geometry,
                 ellipse1SD.setMap(map);
                 ellipse2SD.setMap(map);
 
-                // var Circle1SD = new google.maps.Circle({
-                //     strokeColor: '#FF0000',
-                //     strokeOpacity: 0.8,
-                //     strokeWeight: 2,
-                //     fillColor: '#FF0000',
-                //     fillOpacity: 0.35,
-                //     map: map,
-                //     center: center,
-                //     radius: radius_50 //in meters
-                // });
-                // //Construct the 90% circle
-                // var Circle2SD = new google.maps.Circle({
-                //     strokeColor: '#99FFFF',
-                //     strokeOpacity: 0.9,
-                //     strokeWeight: 2,
-                //     fillColor: '#99FFFF',
-                //     fillOpacity: 0.2,
-                //     map: map,
-                //     center: center,
-                //     radius: radius_90 //in meters
-                // });
-
-                marks[username] = {'markers': [marker], 'circles': [Circle50, Circle90, ellipse1SD, ellipse2SD]};
+                //marks[username] = {'markers': [marker], 'circles': [Circle50, Circle90, ellipse1SD, ellipse2SD]};
+                marks[username] = {'markers': [marker], 'ellipses': [ellipse1SD, ellipse2SD]};
 
                 if (zoom) {
                     //zoom bounds

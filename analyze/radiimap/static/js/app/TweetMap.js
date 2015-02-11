@@ -411,10 +411,9 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=geometry,
             },
 
             plotTweet: function (tweet) {
-                // var latJitter = Math.random() * 0.005 - 0.0025;
-                // var lngJitter = Math.random() * 0.005 - 0.0025;
-                // What are Jitters?????
-                var latJitter, lngJitter = 0;
+                var latJitter = Math.random() * 0.005 - 0.0025;
+                var lngJitter = Math.random() * 0.005 - 0.0025;
+                
                 if(tweet !== null && tweet["geo"] !== null && tweet["geo"]["coordinates"] !== null) {
                     var userGeoCoordData = tweet["geo"]["coordinates"];
                     var userMarker = new google.maps.Marker({
@@ -423,6 +422,7 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=geometry,
                         map: map,
                         icon: redDotImg
                     });
+                    
                     var username = tweet["user"]["screen_name"];
                     var userText = "<b>" + username + "</b>: " + tweet["text"]
                                  + "<br /> (" + prettyPrint(userGeoCoordData[0]) + ", "

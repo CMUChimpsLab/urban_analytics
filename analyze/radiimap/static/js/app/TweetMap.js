@@ -35,9 +35,14 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=geometry,
         twt_btn.setAttribute("id", "get-user-tweets-btn");
         twt_btn.innerText = "Tweets";
 
+        var heatmap_btn = document.createElement('button');
+        heatmap_btn.setAttribute("id","create-user-heatmap-btn");
+        heatmap_btn.innerText = "Heatmap";
+
         userSearchDiv.appendChild(input);
         userSearchDiv.appendChild(ellipse_btn);
         userSearchDiv.appendChild(twt_btn);
+        userSearchDiv.appendChild(heatmap_btn)
         userSearchDiv.index = 1;
         map.controls[google.maps.ControlPosition.TOP_LEFT].push(userSearchDiv);
 
@@ -54,7 +59,7 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=geometry,
 
         var heatmap_link = document.createElement('a');
         heatmap_link.setAttribute("id", "heatmap_link");
-        heatmap_link.innerText = "Heatmap";
+        heatmap_link.innerText = "Heatmap of Pittsburgh";
         heatmap_link.index = 1;
         functionsDiv.appendChild(heatmap_link);
         map.controls[google.maps.ControlPosition.BOTTOM_LEFT].push(functionsDiv);
@@ -168,6 +173,23 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=geometry,
                 }
             });
         });
+
+        google.maps.event.addDomListener(heatmap_btn, 'click', function() {
+            $.ajax({
+                type: "get",
+                data: {user_screen_name: $("#user-screen-name-input").val()},
+                url: $SCRIPT_ROOT + "/get-user-tweets",
+                success: function (response) {
+                    // api.clearMap();
+                    api.makeHeatMap(response["tweets"]);
+                },
+                error: function () {
+                    console.log("ajax request failed for " + this.url);
+                }
+            });
+        });
+
+
 
         // get the default bounds for a google.maps.Rectangle
         function getDefaultBounds(latitude, longitude) {
@@ -322,6 +344,10 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=geometry,
                 removeDots(username);
                 $("#" + username + ".user-label").remove();
             }
+        }
+
+        function removeHeatMap (){
+            heatmap.setMap(null);
         }
 
         function addUserLabel(username) {

@@ -58,6 +58,13 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=geometry,
         functionsDiv.appendChild(most_tweets_link);
         functionsDiv.appendChild(document.createElement('br'));
 
+        var ngbh_shadyside = document.createElement('a');
+        ngbh_shadyside.setAttribute("id", "ngbh_shadyside");
+        ngbh_shadyside.innerText = "range for shadyside ppl";
+        ngbh_shadyside.index = 1;
+        functionsDiv.appendChild(ngbh_shadyside);
+        functionsDiv.appendChild(document.createElement('br'));
+
         var heatmap_link = document.createElement('a');
         heatmap_link.setAttribute("id", "heatmap_link");
         heatmap_link.innerText = "Heatmap of Pittsburgh";
@@ -100,7 +107,7 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=geometry,
         }
 
 
-        function make_ellipse(point, r1, r2, rotation, strokeColour, strokeWeight, Strokepacity, fillColour, fillOpacity, opts) {
+        function make_ellipse(point, r2, r1, rotation, strokeColour, strokeWeight, Strokepacity, fillColour, fillOpacity, opts) {
             rotation = rotation || 0;
             return make_shape(point, r1, r2, r1, r2, rotation, 100, strokeColour, strokeWeight, Strokepacity, fillColour, fillOpacity, opts);
         }
@@ -176,6 +183,7 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=geometry,
             });
         });
 
+
         google.maps.event.addDomListener(heatmap_btn, 'click', function() {
             $.ajax({
                 type: "get",
@@ -191,7 +199,20 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=geometry,
             });
         });
 
-
+        google.maps.event.addDomListener(ngbh_shadyside, 'click', function() {
+            $.ajax({
+                type: "get",
+                data: {neighborhood: 'shadyside'},
+                url: $SCRIPT_ROOT + "/get-ngbh-range",
+                success: function (response) {
+                    // api.clearMap();
+                    api.addRange(response["result"]);
+                },
+                error: function () {
+                    console.log("ajax request failed for " + this.url);
+                }
+            });
+        });
 
         // get the default bounds for a google.maps.Rectangle
         function getDefaultBounds(latitude, longitude) {
@@ -202,7 +223,7 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=geometry,
         }
 
         function prettyPrint(num) {
-            return num.toFixed(4);
+            return num.toFixed(6);
         }
 
         function attachTextToMarker(marker, message) {
@@ -315,8 +336,8 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=geometry,
                */
 
                 var point = new google.maps.LatLng(centroid[1], centroid[0]);
-                var ellipse1SD = make_ellipse(point, sd_x, sd_y, -angle, "#FF0000", 2, 0.8, "#FF0000", 0.5);
-                var ellipse2SD = make_ellipse(point, 2 * sd_x, 2 * sd_y, -angle, "#99FFFF", 2, 0.9, "#99FFFF", 0.5);
+                var ellipse1SD = make_ellipse(point, sd_x, sd_y, angle, "#FF0000", 2, 0.8, "#FF0000", 0.5);
+                var ellipse2SD = make_ellipse(point, 2 * sd_x, 2 * sd_y, angle, "#99FFFF", 2, 0.9, "#99FFFF", 0.5);
                 ellipse1SD.setMap(map);
                 ellipse2SD.setMap(map);
 
@@ -413,7 +434,7 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=geometry,
             plotTweet: function (tweet) {
                 var latJitter = Math.random() * 0.005 - 0.0025;
                 var lngJitter = Math.random() * 0.005 - 0.0025;
-                
+
                 if(tweet !== null && tweet["geo"] !== null && tweet["geo"]["coordinates"] !== null) {
                     var userGeoCoordData = tweet["geo"]["coordinates"];
                     var userMarker = new google.maps.Marker({

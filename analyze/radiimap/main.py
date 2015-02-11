@@ -1,9 +1,12 @@
 #!/usr/bin/env python
 
 import os
+import sys
 import pymongo
 from flask import Flask, render_template, request, jsonify, json, url_for, flash, redirect
 from flask_debugtoolbar import DebugToolbarExtension
+sys.path.append('../user/')
+from build_user_coll_sde import generate_centroids_and_sd
 
 SITE_ROOT = os.path.realpath(os.path.dirname(__file__))
 # general flask app settings
@@ -55,6 +58,20 @@ def get_user_tweet_range():
     cursor = to_serializable(cursor)
     print cursor
     return jsonify(tweet_range=cursor)
+
+@app.route('/get-ngbh-range', methods=['GET'])
+def get_ngbh_range():
+    neighborhood = request.args.get('neighborhood', '', type=str)
+    if neighborhood == '':
+        return jsonify([])
+
+    users = db['user'].find({'most_common_neighborhood': 'Shadyside'})
+    print len(users)
+    tweets = []
+    for user in users:
+         tweets += db['tweet_pgh'].find({'user.screen_name': user['screen_name']})
+    result = generate_centroids_and_sd(tweets)
+    return jsonify(result=result)
 
 # Returns list of tweet ranges of 10 users who tweet the most
 @app.route('/get-top-10-user-tweet-range', methods=['GET'])

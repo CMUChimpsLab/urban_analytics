@@ -54,6 +54,7 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=geometry,
         most_tweets_link.setAttribute("id", "most_tweets_link");
         most_tweets_link.innerText = "Get 10 Users Who Tweet The Most";
         most_tweets_link.index = 1;
+        most_tweets_link.style.backgroundColor = "white";
         functionsDiv.appendChild(most_tweets_link);
         functionsDiv.appendChild(document.createElement('br'));
 
@@ -61,6 +62,7 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=geometry,
         heatmap_link.setAttribute("id", "heatmap_link");
         heatmap_link.innerText = "Heatmap of Pittsburgh";
         heatmap_link.index = 1;
+        heatmap_link.style.backgroundColor = "white";
         functionsDiv.appendChild(heatmap_link);
         map.controls[google.maps.ControlPosition.BOTTOM_LEFT].push(functionsDiv);
 

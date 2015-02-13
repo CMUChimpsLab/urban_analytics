@@ -52,12 +52,46 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=geometry,
 
         var ngbh_input = document.createElement('select');
         ngbh_input.setAttribute("id","ngbh-input");
+        ngbh_input.appendChild(new Option("Allegheny Center","Allegheny Center"));
+        ngbh_input.appendChild(new Option("Allegheny West","Allgheny West"));
+        ngbh_input.appendChild(new Option("Bloomfield","Bloomfield"));
         ngbh_input.appendChild(new Option("Bluff","Bluff"));
-        ngbh_input.appendChild(new Option("Central Business District","Central Business District")); 
+        ngbh_input.appendChild(new Option("Brighton Heights","Brighton Heights"));
+        ngbh_input.appendChild(new Option("Brookline","Brookline"));
+        ngbh_input.appendChild(new Option("Central Business District","Central Business District"));
+        ngbh_input.appendChild(new Option("Crafton Heights","Crafton Heights"));
+        ngbh_input.appendChild(new Option("Duquesne Heights","Duquesne Heights"));
+        ngbh_input.appendChild(new Option("East Liberty","Easy Liberty"));
+        ngbh_input.appendChild(new Option("Elliott","Elliott"));
+        ngbh_input.appendChild(new Option("Friendship","Friendship"));
+        ngbh_input.appendChild(new Option("Garfield","Garfield"));
+        ngbh_input.appendChild(new Option("Greenfield","Greenfield"));
+        ngbh_input.appendChild(new Option("Hazelwood","Hazelwood"));
+        ngbh_input.appendChild(new Option("Highland Park","Highland Park"));
+        ngbh_input.appendChild(new Option("Homewood North","Homewood North"));
+        ngbh_input.appendChild(new Option("Lincoln-Lemington-Belmar","Lincoln-Lemington-Belmar"));
+        ngbh_input.appendChild(new Option("Lower Lawrenceville","Lower Lawrenceville"));
+        ngbh_input.appendChild(new Option("Mount Washington","Mount Washington"));
+        ngbh_input.appendChild(new Option("North Shore","North Shore"));
         ngbh_input.appendChild(new Option("Oakland - Central","Central Oakland"));
+        ngbh_input.appendChild(new Option("Oakland - North","North Oakland"));
+        ngbh_input.appendChild(new Option("Oakland - South","South Oakland"));
         ngbh_input.appendChild(new Option("Oakland - West","West Oakland"));
-        ngbh_input.appendChild(new Option("Strip District","Strip District"));
+        ngbh_input.appendChild(new Option("Perry North","Perry North"));
+        ngbh_input.appendChild(new Option("Point Breeze","Point Breeze"));
+        ngbh_input.appendChild(new Option("Regent Square","Regent Square"));
         ngbh_input.appendChild(new Option("Shadyside","Shadyside"));
+        ngbh_input.appendChild(new Option("South Shore","South Shore"));
+        ngbh_input.appendChild(new Option("South Side Flats","South Side Flats"));
+        ngbh_input.appendChild(new Option("South Side Slopes","South Side Slopes"));
+        ngbh_input.appendChild(new Option("Spring Hill - City View", "Spring Hill - City View"));
+        ngbh_input.appendChild(new Option("Strip District","Strip District"));
+        ngbh_input.appendChild(new Option("Squirrel Hill North","Squirrel Hill North"));
+        ngbh_input.appendChild(new Option("Squirrel Hill South","Squirrel Hill South"));
+        //had to comment these out or else the map won't load...too many options??
+        //ngbh_input.appendChild(new Option("Terrace Village","Terrace Village");
+        //ngbh_input.appendChild(new Option("Upper Lawrenceville","Upper Lawrenceville"));
+        //ngbh_input.appendChild(new Option("Westwood","Westwood"));
        
         var ngbh_ellipse_btn = document.createElement('button');
         ngbh_ellipse_btn.setAttribute("id", "get-ngbh-tweet-range-btn");

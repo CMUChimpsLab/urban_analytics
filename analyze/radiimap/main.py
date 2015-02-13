@@ -27,7 +27,6 @@ db = db_client['tweet']
 def index():
     return render_template('main.html')
 
-
 @app.route('/get-all-tweets', methods=['GET'])
 def get_all_tweets():
     cursor = db['tweet_pgh'].find({'$query': {}, '$maxTimeMS': 10000}).limit(10000)
@@ -59,14 +58,27 @@ def get_user_tweet_range():
     print cursor
     return jsonify(tweet_range=cursor)
 
+@app.route('/get-ngbh-tweets', methods=['GET'])
+def get_ngbh_tweets():
+    neighborhood = request.args.get('neighborhood', '', type=str)
+    if neighborhood == '':
+        return jsonify([])
+
+    users = db['user'].find({'most_common_neighborhood': neighborhood}).limit(200)
+    #print len(users)
+    tweets = []
+    for user in users:
+         tweets += db['tweet_pgh'].find({'user.screen_name': user['screen_name']})
+    return jsonify(tweets=to_serializable_list(tweets))
+
 @app.route('/get-ngbh-range', methods=['GET'])
 def get_ngbh_range():
     neighborhood = request.args.get('neighborhood', '', type=str)
     if neighborhood == '':
         return jsonify([])
 
-    users = db['user'].find({'most_common_neighborhood': 'Shadyside'})
-    print len(users)
+    users = db['user'].find({'most_common_neighborhood': neighborhood}).limit(100)
+    #print len(users)
     tweets = []
     for user in users:
          tweets += db['tweet_pgh'].find({'user.screen_name': user['screen_name']})

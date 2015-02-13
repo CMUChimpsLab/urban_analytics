@@ -21,11 +21,12 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=geometry,
         var map = new google.maps.Map(canvas, mapOptions);
         var heatmap;
         // add user search UI
+        var userSearchDiv = document.createElement('div');
+        userSearchDiv.setAttribute("id", "userSearchDiv");
+
         var input = document.createElement('input');
         input.setAttribute("id", "user-screen-name-input");
         input.setAttribute("placeholder", "Twitter Screen Name");
-        var userSearchDiv = document.createElement('div');
-        userSearchDiv.setAttribute("id", "userSearchDiv");
 
         var ellipse_btn = document.createElement('button');
         ellipse_btn.setAttribute("id", "get-user-tweet-range-btn");
@@ -46,6 +47,38 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=geometry,
         userSearchDiv.index = 1;
         map.controls[google.maps.ControlPosition.TOP_LEFT].push(userSearchDiv);
 
+        var ngbhSearchDiv = document.createElement('div');
+        ngbhSearchDiv.setAttribute("id", "ngbhSearchDiv");
+
+        var ngbh_input = document.createElement('select');
+        ngbh_input.setAttribute("id","ngbh-input");
+        ngbh_input.appendChild(new Option("Bluff","Bluff"));
+        ngbh_input.appendChild(new Option("Central Business District","Central Business District")); 
+        ngbh_input.appendChild(new Option("Oakland - Central","Central Oakland"));
+        ngbh_input.appendChild(new Option("Oakland - West","West Oakland"));
+        ngbh_input.appendChild(new Option("Strip District","Strip District"));
+        ngbh_input.appendChild(new Option("Shadyside","Shadyside"));
+       
+        var ngbh_ellipse_btn = document.createElement('button');
+        ngbh_ellipse_btn.setAttribute("id", "get-ngbh-tweet-range-btn");
+        ngbh_ellipse_btn.innerText = "Ellipse";
+
+        var ngbh_twt_btn = document.createElement('button');
+        ngbh_twt_btn.setAttribute("id", "get-ngbh-tweets-btn");
+        ngbh_twt_btn.innerText = "Tweets";
+
+        var ngbh_heatmap_btn = document.createElement('button');
+        ngbh_heatmap_btn.setAttribute("id","create-ngbh-heatmap-btn");
+        ngbh_heatmap_btn.innerText = "Heatmap";
+ 
+        ngbhSearchDiv.appendChild(ngbh_input);
+        ngbhSearchDiv.appendChild(ngbh_ellipse_btn);
+        ngbhSearchDiv.appendChild(ngbh_twt_btn);
+        ngbhSearchDiv.appendChild(ngbh_heatmap_btn);
+        ngbhSearchDiv.index = 1;
+        ngbhSearchDiv.style.paddingTop = "20px";
+        map.controls[google.maps.ControlPosition.TOP_RIGHT].push(ngbhSearchDiv);
+
         // add function UI
         var functionsDiv = document.createElement('div');
         functionsDiv.setAttribute("id", "functionsDiv");
@@ -56,13 +89,6 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=geometry,
         most_tweets_link.index = 1;
         most_tweets_link.style.backgroundColor = "white";
         functionsDiv.appendChild(most_tweets_link);
-        functionsDiv.appendChild(document.createElement('br'));
-
-        var ngbh_shadyside = document.createElement('a');
-        ngbh_shadyside.setAttribute("id", "ngbh_shadyside");
-        ngbh_shadyside.innerText = "range for shadyside ppl";
-        ngbh_shadyside.index = 1;
-        functionsDiv.appendChild(ngbh_shadyside);
         functionsDiv.appendChild(document.createElement('br'));
 
         var heatmap_link = document.createElement('a');
@@ -137,9 +163,10 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=geometry,
                 }
             });
         });
+        
         google.maps.event.addDomListener(input, 'keyup', function() {
             if(event.keyCode == 13){
-                // $("#get-user-tweet-range-btn").click();
+                // if you press ENTER
                 $.ajax({
                     type: "get",
                     data: {user_screen_name: $("#user-screen-name-input").val()},
@@ -154,7 +181,8 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=geometry,
                 });
             }
         });
-        google.maps.event.addDomListener(ellipse_btn, 'click', function() {
+       
+         google.maps.event.addDomListener(ellipse_btn, 'click', function() {
             $.ajax({
                 type: "get",
                 data: {user_screen_name: $("#user-screen-name-input").val()},
@@ -168,6 +196,7 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=geometry,
                 }
             });
         });
+        
         google.maps.event.addDomListener(twt_btn, 'click', function() {
             $.ajax({
                 type: "get",
@@ -183,7 +212,6 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=geometry,
             });
         });
 
-
         google.maps.event.addDomListener(heatmap_btn, 'click', function() {
             $.ajax({
                 type: "get",
@@ -198,11 +226,30 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=geometry,
                 }
             });
         });
+        //neighborhood bindings 
 
-        google.maps.event.addDomListener(ngbh_shadyside, 'click', function() {
+        google.maps.event.addDomListener(ngbh_input, 'keyup', function() {
+            if(event.keyCode == 13){
+                // if press ENTER
+                $.ajax({
+                    type: "get",
+                    data: {neighborhood: $("#ngbh-input").val()},
+                    url: $SCRIPT_ROOT + "/get-ngbh-range",
+                    success: function (response) {
+                        // api.clearMap();
+                        api.addRange(response["result"]);
+                    },
+                    error: function () {
+                        console.log("ajax request failed for " + this.url);
+                    }
+                });
+            }
+        });
+
+        google.maps.event.addDomListener(ngbh_ellipse_btn, 'click', function() {
             $.ajax({
                 type: "get",
-                data: {neighborhood: 'shadyside'},
+                data: {neighborhood: $("#ngbh-input").val()},
                 url: $SCRIPT_ROOT + "/get-ngbh-range",
                 success: function (response) {
                     // api.clearMap();
@@ -213,6 +260,37 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=geometry,
                 }
             });
         });
+       
+         google.maps.event.addDomListener(ngbh_twt_btn, 'click', function() {
+            $.ajax({
+                type: "get",
+                data: {neighborhood: $("#ngbh-input").val()},
+                url: $SCRIPT_ROOT + "/get-ngbh-tweets",
+                success: function (response) {
+                    // api.clearMap();
+                    api.plotTweets(response["tweets"]);
+                },
+                error: function () {
+                    console.log("ajax request failed for " + this.url);
+                }
+            });
+        });
+
+        google.maps.event.addDomListener(ngbh_heatmap_btn, 'click', function() {
+            $.ajax({
+                type: "get",
+                data: {neighborhood: $("#ngbh-input").val()},
+                url: $SCRIPT_ROOT + "/get-ngbh-tweets",
+                success: function (response) {
+                    // api.clearMap();
+                    api.makeHeatMap(response["tweets"]);
+                },
+                error: function () {
+                    console.log("ajax request failed for " + this.url);
+                }
+            });
+        });
+
 
         // get the default bounds for a google.maps.Rectangle
         function getDefaultBounds(latitude, longitude) {

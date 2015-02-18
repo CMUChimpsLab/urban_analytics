@@ -19,13 +19,14 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=geometry,
             zoom: 14,
         };
         var map = new google.maps.Map(canvas, mapOptions);
-
+        var heatmap;
         // add user search UI
+        var userSearchDiv = document.createElement('div');
+        userSearchDiv.setAttribute("id", "userSearchDiv");
+
         var input = document.createElement('input');
         input.setAttribute("id", "user-screen-name-input");
         input.setAttribute("placeholder", "Twitter Screen Name");
-        var userSearchDiv = document.createElement('div');
-        userSearchDiv.setAttribute("id", "userSearchDiv");
 
         var ellipse_btn = document.createElement('button');
         ellipse_btn.setAttribute("id", "get-user-tweet-range-btn");
@@ -35,20 +36,101 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=geometry,
         twt_btn.setAttribute("id", "get-user-tweets-btn");
         twt_btn.innerText = "Tweets";
 
+        var heatmap_btn = document.createElement('button');
+        heatmap_btn.setAttribute("id","create-user-heatmap-btn");
+        heatmap_btn.innerText = "Heatmap";
+
         userSearchDiv.appendChild(input);
         userSearchDiv.appendChild(ellipse_btn);
         userSearchDiv.appendChild(twt_btn);
+        userSearchDiv.appendChild(heatmap_btn)
         userSearchDiv.index = 1;
         map.controls[google.maps.ControlPosition.TOP_LEFT].push(userSearchDiv);
+
+        var ngbhSearchDiv = document.createElement('div');
+        ngbhSearchDiv.setAttribute("id", "ngbhSearchDiv");
+
+        var ngbh_input = document.createElement('select');
+        ngbh_input.setAttribute("id","ngbh-input");
+        ngbh_input.appendChild(new Option("Allegheny Center","Allegheny Center"));
+        ngbh_input.appendChild(new Option("Allegheny West","Allgheny West"));
+        ngbh_input.appendChild(new Option("Bloomfield","Bloomfield"));
+        ngbh_input.appendChild(new Option("Bluff","Bluff"));
+        ngbh_input.appendChild(new Option("Brighton Heights","Brighton Heights"));
+        ngbh_input.appendChild(new Option("Brookline","Brookline"));
+        ngbh_input.appendChild(new Option("Central Business District","Central Business District"));
+        ngbh_input.appendChild(new Option("Crafton Heights","Crafton Heights"));
+        ngbh_input.appendChild(new Option("Duquesne Heights","Duquesne Heights"));
+        ngbh_input.appendChild(new Option("East Liberty","Easy Liberty"));
+        ngbh_input.appendChild(new Option("Elliott","Elliott"));
+        ngbh_input.appendChild(new Option("Friendship","Friendship"));
+        ngbh_input.appendChild(new Option("Garfield","Garfield"));
+        ngbh_input.appendChild(new Option("Greenfield","Greenfield"));
+        ngbh_input.appendChild(new Option("Hazelwood","Hazelwood"));
+        ngbh_input.appendChild(new Option("Highland Park","Highland Park"));
+        ngbh_input.appendChild(new Option("Homewood North","Homewood North"));
+        ngbh_input.appendChild(new Option("Lincoln-Lemington-Belmar","Lincoln-Lemington-Belmar"));
+        ngbh_input.appendChild(new Option("Lower Lawrenceville","Lower Lawrenceville"));
+        ngbh_input.appendChild(new Option("Mount Washington","Mount Washington"));
+        ngbh_input.appendChild(new Option("North Shore","North Shore"));
+        ngbh_input.appendChild(new Option("Oakland - Central","Central Oakland"));
+        ngbh_input.appendChild(new Option("Oakland - North","North Oakland"));
+        ngbh_input.appendChild(new Option("Oakland - South","South Oakland"));
+        ngbh_input.appendChild(new Option("Oakland - West","West Oakland"));
+        ngbh_input.appendChild(new Option("Perry North","Perry North"));
+        ngbh_input.appendChild(new Option("Point Breeze","Point Breeze"));
+        ngbh_input.appendChild(new Option("Regent Square","Regent Square"));
+        ngbh_input.appendChild(new Option("Shadyside","Shadyside"));
+        ngbh_input.appendChild(new Option("South Shore","South Shore"));
+        ngbh_input.appendChild(new Option("South Side Flats","South Side Flats"));
+        ngbh_input.appendChild(new Option("South Side Slopes","South Side Slopes"));
+        ngbh_input.appendChild(new Option("Spring Hill - City View", "Spring Hill - City View"));
+        ngbh_input.appendChild(new Option("Strip District","Strip District"));
+        ngbh_input.appendChild(new Option("Squirrel Hill North","Squirrel Hill North"));
+        ngbh_input.appendChild(new Option("Squirrel Hill South","Squirrel Hill South"));
+        //had to comment these out or else the map won't load...too many options??
+        //ngbh_input.appendChild(new Option("Terrace Village","Terrace Village");
+        //ngbh_input.appendChild(new Option("Upper Lawrenceville","Upper Lawrenceville"));
+        //ngbh_input.appendChild(new Option("Westwood","Westwood"));
+       
+        var ngbh_ellipse_btn = document.createElement('button');
+        ngbh_ellipse_btn.setAttribute("id", "get-ngbh-tweet-range-btn");
+        ngbh_ellipse_btn.innerText = "Ellipse";
+
+        var ngbh_twt_btn = document.createElement('button');
+        ngbh_twt_btn.setAttribute("id", "get-ngbh-tweets-btn");
+        ngbh_twt_btn.innerText = "Tweets";
+
+        var ngbh_heatmap_btn = document.createElement('button');
+        ngbh_heatmap_btn.setAttribute("id","create-ngbh-heatmap-btn");
+        ngbh_heatmap_btn.innerText = "Heatmap";
+ 
+        ngbhSearchDiv.appendChild(ngbh_input);
+        ngbhSearchDiv.appendChild(ngbh_ellipse_btn);
+        ngbhSearchDiv.appendChild(ngbh_twt_btn);
+        ngbhSearchDiv.appendChild(ngbh_heatmap_btn);
+        ngbhSearchDiv.index = 1;
+        ngbhSearchDiv.style.paddingTop = "20px";
+        map.controls[google.maps.ControlPosition.TOP_RIGHT].push(ngbhSearchDiv);
 
         // add function UI
         var functionsDiv = document.createElement('div');
         functionsDiv.setAttribute("id", "functionsDiv");
+
         var most_tweets_link = document.createElement('a');
         most_tweets_link.setAttribute("id", "most_tweets_link");
         most_tweets_link.innerText = "Get 10 Users Who Tweet The Most";
         most_tweets_link.index = 1;
+        most_tweets_link.style.backgroundColor = "white";
         functionsDiv.appendChild(most_tweets_link);
+        functionsDiv.appendChild(document.createElement('br'));
+
+        var heatmap_link = document.createElement('a');
+        heatmap_link.setAttribute("id", "heatmap_link");
+        heatmap_link.innerText = "Heatmap of Pittsburgh";
+        heatmap_link.index = 1;
+        heatmap_link.style.backgroundColor = "white";
+        functionsDiv.appendChild(heatmap_link);
         map.controls[google.maps.ControlPosition.BOTTOM_LEFT].push(functionsDiv);
 
         // Draw Ellipse: Stolen from https://github.com/monkeyherder/v3-eshapes/blob/master/eshapes.js
@@ -85,7 +167,7 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=geometry,
         }
 
 
-        function make_ellipse(point, r1, r2, rotation, strokeColour, strokeWeight, Strokepacity, fillColour, fillOpacity, opts) {
+        function make_ellipse(point, r2, r1, rotation, strokeColour, strokeWeight, Strokepacity, fillColour, fillOpacity, opts) {
             rotation = rotation || 0;
             return make_shape(point, r1, r2, r1, r2, rotation, 100, strokeColour, strokeWeight, Strokepacity, fillColour, fillOpacity, opts);
         }
@@ -103,9 +185,22 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=geometry,
                 }
             });
         });
+        google.maps.event.addDomListener(heatmap_link, 'click', function() {
+            $.ajax({
+                type: "get",
+                url: $SCRIPT_ROOT + "/get-all-tweets",
+                success: function (response) {
+                    api.makeHeatMap(response["tweets"]);
+                },
+                error: function () {
+                    console.log("ajax request failed for " + this.url);
+                }
+            });
+        });
+        
         google.maps.event.addDomListener(input, 'keyup', function() {
             if(event.keyCode == 13){
-                // $("#get-user-tweet-range-btn").click();
+                // if you press ENTER
                 $.ajax({
                     type: "get",
                     data: {user_screen_name: $("#user-screen-name-input").val()},
@@ -120,7 +215,8 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=geometry,
                 });
             }
         });
-        google.maps.event.addDomListener(ellipse_btn, 'click', function() {
+       
+         google.maps.event.addDomListener(ellipse_btn, 'click', function() {
             $.ajax({
                 type: "get",
                 data: {user_screen_name: $("#user-screen-name-input").val()},
@@ -134,6 +230,7 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=geometry,
                 }
             });
         });
+        
         google.maps.event.addDomListener(twt_btn, 'click', function() {
             $.ajax({
                 type: "get",
@@ -149,6 +246,86 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=geometry,
             });
         });
 
+        google.maps.event.addDomListener(heatmap_btn, 'click', function() {
+            $.ajax({
+                type: "get",
+                data: {user_screen_name: $("#user-screen-name-input").val()},
+                url: $SCRIPT_ROOT + "/get-user-tweets",
+                success: function (response) {
+                    // api.clearMap();
+                    api.makeHeatMap(response["tweets"]);
+                },
+                error: function () {
+                    console.log("ajax request failed for " + this.url);
+                }
+            });
+        });
+        //neighborhood bindings 
+
+        google.maps.event.addDomListener(ngbh_input, 'keyup', function() {
+            if(event.keyCode == 13){
+                // if press ENTER
+                $.ajax({
+                    type: "get",
+                    data: {neighborhood: $("#ngbh-input").val()},
+                    url: $SCRIPT_ROOT + "/get-ngbh-range",
+                    success: function (response) {
+                        // api.clearMap();
+                        api.addRange(response["result"]);
+                    },
+                    error: function () {
+                        console.log("ajax request failed for " + this.url);
+                    }
+                });
+            }
+        });
+
+        google.maps.event.addDomListener(ngbh_ellipse_btn, 'click', function() {
+            $.ajax({
+                type: "get",
+                data: {neighborhood: $("#ngbh-input").val()},
+                url: $SCRIPT_ROOT + "/get-ngbh-range",
+                success: function (response) {
+                    // api.clearMap();
+                    api.addRange(response["result"]);
+                },
+                error: function () {
+                    console.log("ajax request failed for " + this.url);
+                }
+            });
+        });
+       
+         google.maps.event.addDomListener(ngbh_twt_btn, 'click', function() {
+            $.ajax({
+                type: "get",
+                data: {neighborhood: $("#ngbh-input").val()},
+                url: $SCRIPT_ROOT + "/get-ngbh-tweets",
+                success: function (response) {
+                    // api.clearMap();
+                    api.plotTweets(response["tweets"]);
+                },
+                error: function () {
+                    console.log("ajax request failed for " + this.url);
+                }
+            });
+        });
+
+        google.maps.event.addDomListener(ngbh_heatmap_btn, 'click', function() {
+            $.ajax({
+                type: "get",
+                data: {neighborhood: $("#ngbh-input").val()},
+                url: $SCRIPT_ROOT + "/get-ngbh-tweets",
+                success: function (response) {
+                    // api.clearMap();
+                    api.makeHeatMap(response["tweets"]);
+                },
+                error: function () {
+                    console.log("ajax request failed for " + this.url);
+                }
+            });
+        });
+
+
         // get the default bounds for a google.maps.Rectangle
         function getDefaultBounds(latitude, longitude) {
             return new google.maps.LatLngBounds(
@@ -158,7 +335,7 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=geometry,
         }
 
         function prettyPrint(num) {
-            return num.toFixed(4);
+            return num.toFixed(6);
         }
 
         function attachTextToMarker(marker, message) {
@@ -181,10 +358,10 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=geometry,
                     }
                 }
 
-                var circles = mark['circles'];
-                if(circles.length > 0) {
-                    for(var j = 0; j < circles.length; j++) {
-                        circles[j].setMap(null);
+                var ellipses = mark['ellipses'];
+                if(ellipses.length > 0) {
+                    for(var j = 0; j < ellipses.length; j++) {
+                        ellipses[j].setMap(null);
                     }
                 }
                 delete marks[key];
@@ -244,7 +421,8 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=geometry,
                                 prettyPrint(centroid[0]) + ")" +
                                 "<br /> 50%: " + radius_50 + ", 90%: " + radius_90;
                 attachTextToMarker(marker, userText);
-
+               
+                /* don't need circles anymore - using ellipses instead
                 // Construct the 50% circle
                 var Circle50 = new google.maps.Circle({
                     strokeColor: '#FF0000',
@@ -267,36 +445,16 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=geometry,
                     center: center,
                     radius: radius_90 //in meters
                 });
+               */
 
                 var point = new google.maps.LatLng(centroid[1], centroid[0]);
-                var ellipse1SD = make_ellipse(point, sd_x, sd_y, -angle, "#FF0000", 2, 0.8, "#FF0000", 0.5);
-                var ellipse2SD = make_ellipse(point, 2 * sd_x, 2 * sd_y, -angle, "#99FFFF", 2, 0.9, "#99FFFF", 0.5);
+                var ellipse1SD = make_ellipse(point, sd_x, sd_y, angle, "#FF0000", 2, 0.8, "#FF0000", 0.5);
+                var ellipse2SD = make_ellipse(point, 2 * sd_x, 2 * sd_y, angle, "#99FFFF", 2, 0.9, "#99FFFF", 0.5);
                 ellipse1SD.setMap(map);
                 ellipse2SD.setMap(map);
 
-                // var Circle1SD = new google.maps.Circle({
-                //     strokeColor: '#FF0000',
-                //     strokeOpacity: 0.8,
-                //     strokeWeight: 2,
-                //     fillColor: '#FF0000',
-                //     fillOpacity: 0.35,
-                //     map: map,
-                //     center: center,
-                //     radius: radius_50 //in meters
-                // });
-                // //Construct the 90% circle
-                // var Circle2SD = new google.maps.Circle({
-                //     strokeColor: '#99FFFF',
-                //     strokeOpacity: 0.9,
-                //     strokeWeight: 2,
-                //     fillColor: '#99FFFF',
-                //     fillOpacity: 0.2,
-                //     map: map,
-                //     center: center,
-                //     radius: radius_90 //in meters
-                // });
-
-                marks[username] = {'markers': [marker], 'circles': [Circle50, Circle90, ellipse1SD, ellipse2SD]};
+                //marks[username] = {'markers': [marker], 'circles': [Circle50, Circle90, ellipse1SD, ellipse2SD]};
+                marks[username] = {'markers': [marker], 'ellipses': [ellipse1SD, ellipse2SD]};
 
                 if (zoom) {
                     //zoom bounds
@@ -321,6 +479,10 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=geometry,
                 removeDots(username);
                 $("#" + username + ".user-label").remove();
             }
+        }
+
+        function removeHeatMap (){
+            heatmap.setMap(null);
         }
 
         function addUserLabel(username) {
@@ -382,10 +544,9 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=geometry,
             },
 
             plotTweet: function (tweet) {
-                // var latJitter = Math.random() * 0.005 - 0.0025;
-                // var lngJitter = Math.random() * 0.005 - 0.0025;
-                // What are Jitters?????
-                var latJitter, lngJitter = 0;
+                var latJitter = Math.random() * 0.005 - 0.0025;
+                var lngJitter = Math.random() * 0.005 - 0.0025;
+
                 if(tweet !== null && tweet["geo"] !== null && tweet["geo"]["coordinates"] !== null) {
                     var userGeoCoordData = tweet["geo"]["coordinates"];
                     var userMarker = new google.maps.Marker({
@@ -394,6 +555,7 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=geometry,
                         map: map,
                         icon: redDotImg
                     });
+                    
                     var username = tweet["user"]["screen_name"];
                     var userText = "<b>" + username + "</b>: " + tweet["text"]
                                  + "<br /> (" + prettyPrint(userGeoCoordData[0]) + ", "
@@ -436,6 +598,23 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=geometry,
                         sw_lat: selectedAreaSW.lat(),
                         sw_lng: selectedAreaSW.lng()
                 };
+            },
+
+            makeHeatMap: function (tweets) {
+                var tweetData = [];
+                for (var tweet in tweets) {
+                    if (tweets[tweet]["geo"] !== null && tweets[tweet]["geo"]["coordinates"] !== null) {
+                         tweetData.push( new google.maps.LatLng(tweets[tweet]["geo"]["coordinates"][0], tweets[tweet]["geo"]["coordinates"][1]) );
+                    }
+                }
+                console.log(tweetData.length);
+                var pointArray = new google.maps.MVCArray(tweetData);
+                heatmap = new google.maps.visualization.HeatmapLayer({
+                    data: pointArray,
+                });
+                heatmap.set('opacity', 1);
+                heatmap.set('radius', 20);
+                heatmap.setMap(map);
             }
         };
 

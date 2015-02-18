@@ -4,10 +4,10 @@
 # Warning! This doesn't check if the tweets are already in there or not.
 # So it may create duplicates.
 
-import argparse, pymongo, psycopg2
+import argparse, pymongo, psycopg2, sys
 
 mongo_db = pymongo.MongoClient('localhost', 27017)['tweet']
-psql_conn = psycopg2.connect("dbname='tweet' user='dtasse' host='localhost'")
+psql_conn = psycopg2.connect("dbname='tweet' user='dantasse'")
 
 cur = psql_conn.cursor()
 
@@ -24,10 +24,16 @@ if __name__=='__main__':
         lon = tweet['coordinates']['coordinates'][0]
         created_at = tweet['created_at']
 
-        cur.execute("""INSERT INTO tweet_pgh(text, user_screen_name, coordinates, created_at)
-            VALUES (%s, %s, Point(%s, %s), %s)  """, \
-            (text, user_screen_name, lat, lon, created_at))
-        psql_conn.commit()
+        try:
+            cur.execute("""INSERT INTO tweet_pgh(text, user_screen_name, coordinates, created_at)
+                VALUES (%s, %s, Point(%s, %s), %s)  """, \
+                (text, user_screen_name, lat, lon, created_at))
+            psql_conn.commit()
+        except Exception as e:
+            print "Error on tweet from user " + user_screen_name
+            print sys.exc_info()[0]
+            print e
+
         counter += 1
         if counter % 1000 == 0:
             print str(counter) + " tweets entered"

@@ -3,9 +3,11 @@
 import os
 import sys
 import pymongo
+import random
 from flask import Flask, render_template, request, jsonify, json, url_for, flash, redirect
 from flask_debugtoolbar import DebugToolbarExtension
 sys.path.append('../user/')
+import build_user_collection as NGHD
 from build_user_coll_sde import generate_centroids_and_sd
 
 SITE_ROOT = os.path.realpath(os.path.dirname(__file__))
@@ -21,6 +23,26 @@ toolbar = DebugToolbarExtension(app)
 db_client = pymongo.MongoClient('localhost', 27017)
 db = db_client['tweet']
 
+def load_nghds(module):
+    print 'loading neighborhoods...'
+    module.nghds = module.load_nghds("../user/neighborhoods.json")
+    print 'done loading neighborhoods!'
+    return
+
+def random_sample(col, query, num):
+    cursor = db[col].find(query)
+    total = cursor.count()
+    print "col:" + str(total)
+    result = []
+    indices = set()
+    while len(result) < num:
+        random_num = random.randint(0, total)
+        while random_num in indices:
+            random_num = random.randint(0, total)
+        indices.add(random_num)
+        record = cursor[random_num]
+        result.append(record)
+    return result
 
 # This call kicks off all the main page rendering.
 @app.route('/')
@@ -60,15 +82,33 @@ def get_user_tweet_range():
 
 @app.route('/get-ngbh-tweets', methods=['GET'])
 def get_ngbh_tweets():
+    if not NGHD.nghds:
+        load_nghds(NGHD)
     neighborhood = request.args.get('neighborhood', '', type=str)
+    print request.args
     if neighborhood == '':
         return jsonify([])
 
-    users = db['user'].find({'most_common_neighborhood': neighborhood}).limit(200)
+    num_users = request.args.get('num_users', 10, type=int)
+    num_tweets_per_user = request.args.get('num_tweets_per_user', 10, type=int)
+    randomize = request.args.get('randomize', 'false', type=str)
+    if randomize == 'false': randomize = False
+    else: randomize = True
+
+    print 'randomized? ' + str(randomize)
+    if randomize:
+        users = random_sample('user', {'most_common_neighborhood': neighborhood}, num_users)
+    else:
+        users = db['user'].find({'most_common_neighborhood': neighborhood}).limit(num_users)
     #print len(users)
     tweets = []
     for user in users:
-         tweets += db['tweet_pgh'].find({'user.screen_name': user['screen_name']})
+         tmp = db['tweet_pgh'].find({'user.screen_name': user['screen_name']}).limit(num_tweets_per_user)
+         for t in tmp:
+             name = NGHD.get_neighborhood_name(NGHD.nghds, t["geo"]["coordinates"][1], t["geo"]["coordinates"][0])
+             t["neighborhood"] = name
+             tweets.append(t)
+    print "num tweets: " + str(len(tweets))
     return jsonify(tweets=to_serializable_list(tweets))
 
 @app.route('/get-ngbh-range', methods=['GET'])
@@ -145,4 +185,4 @@ if __name__ == '__main__':
     db['tweet_pgh'].ensure_index('geo.coordinates.0')
     db['tweet_pgh'].ensure_index('geo.coordinates.1')
     db['tweet_pgh'].ensure_index('user.screen_name')
-    app.run(host='0.0.0.0')  # listen on all public IPs
+    app.run(host='0.0.0.0', port=1025)  # listen on all public IPs

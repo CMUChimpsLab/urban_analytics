@@ -11,9 +11,13 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=geometry,
         var latitude = 40.4417, // default pittsburgh downtown center
             longitude = -80.0000;
         var marks = {};
-        var dots = {};
         var redDotImg = 'static/images/maps_measle_red.png';
         var blueDotImg = 'static/images/maps_measle_blue.png';
+        var greenDotImg = 'static/images/maps_measle_green.png';
+        var pinkDotImg = 'static/images/maps_measle_pink.png';
+        var yellowDotImg = 'static/images/maps_measle_yellow.png';
+        var availableColors = [redDotImg, blueDotImg, greenDotImg, pinkDotImg, yellowDotImg];
+        var groupDotColors = {};
         var mapOptions = {
             center: {lat: latitude, lng: longitude},
             zoom: 14,
@@ -104,11 +108,31 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=geometry,
         var ngbh_heatmap_btn = document.createElement('button');
         ngbh_heatmap_btn.setAttribute("id","create-ngbh-heatmap-btn");
         ngbh_heatmap_btn.innerText = "Heatmap";
+
+        var ngbh_randomize = document.createElement('input');
+        ngbh_randomize.setAttribute("id","ngbh-randomize-checkbox");
+        ngbh_randomize.setAttribute("type","checkbox");
+
+        var ngbh_user_num = document.createElement('input');
+        ngbh_user_num.setAttribute("id","ngbh-user-num-input");
+        ngbh_user_num.setAttribute("placeholder","# of users in ngbh");
+        ngbh_user_num.setAttribute("value","10");
+
+        var ngbh_num_tweets_per_user = document.createElement('input');
+        ngbh_num_tweets_per_user.setAttribute("id","ngbh-num-tweets-per-user-input");
+        ngbh_user_num.setAttribute("placeholder", "# of tweets per user");
+        ngbh_num_tweets_per_user.setAttribute("value","10");
  
         ngbhSearchDiv.appendChild(ngbh_input);
         ngbhSearchDiv.appendChild(ngbh_ellipse_btn);
         ngbhSearchDiv.appendChild(ngbh_twt_btn);
         ngbhSearchDiv.appendChild(ngbh_heatmap_btn);
+        ngbhSearchDiv.appendChild(ngbh_randomize);
+        ngbhSearchDiv.appendChild(document.createTextNode('randomize'));
+        ngbhSearchDiv.appendChild(document.createElement('br'));
+        ngbhSearchDiv.appendChild(ngbh_user_num);
+        ngbhSearchDiv.appendChild(ngbh_num_tweets_per_user);
+        
         ngbhSearchDiv.index = 1;
         ngbhSearchDiv.style.paddingTop = "20px";
         map.controls[google.maps.ControlPosition.TOP_RIGHT].push(ngbhSearchDiv);
@@ -123,6 +147,14 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=geometry,
         most_tweets_link.index = 1;
         most_tweets_link.style.backgroundColor = "white";
         functionsDiv.appendChild(most_tweets_link);
+        functionsDiv.appendChild(document.createElement('br'));
+
+        var remove_heatmap_link = document.createElement('a');
+        remove_heatmap_link.setAttribute("id", "remove_heatmap_link");
+        remove_heatmap_link.innerText = "Remove Heatmap";
+        remove_heatmap_link.index = 1;
+        remove_heatmap_link.style.backgroundColor = "white";
+        functionsDiv.appendChild(remove_heatmap_link);
         functionsDiv.appendChild(document.createElement('br'));
 
         var heatmap_link = document.createElement('a');
@@ -185,6 +217,9 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=geometry,
                 }
             });
         });
+        google.maps.event.addDomListener(remove_heatmap_link, 'click', function() {
+            removeHeatMap();
+        });
         google.maps.event.addDomListener(heatmap_link, 'click', function() {
             $.ajax({
                 type: "get",
@@ -204,10 +239,10 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=geometry,
                 $.ajax({
                     type: "get",
                     data: {user_screen_name: $("#user-screen-name-input").val()},
-                    url: $SCRIPT_ROOT + "/get-user-tweet-range",
+                    url: $SCRIPT_ROOT + "/get-user-tweets",
                     success: function (response) {
                         // api.clearMap();
-                        api.addRange(response["tweet_range"]);
+                        api.makeHeatMap(response["tweets"]);
                     },
                     error: function () {
                         console.log("ajax request failed for " + this.url);
@@ -268,10 +303,10 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=geometry,
                 $.ajax({
                     type: "get",
                     data: {neighborhood: $("#ngbh-input").val()},
-                    url: $SCRIPT_ROOT + "/get-ngbh-range",
+                    url: $SCRIPT_ROOT + "/get-ngbh-tweets",
                     success: function (response) {
                         // api.clearMap();
-                        api.addRange(response["result"]);
+                        api.makeHeatMap(response["result"]);
                     },
                     error: function () {
                         console.log("ajax request failed for " + this.url);
@@ -296,12 +331,20 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=geometry,
         });
        
          google.maps.event.addDomListener(ngbh_twt_btn, 'click', function() {
+            var randomize = document.getElementById("ngbh-randomize-checkbox").checked;
+            var user_num = $("#ngbh-user-num-input").val();
+            var num_tweets_per_user = $("#ngbh-num-tweets-per-user-input").val();
+            console.log("randomize: " + randomize);
             $.ajax({
                 type: "get",
-                data: {neighborhood: $("#ngbh-input").val()},
+                data: { neighborhood: $("#ngbh-input").val(),
+                        randomize: randomize,
+                        user_num: user_num,
+                        num_tweets_per_user: num_tweets_per_user },
                 url: $SCRIPT_ROOT + "/get-ngbh-tweets",
                 success: function (response) {
                     // api.clearMap();
+                    console.log("Clicked btn. Received tweets. Plotting tweets. " + response["tweets"].length);
                     api.plotTweets(response["tweets"]);
                 },
                 error: function () {
@@ -311,9 +354,16 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=geometry,
         });
 
         google.maps.event.addDomListener(ngbh_heatmap_btn, 'click', function() {
+            var randomize = document.getElementById("ngbh-randomize-checkbox").checked;
+            var user_num = $("#ngbh-user-num-input").val();
+            var num_tweets_per_user = $("#ngbh-num-tweets-per-user-input").val();
+            console.log("randomize: " + randomize);
             $.ajax({
                 type: "get",
-                data: {neighborhood: $("#ngbh-input").val()},
+                data: { neighborhood: $("#ngbh-input").val(),
+                        randomize: randomize,
+                        user_num: user_num,
+                        num_tweets_per_user: num_tweets_per_user },
                 url: $SCRIPT_ROOT + "/get-ngbh-tweets",
                 success: function (response) {
                     // api.clearMap();
@@ -348,40 +398,73 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=geometry,
             });
         }
 
-        function removeMark(key) {
-            if (key in marks) {
-                var mark = marks[key];
-                var markers = mark['markers'];
-                if (markers.length > 0) {
-                    for(var i = 0; i < markers.length; i++) {
-                        markers[i].setMap(null);
+        /*
+          marks: groupname -> mark_type -> object array
+            - groupname: str (username, neighborhood, etc.)
+            - mark_type: str ("markers", "dots", "ellipses", etc.)
+        */
+
+        function groupExists(groupname) {
+            return groupname in marks;
+        }
+
+        function removeGroup(groupname) {
+            if (groupname in marks) {
+                var group = marks[groupname];
+
+                for(var mark_type in group) {
+                    var mark_objs = group[mark_type];
+                    for (var i = 0; i < mark_objs.length; i++) {
+                        mark_objs[i].setMap(null);
                     }
                 }
 
-                var ellipses = mark['ellipses'];
-                if(ellipses.length > 0) {
-                    for(var j = 0; j < ellipses.length; j++) {
-                        ellipses[j].setMap(null);
-                    }
-                }
-                delete marks[key];
-                console.log("removed " + key);
+                delete marks[groupname];
                 console.log(marks);
             }
         }
 
-        function removeDots(key) {
-            if (key in marks) {
-                var dot_set = dots[key];
-                if (dot_set.length > 0) {
-                    for(var i = 0; i < dot_set.length; i++) {
-                        dot_set[i].setMap(null);
+        function removeMarks(groupname, mark_type) {
+            if (groupname in marks && mark_type in marks[groupname]) {
+                var mark_set = marks[groupname][mark_type];
+                if (mark_set.length > 0) {
+                    for(var i = 0; i < mark_set.length; i++) {
+                        mark_set[i].setMap(null);
                     }
                 }
 
-                delete dots[key];
-                console.log("removed " + key);
-                console.log(dots);
+                delete marks[groupname][mark_type];
+                console.log(marks);
+            }
+        }
+
+        function addMark(marker, groupname, mark_type) {
+            groupname = typeof groupname !== 'undefined' ? groupname : "default";
+            mark_type = typeof mark_type !== 'undefined' ? mark_type : "markers";
+
+            if (mark_type == 'dots') {
+                if (groupname in groupDotColors) {
+                    marker.setIcon(groupDotColors[groupname]);
+                } else {
+                    if (availableColors.length == 0) {
+                        availableColors = [redDotImg, blueDotImg, greenDotImg, pinkDotImg, yellowDotImg];
+                    }
+                    var color = availableColors.pop();
+                    console.log(groupname + ": " + color);
+                    groupDotColors[groupname] = color;
+                    marker.setIcon(color);
+                }
+            }
+
+            if (groupname in marks) {
+                if (mark_type in marks[groupname]) {
+                    marks[groupname][mark_type].push(marker);
+                } else {
+                    marks[groupname][mark_type] = [marker]
+                }
+            } else {
+                marks[groupname] = {}
+                marks[groupname][mark_type] = [marker]
             }
         }
 
@@ -454,7 +537,9 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=geometry,
                 ellipse2SD.setMap(map);
 
                 //marks[username] = {'markers': [marker], 'circles': [Circle50, Circle90, ellipse1SD, ellipse2SD]};
-                marks[username] = {'markers': [marker], 'ellipses': [ellipse1SD, ellipse2SD]};
+                addMark(marker, username, 'markers');
+                addMark(ellipse1SD, username, 'ellipses');
+                addMark(ellipse2SD, username, 'ellipses');
 
                 if (zoom) {
                     //zoom bounds
@@ -472,12 +557,10 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=geometry,
             return null;
         }
 
-
-        function removeRange (username) {
-            if (username !== null) {
-                removeMark(username);
-                removeDots(username);
-                $("#" + username + ".user-label").remove();
+        function removeRange (groupname) {
+            if (groupname !== null) {
+                removeGroup(groupname);
+                $("#" + groupname.replace(/\ /g, "-") + ".user-label").remove();
             }
         }
 
@@ -485,7 +568,7 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=geometry,
             heatmap.setMap(null);
         }
 
-        function addUserLabel(username) {
+        function addUserLabel(username, num) {
             console.log("ADD USER LABEL " + username);
             if (username !== null) {
                 icon_src = document.getElementById("remove-icon").getAttribute("src");
@@ -497,13 +580,41 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=geometry,
                 });
 
                 var p = document.createElement('p');
-                p.id = username;
-                p.innerText = username;
+                p.id = username.replace(/\ /g, "-");
+                p.innerText = "(" + num + ") " + username;
                 p.className = "user-label";
                 p.appendChild(image);
                 userSearchDiv.appendChild(p);
             }
         }
+
+        function addOrUpdateUserLabel(username, delta) {
+            if (username != null) {
+                var obj = $("#" + username.replace(/\ /g, "-") + ".user-label");
+                console.log(obj);
+                if (obj.length != 0) {
+                    var text = obj.text();
+                    var rest = text.split(" ");
+                    var num = rest.shift();
+                    num = num.substr(1, num.length - 2);
+                    var new_num = parseInt(num) + delta;
+                    console.log("new inner text: " + "(" + new_num + ") " + rest.join(" "));
+                    obj.text("(" + new_num + ") " + rest.join(" "));
+
+                    icon_src = document.getElementById("remove-icon").getAttribute("src");
+                    var image = document.createElement('img');
+                    image.src = icon_src;
+                    image.className = "remove_icon";
+                    google.maps.event.addDomListener(image, 'click', function() {
+                        removeRange(username);
+                    });
+                    obj[0].appendChild(image);
+                } else {
+                    addUserLabel(username, delta);
+                }
+            }
+        }
+
 
         var api =  {
             setCenter: function (position) {
@@ -517,10 +628,7 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=geometry,
             clearMap: function () {
                 // remove previous markers from map and empty queriedUsersMarkers
                 for (var key in marks) {
-                    removeMark(key);
-                }
-                for (var dotkey in dots) {
-                    removeDots(dotkey);
+                    removeGroup(key);
                 }
             },
 
@@ -537,8 +645,18 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=geometry,
 
             plotTweets: function (tweets) {
                 if(tweets !== null) {
+                    var group = {};
                     for (var i = 0; i < tweets.length; i++) {
-                        api.plotTweet(tweets[i]);
+                        var groupname = api.plotTweet(tweets[i]);
+                        if (groupname in group) {
+                            group[groupname] += 1;
+                        } else {
+                            group[groupname] = 1;
+                        }
+                    }
+
+                    for (var name in group) {
+                        addOrUpdateUserLabel(name, group[name]);
                     }
                 }
             },
@@ -546,32 +664,31 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=geometry,
             plotTweet: function (tweet) {
                 var latJitter = Math.random() * 0.005 - 0.0025;
                 var lngJitter = Math.random() * 0.005 - 0.0025;
-
                 if(tweet !== null && tweet["geo"] !== null && tweet["geo"]["coordinates"] !== null) {
                     var userGeoCoordData = tweet["geo"]["coordinates"];
                     var userMarker = new google.maps.Marker({
                         position: {lat: userGeoCoordData[0] + latJitter,
                                    lng: userGeoCoordData[1] + lngJitter},
-                        map: map,
-                        icon: redDotImg
+                        map: map
                     });
-                    
+
                     var username = tweet["user"]["screen_name"];
                     var userText = "<b>" + username + "</b>: " + tweet["text"]
-                                 + "<br /> (" + prettyPrint(userGeoCoordData[0]) + ", "
+                                 + "<br /> (lat:" + prettyPrint(userGeoCoordData[0]) + ", lon:"
                                  + prettyPrint(userGeoCoordData[1]) + ")";
-                    attachTextToMarker(userMarker, userText);
-                    google.maps.event.addListener(userMarker, 'mouseover', function() {
-                        userMarker.setIcon(blueDotImg);
-                    });
-                    google.maps.event.addListener(userMarker, 'mouseout', function() {
-                        userMarker.setIcon(redDotImg);
-                    });
-                    if(username in dots) {
-                        dots[username].push(userMarker);
-                    } else {
-                        dots[username] = [userMarker];
+                    if(tweet["neighborhood"] !== null) {
+                        userText = userText + "<br />" + tweet["neighborhood"];
                     }
+                    attachTextToMarker(userMarker, userText);
+
+                    var groupname = '';
+                    if ("neighborhood" in tweet) {
+                        groupname = tweet["neighborhood"];
+                    } else {
+                        groupname = username;
+                    }
+                    addMark(userMarker, groupname, 'dots');
+                    return groupname;
                 }
             },
 
@@ -579,7 +696,7 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=geometry,
                 var username = plotRange(tweet_range, true);
                 console.log("addRange " + username);
                 if (username !== null) {
-                    addUserLabel(username);
+                    addUserLabel(username, -1);
                 }
             },
 
@@ -587,7 +704,7 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=geometry,
                 for (var i = 0; i < tweet_ranges.length; i++) {
                     var username = plotRange(tweet_ranges[i], false);
                     if (username !== null) {
-                        addUserLabel(username);
+                        addUserLabel(username, -1);
                     }
                 }
             },

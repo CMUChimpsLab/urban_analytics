@@ -89,13 +89,13 @@ def get_ngbh_tweets():
     if neighborhood == '':
         return jsonify([])
 
-    num_users = request.args.get('num_users', 10, type=int)
+    num_users = request.args.get('user_num', 10, type=int)
     num_tweets_per_user = request.args.get('num_tweets_per_user', 10, type=int)
     randomize = request.args.get('randomize', 'false', type=str)
     if randomize == 'false': randomize = False
     else: randomize = True
 
-    print 'randomized? ' + str(randomize)
+    print 'randomized? ' + str(randomize) + ', num users: ' + str(num_users) + ', num tweets per user: ' + str(num_tweets_per_user)
     if randomize:
         users = random_sample('user', {'most_common_neighborhood': neighborhood}, num_users)
     else:

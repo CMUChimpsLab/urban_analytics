@@ -120,7 +120,7 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=geometry,
 
         var ngbh_num_tweets_per_user = document.createElement('input');
         ngbh_num_tweets_per_user.setAttribute("id","ngbh-num-tweets-per-user-input");
-        ngbh_user_num.setAttribute("placeholder", "# of tweets per user");
+        ngbh_num_tweets_per_user.setAttribute("placeholder", "# of tweets per user");
         ngbh_num_tweets_per_user.setAttribute("value","10");
  
         ngbhSearchDiv.appendChild(ngbh_input);
@@ -662,13 +662,13 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=geometry,
             },
 
             plotTweet: function (tweet) {
-                var latJitter = Math.random() * 0.005 - 0.0025;
-                var lngJitter = Math.random() * 0.005 - 0.0025;
+                //var latJitter = Math.random() * 0.005 - 0.0025;
+                //var lngJitter = Math.random() * 0.005 - 0.0025;
                 if(tweet !== null && tweet["geo"] !== null && tweet["geo"]["coordinates"] !== null) {
                     var userGeoCoordData = tweet["geo"]["coordinates"];
                     var userMarker = new google.maps.Marker({
-                        position: {lat: userGeoCoordData[0] + latJitter,
-                                   lng: userGeoCoordData[1] + lngJitter},
+                        position: {lat: userGeoCoordData[0],
+                                   lng: userGeoCoordData[1]},
                         map: map
                     });
 

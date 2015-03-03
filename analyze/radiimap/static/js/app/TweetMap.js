@@ -163,7 +163,16 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=geometry,
         heatmap_link.index = 1;
         heatmap_link.style.backgroundColor = "white";
         functionsDiv.appendChild(heatmap_link);
+        functionsDiv.appendChild(document.createElement('br'));
+
+        var drawbins_link = document.createElement('a');
+        drawbins_link.setAttribute("id", "drawbins_link");
+        drawbins_link.innerText = "Draw Bins";
+        drawbins_link.index = 1;
+        drawbins_link.style.backgroundColor = "white";
+        functionsDiv.appendChild(drawbins_link);
         map.controls[google.maps.ControlPosition.BOTTOM_LEFT].push(functionsDiv);
+
 
         // Draw Ellipse: Stolen from https://github.com/monkeyherder/v3-eshapes/blob/master/eshapes.js
         function make_shape(point, r1, r2, r3, r4, rotation, vertexCount, strokeColour, strokeWeight, Strokepacity, fillColour, fillOpacity, opts, tilt) {
@@ -220,6 +229,13 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=geometry,
         google.maps.event.addDomListener(remove_heatmap_link, 'click', function() {
             removeHeatMap();
         });
+
+        google.maps.event.addDomListener(drawbins_link, 'click', function() {
+            drawBins();
+        });
+
+
+
         google.maps.event.addDomListener(heatmap_link, 'click', function() {
             $.ajax({
                 type: "get",
@@ -568,6 +584,34 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=geometry,
             heatmap.setMap(null);
         }
 
+        function drawLine(lat1, lng1, lat2, lng2) {
+             var line1Coordinates = [
+              new google.maps.LatLng(lat1, lng1),
+              new google.maps.LatLng(lat2, lng2)
+            ];
+            var line1 = new google.maps.Polyline({
+              path: line1Coordinates,
+              geodesic: true,
+              strokeColor: '#000000',
+              strokeOpacity: 0.3,
+              strokeWeight: 1
+            });
+            line1.setMap(map);
+
+        }
+
+        function drawBins () {
+
+        // Draw grid lines for our rectangular bins.
+        for (var lat = 40.2417; lat < 40.6417; lat += .001) {
+            drawLine(lat, -80.2, lat, -79.8);
+        }
+        for (var lng = -80.2; lng < -79.8; lng += .001) {
+            drawLine(40.2417, lng, 40.6417, lng);
+        }
+
+        }
+
         function addUserLabel(username, num) {
             console.log("ADD USER LABEL " + username);
             if (username !== null) {
@@ -733,6 +777,7 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=geometry,
                 heatmap.set('radius', 20);
                 heatmap.setMap(map);
             }
+
         };
 
         return api;

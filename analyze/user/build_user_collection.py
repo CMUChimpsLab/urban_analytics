@@ -15,8 +15,8 @@ db = dbclient['tweet']
 pittsburgh_outline = None # TODO ugh globals
 nghds = None # TODO ugh again
 
-def load_nghds():
-    neighborhoods = geojson.load(open('neighborhoods.json'))
+def load_nghds(json_file="neighborhoods.json"):
+    neighborhoods = geojson.load(open(json_file))
     nghds = neighborhoods['features']
     for nghd in nghds:
         nghd['shape'] = shapely.geometry.asShape(nghd.geometry)

@@ -1,5 +1,6 @@
 require.config({
     baseUrl: 'static/js',
+    urlArgs: 'bust=' + (new Date()).getTime(),
     // paths for various dependencies; I guess each list is a list of possible options.
     paths: {
         jquery: ['//code.jquery.com/jquery-2.1.1.min', 'libs/jquery/dist/jquery.min'],

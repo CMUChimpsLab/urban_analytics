@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
-# Pull tweets out of a collection in mongodb and put them into postgresql.
+# Drops any postgres table that already exists (!), recreates it, then 
+# pull tweets out of a collection in mongodb and put them into postgresql.
 # Warning! This doesn't check if the tweets are already in there or not.
 # So it may create duplicates.
 
@@ -15,9 +16,8 @@ if __name__=='__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--collection', default='tweet_pgh')
     args = parser.parse_args()
-
-    print "About to drop the table in postgres and reload it. Ok? (enter to continue, ctrl-c to quit."
-    raw_input()
+    # outfile = open('load_into_postgres_output.txt', 'w')
+    # sys.stdout=outfile
 
     cur.execute("DROP TABLE IF EXISTS tweet_pgh;")
     cur.execute("CREATE TABLE tweet_pgh(text VARCHAR(500), user_screen_name VARCHAR(50), created_at VARCHAR(100));");
@@ -36,8 +36,10 @@ if __name__=='__main__':
             psql_conn.commit()
         except Exception as e:
             print "Error on tweet from user " + user_screen_name
-            traceback.print_exc()
-            traceback.print_stack()
+            print "tweet name: %s, text: %s, lon=%d, lat=%d, created_at=%s" % (user_screen_name, text, lon, lat, created_at)
+            # traceback.print_exc()
+            # traceback.print_stack()
+            psql_conn.commit()
 
         counter += 1
         if counter % 1000 == 0:

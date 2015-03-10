@@ -1,18 +1,19 @@
 #!/usr/bin/env python
 
-# Pull tweets out of a collection in mongodb and put them into postgresql.
+# Drops any postgres table that already exists (!), recreates it, then 
+# pull tweets out of a collection in mongodb and put them into postgresql.
 # Warning! This doesn't check if the tweets are already in there or not.
 # So it may create duplicates.
 
-import argparse, pymongo, psycopg2, psycopg2.extensions, ppygis
+import argparse, pymongo, psycopg2, psycopg2.extensions, ppygis, traceback
 
 psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
 psycopg2.extensions.register_type(psycopg2.extensions.UNICODEARRAY)
 
 mongo_db = pymongo.MongoClient('localhost', 27017)['tweet']
-psql_conn = psycopg2.connect("dbname='tweet' user='dtasse' host='localhost'")
+psql_conn = psycopg2.connect("dbname='tweet' user='dantasse'")
 
-cur = psql_conn.cursor()
+pg_cur = psql_conn.cursor()
 
 def tweet_to_db_row(tweet):
     text = tweet['text']
@@ -43,13 +44,22 @@ if __name__=='__main__':
         user_screen_name string NOT NULL,
         text string NOT NULL
         );""")
+    cur.execute("SELECT AddGeometryColumn('tweet_pgh', 'coordinates', 4326, 'POINT', 2)")
 
     counter = 0
     for tweet in mongo_db['tweet_pgh'].find():
         insert_str = tweet_to_db_row(tweet)
         print insert_str
-        cur.execute(insert_str)
-        psql_conn.commit()
+        try:
+            cur.execute(insert_str)
+            psql_conn.commit()
+        except Exception as e:
+            print "Error on tweet from user " + user_screen_name
+            print "tweet name: %s, text: %s, lon=%d, lat=%d, created_at=%s" % (user_screen_name, text, lon, lat, created_at)
+            # traceback.print_exc()
+            # traceback.print_stack()
+            psql_conn.commit()
+
         counter += 1
         if counter % 1000 == 0:
             print str(counter) + " tweets entered"

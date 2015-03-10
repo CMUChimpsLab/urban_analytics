@@ -1,21 +1,13 @@
-***Copied from Dan's map4***
+*****For Pittsburgh only*****
 
-Trying to use google maps (copy from Andy) to display a map quickly and easily.
-Ideally we'd be able to display one user's tweets easily.
+Given a Twitter username, this map can 
+-plot the range of all tweets under that username using a standard deviation ellipse. Some usernames might not work right now because some of the usernames in the user_SDE database do not have the ellipse info (still on circle info).
+-plot each individual tweet under that username
+-create a heatmap of tweets under that username
 
-Client-side, this uses require.js, which was a new thing to me.
-templates/layout.html includes templates/main.html, which includes the script
-require.js, while also declaring a data-main attribute of static/js/app.js.
-require.js then kicks off in app.js, which requires app/main.js, which requires
-app/TweetMap.js and jquery, and so on. Then TweetMap depends on the Google Maps
-API, which is how you get that in there.
+This map also can display a heatmap of a sample of tweets in Pittsburgh.
 
-How does Google Maps know who we are? Hmm...
-Short answer: it doesn't. While we're under the usage limits, they don't care
-who we are. To deploy to the public, though, we should use an API key. More:
-https://developers.google.com/maps/documentation/javascript/tutorial#api_key
-
-
+-----------------------------------------------------------------------------
 To run this: run ./main.py, then go to localhost:5000 in a browser.
 
 Troubleshooting: If on startup you get:

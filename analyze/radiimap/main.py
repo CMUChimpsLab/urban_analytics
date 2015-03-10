@@ -1,9 +1,16 @@
 #!/usr/bin/env python
 
 import os
+import sys
 import pymongo
+import random
 from flask import Flask, render_template, request, jsonify, json, url_for, flash, redirect
 from flask_debugtoolbar import DebugToolbarExtension
+sys.path.append('../user/')
+import build_user_collection as NGHD
+from build_user_coll_sde import generate_centroids_and_sd
+import cProfile, pstats, StringIO
+from csv import DictWriter, DictReader
 
 SITE_ROOT = os.path.realpath(os.path.dirname(__file__))
 # general flask app settings
@@ -17,13 +24,41 @@ toolbar = DebugToolbarExtension(app)
 # related to db
 db_client = pymongo.MongoClient('localhost', 27017)
 db = db_client['tweet']
+bin_to_nghds = {}
 
+def load_nghds(module):
+    print 'loading neighborhoods...'
+    for line in DictReader(open(module)):
+        bin_to_nghds[(float(line['lat']), float(line['lon']))] = line['nghd']
+    print 'done loading neighborhoods!'
+    return
+
+# from https://github.com/dantasse/nghd_info/blob/master/util/util.py
+# Rounds lat and lon to 2 decimal places and returns a tuple of them both.
+def round_latlon(lat, lon):
+    if lat is None or lon is None:
+        return (None, None)
+    return (round(float(lat), 2), round(float(lon), 2))
+
+def random_sample(col, query, num):
+    cursor = db[col].find(query)
+    total = cursor.count()
+    print "col:" + str(total)
+    result = []
+    indices = set()
+    while len(result) < num:
+        random_num = random.randint(0, total)
+        while random_num in indices:
+            random_num = random.randint(0, total)
+        indices.add(random_num)
+        record = cursor[random_num]
+        result.append(record)
+    return result
 
 # This call kicks off all the main page rendering.
 @app.route('/')
 def index():
     return render_template('main.html')
-
 
 @app.route('/get-all-tweets', methods=['GET'])
 def get_all_tweets():
@@ -55,6 +90,67 @@ def get_user_tweet_range():
     cursor = to_serializable(cursor)
     print cursor
     return jsonify(tweet_range=cursor)
+
+@app.route('/get-ngbh-tweets', methods=['GET'])
+def get_ngbh_tweets():
+    pr = cProfile.Profile()
+    pr.enable()
+    # ---------------- start profiling the whole thing ----------------
+
+    neighborhood = request.args.get('neighborhood', '', type=str)
+    if neighborhood == '':
+        return jsonify([])
+    num_users = request.args.get('user_num', 10, type=int)
+    num_tweets_per_user = request.args.get('num_tweets_per_user', 10, type=int)
+    randomize = request.args.get('randomize', 'false', type=str)
+    if randomize == 'false': randomize = False
+    else: randomize = True
+
+    print 'randomized? ' + str(randomize) + ', num users: ' + str(num_users) + ', num tweets per user: ' + str(num_tweets_per_user)
+    if randomize:
+        users = random_sample('user', {'most_common_neighborhood': neighborhood}, num_users)
+    else:
+        users = db['user'].find({'most_common_neighborhood': neighborhood}).limit(num_users)
+    tweets = []
+
+    if not bin_to_nghds:
+        load_nghds('point_map.csv')
+
+    for user in users:
+         tmp = db['tweet_pgh'].find({'user.screen_name': user['screen_name']}).limit(num_tweets_per_user)
+         for t in tmp:
+             bin_coord = round_latlon(t["geo"]["coordinates"][0], t["geo"]["coordinates"][1])
+             if bin_coord in bin_to_nghds:
+                 nghd = bin_to_nghds[bin_coord]
+             else:
+                 nghd = 'Outside Pittsburgh'
+             t["neighborhood"] = nghd
+             tweets.append(t)
+
+    # ---------------- end profiling the whole thing ----------------
+
+    pr.disable()
+    s = StringIO.StringIO()
+    sortby = 'cumulative'
+    ps = pstats.Stats(pr, stream=s).strip_dirs().sort_stats(sortby)
+    ps.print_stats(10)
+    print s.getvalue()
+
+    return jsonify(tweets=to_serializable_list(tweets))
+
+@app.route('/get-ngbh-range', methods=['GET'])
+def get_ngbh_range():
+    neighborhood = request.args.get('neighborhood', '', type=str)
+    if neighborhood == '':
+        return jsonify([])
+
+    users = db['user'].find({'most_common_neighborhood': neighborhood}).limit(100)
+    #print len(users)
+    tweets = []
+    for user in users:
+         tweets += db['tweet_pgh'].find({'user.screen_name': user['screen_name']})
+    result = generate_centroids_and_sd(tweets)
+    return jsonify(result=result)
 
 # Returns list of tweet ranges of 10 users who tweet the most
 @app.route('/get-top-10-user-tweet-range', methods=['GET'])
@@ -116,4 +212,4 @@ if __name__ == '__main__':
     db['tweet_pgh'].ensure_index('geo.coordinates.0')
     db['tweet_pgh'].ensure_index('geo.coordinates.1')
     db['tweet_pgh'].ensure_index('user.screen_name')
-    app.run(host='0.0.0.0')  # listen on all public IPs
+    app.run(host='0.0.0.0', port=1025)  # listen on all public IPs

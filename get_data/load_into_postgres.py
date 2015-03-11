@@ -5,7 +5,8 @@
 # Warning! This doesn't check if the tweets are already in there or not.
 # So it may create duplicates.
 
-import argparse, pymongo, psycopg2, psycopg2.extensions, ppygis, traceback
+import argparse, pymongo, psycopg2, psycopg2.extras, psycopg2.extensions
+import ppygis, traceback
 import pytz, datetime
 
 psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
@@ -13,6 +14,7 @@ psycopg2.extensions.register_type(psycopg2.extensions.UNICODEARRAY)
 
 mongo_db = pymongo.MongoClient('localhost', 27017)['tweet']
 psql_conn = psycopg2.connect("dbname='tweet'")
+psycopg2.extras.register_hstore(psql_conn)
 
 pg_cur = psql_conn.cursor()
 
@@ -29,11 +31,11 @@ def parse_date(d):
 # Map of field name -> postgres datatype. Contains everything we want to save.
 # TODO: if you change this, also change the tweet_to_insert_string method below.
 data_types = {
-    # _id skipped; id (no underscore) works well enough for us.
-    # 'contributors': 'ARRAY', # TODO does this work?
+    # _id skipped; it's from mongodb. id (no _) works, and ensures no duplicate tweets.
+    'contributors': 'text', # TODO does this work?
     'coordinates': 'Point',
     'created_at': 'timestamp',
-    # 'entities': 'hstore', # TODO this is tricky too.
+    'entities': 'hstore', 
     'favorite_count': 'integer',
     # |favorited| only makes sense if there's an authenticated user.
     'filter_level': 'text',
@@ -46,15 +48,21 @@ data_types = {
     'in_reply_to_status_id_str': 'text',
     'in_reply_to_user_id': 'bigint',
     'in_reply_to_user_id_str': 'text',
-    # 'place': 'hstore', # TODO this is tricky.
+    'place': 'hstore',
     'retweet_count': 'integer',
     # |retweeted| only make sense if there's an authenticated user.
     'source': 'text',
     'text': 'text NOT NULL',
-    # truncated is obsolete; Twitter now rejects long tweets instead of truncating.
-    # 'user': 'hstore', # TODO this may be tricky.
+    # |truncated| is obsolete; Twitter now rejects long tweets instead of truncating.
+    'twitter_user': 'hstore', # was |user| in Twitter API.
     'user_screen_name': 'text NOT NULL', # added this
 }
+
+# Argument: a python dictionary. Returns: the same thing with all keys and
+# values as strings, so we can make a postgres hstore with them.
+def make_hstore(py_dict):
+    return {unicode(k): unicode(v) for k, v in py_dict.iteritems()}
+
     
 # Argument: a tweet JSON object. Returns: a string starting with "INSERT..."
 # that you can run to insert this tweet into a Postgres database.
@@ -63,6 +71,9 @@ def tweet_to_insert_string(tweet):
     lon = tweet['coordinates']['coordinates'][0]
     coordinates = ppygis.Point(lon, lat, srid=4326)
     created_at = parse_date(tweet['created_at'])
+    hstore_user = make_hstore(tweet['user'])
+    hstore_place = make_hstore(tweet['place'])
+    hstore_entities = make_hstore(tweet['entities'])
 
     # Sometimes there's no lang, or filter_level. Not sure why. Fix it I guess?
     if 'filter_level' not in tweet:
@@ -70,18 +81,18 @@ def tweet_to_insert_string(tweet):
     if 'lang' not in tweet:
         tweet['lang'] = ''
 
-    insert_str = pg_cur.mogrify("INSERT INTO tweet_pgh(" +
-            "coordinates, created_at, favorite_count, filter_level, " +
+    insert_str = pg_cur.mogrify("INSERT INTO tweet_pgh(contributors, " +
+            "coordinates, created_at, entities, favorite_count, filter_level, " +
             "lang, id, id_str, in_reply_to_screen_name, in_reply_to_status_id, " +
             "in_reply_to_status_id_str, in_reply_to_user_id, in_reply_to_user_id_str, " +
-            "retweet_count, source, text, user_screen_name) " + 
+            "place, retweet_count, source, twitter_user, text, user_screen_name) " + 
             "VALUES (" + ','.join(['%s' for key in data_types]) + ")", 
-        (coordinates, created_at, tweet['favorite_count'], 
+        (tweet['contributors'], coordinates, created_at, hstore_entities, tweet['favorite_count'], 
         tweet['filter_level'], tweet['lang'], tweet['id'], tweet['id_str'],
         tweet['in_reply_to_screen_name'], tweet['in_reply_to_status_id'],
         tweet['in_reply_to_status_id_str'], tweet['in_reply_to_user_id'],
-        tweet['in_reply_to_user_id_str'], tweet['retweet_count'],
-        tweet['source'], tweet['text'],
+        tweet['in_reply_to_user_id_str'], hstore_place, tweet['retweet_count'],
+        tweet['source'], hstore_user, tweet['text'],
         tweet['user']['screen_name']))
     return insert_str
 

@@ -1,9 +1,18 @@
 #!/usr/bin/env python
 
-# Drops any postgres table that already exists (!), recreates it, then 
+# Utilities to take a JSON tweet and turn it into a PostgreSQL string that can
+# then be run to insert it into Postgres.
+#
+# To be more exact: saves everything as the data type that makes sense, except:
+# - |coordinates| becomes a PostGIS Point
+# - |contributors| just becomes a string (was a list)
+# - |entities|, |place| become hstores (one-level dicts; everything inside flattened)
+# - |user| becomes "twitter_user", also an hstore like the above.
+# - |favorited|, |geo|, |retweeted|, and |truncated| are all skipped.
+#
+# If run on its own, this file will:
+# Drop any postgres table that already exists (!), recreate it, then 
 # pull tweets out of a collection in mongodb and put them into postgresql.
-# Warning! This doesn't check if the tweets are already in there or not.
-# So it may create duplicates.
 
 import argparse, pymongo, psycopg2, psycopg2.extras, psycopg2.extensions
 import ppygis, traceback

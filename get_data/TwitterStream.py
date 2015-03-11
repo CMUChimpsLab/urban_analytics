@@ -21,6 +21,7 @@
 import sys, argparse, inspect, time, pycurl, urllib, json, ConfigParser
 import requests, HTMLParser, traceback
 import oauth2 as oauth
+import load_into_postgres, psycopg2, psycopg2.extensions, psycopg2.extras
 from pymongo import Connection
 
 API_ENDPOINT_URL = 'https://stream.twitter.com/1.1/statuses/filter.json'
@@ -83,6 +84,8 @@ def log(message):
     info = inspect.getframeinfo(frame)
     line_no = int(info.lineno)
     print '%d, line %d: %s' % (time.time(), line_no, message)
+
+
  
 class TwitterStream:
     def __init__(self, city, timeout=False):
@@ -102,6 +105,25 @@ class TwitterStream:
         self.tweet_col, self.foursquare_col = CITY_COLLECTIONS.get(self.city)
         self.num_reconnect = 0
         self.setup_connection()
+
+        # set up the Postgres connection.
+        psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
+        psycopg2.extensions.register_type(psycopg2.extensions.UNICODEARRAY)
+        self.psql_conn = psycopg2.connect("dbname='tweet'")
+        psycopg2.extras.register_hstore(self.psql_conn)
+        self.pg_cur = self.psql_conn.cursor()
+
+    # Given a tweet from the Twitter API, saves it to PostgreSQL DB.
+    def save_to_postgres(self, tweet):
+        insert_str = load_into_postgres.tweet_to_insert_string(tweet)
+        try:
+            self.pg_cur.execute(insert_str)
+            self.psql_conn.commit()
+        except Exception as e:
+            print "Error running this command: %s" % insert_str
+            traceback.print_exc()
+            traceback.print_stack()
+            self.psql_conn.commit()
 
     def set_credentials(self):
         log('setting api credentials num %s' % self.credential_num)
@@ -252,6 +274,7 @@ class TwitterStream:
                 if lon >= self.min_lon and lon <= self.max_lon and \
                         lat >= self.min_lat and lat <= self.max_lat:
                     db[self.tweet_col].insert(dict(message))
+                    self.save_to_postgres(dict(message))
                     log('Got tweet with text: %s' % message.get('text').encode('utf-8'))
                     self.save_foursquare_data_if_present(message)
 
@@ -269,6 +292,7 @@ if __name__ == '__main__':
             'cleveland', 'seattle', 'london'])
     parser.add_argument('--mongo_port', '-m', default=27017, type=int,
         help='Which port MongoDB is on.')
+    parser.add_argument('--logs_dir', '-l', default='/data/twitter_logs') 
     args = parser.parse_args()
 
     db = Connection('localhost', args.mongo_port)['tweet']
@@ -276,8 +300,8 @@ if __name__ == '__main__':
     print "Getting stream in " + args.city + " on port " + str(args.mongo_port)
 
     timestamp = time.time()
-    errFile = open('/data/twitter_logs/error_%s_%d.log'%(args.city, timestamp), 'w')
-    outFile = open('/data/twitter_logs/output_%s_%d.log'%(args.city, timestamp), 'w')
+    errFile = open(args.logs_dir + '/error_%s_%d.log'%(args.city, timestamp), 'w')
+    outFile = open(args.logs_dir + '/output_%s_%d.log'%(args.city, timestamp), 'w')
     sys.stdout = outFile
     sys.stderr = errFile
 

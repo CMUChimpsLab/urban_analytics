@@ -61,6 +61,8 @@ data_types = {
 # Argument: a python dictionary. Returns: the same thing with all keys and
 # values as strings, so we can make a postgres hstore with them.
 def make_hstore(py_dict):
+    if not py_dict:
+        py_dict={}
     return {unicode(k): unicode(v) for k, v in py_dict.iteritems()}
 
     

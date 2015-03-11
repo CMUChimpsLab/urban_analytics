@@ -40,7 +40,7 @@ data_types = {
     # geo skipped, b/c it's deprecated
     'lang': 'text',
     'id': 'bigint primary key',
-    # id_str skipped; same as ID.
+    'id_str': 'text',
     'in_reply_to_screen_name': 'text',
     'in_reply_to_status_id': 'bigint',
     'in_reply_to_status_id_str': 'text',
@@ -64,14 +64,20 @@ def tweet_to_insert_string(tweet):
     coordinates = ppygis.Point(lon, lat, srid=4326)
     created_at = parse_date(tweet['created_at'])
 
+    # Sometimes there's no lang, or filter_level. Not sure why. Fix it I guess?
+    if 'filter_level' not in tweet:
+        tweet['filter_level'] = ''
+    if 'lang' not in tweet:
+        tweet['lang'] = ''
+
     insert_str = pg_cur.mogrify("INSERT INTO tweet_pgh(" +
             "coordinates, created_at, favorite_count, filter_level, " +
-            "lang, id, in_reply_to_screen_name, in_reply_to_status_id, " +
+            "lang, id, id_str, in_reply_to_screen_name, in_reply_to_status_id, " +
             "in_reply_to_status_id_str, in_reply_to_user_id, in_reply_to_user_id_str, " +
             "retweet_count, source, text, user_screen_name) " + 
             "VALUES (" + ','.join(['%s' for key in data_types]) + ")", 
         (coordinates, created_at, tweet['favorite_count'], 
-        tweet['filter_level'], tweet['lang'], tweet['id'],
+        tweet['filter_level'], tweet['lang'], tweet['id'], tweet['id_str'],
         tweet['in_reply_to_screen_name'], tweet['in_reply_to_status_id'],
         tweet['in_reply_to_status_id_str'], tweet['in_reply_to_user_id'],
         tweet['in_reply_to_user_id_str'], tweet['retweet_count'],

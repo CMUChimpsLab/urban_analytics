@@ -15,8 +15,7 @@
 # pull tweets out of a collection in mongodb and put them into postgresql.
 
 import argparse, pymongo, psycopg2, psycopg2.extras, psycopg2.extensions
-import ppygis, traceback
-import pytz, datetime
+import ppygis, traceback, pytz, datetime, send_email
 
 psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
 psycopg2.extensions.register_type(psycopg2.extensions.UNICODEARRAY)
@@ -75,9 +74,10 @@ def make_hstore(py_dict):
     return {unicode(k): unicode(v) for k, v in py_dict.iteritems()}
 
     
-# Argument: a tweet JSON object. Returns: a string starting with "INSERT..."
-# that you can run to insert this tweet into a Postgres database.
-def tweet_to_insert_string(tweet):
+# Argument: a tweet JSON object and a collection string name to insert into.
+# Returns: a string starting with "INSERT..." that you can run to insert this
+# tweet into a Postgres database.
+def tweet_to_insert_string(tweet, collection):
     lat = tweet['coordinates']['coordinates'][1]
     lon = tweet['coordinates']['coordinates'][0]
     coordinates = ppygis.Point(lon, lat, srid=4326)
@@ -92,7 +92,7 @@ def tweet_to_insert_string(tweet):
     if 'lang' not in tweet:
         tweet['lang'] = ''
 
-    insert_str = pg_cur.mogrify("INSERT INTO tweet_pgh(contributors, " +
+    insert_str = pg_cur.mogrify("INSERT INTO " + collection + "(contributors, " +
             "coordinates, created_at, entities, favorite_count, filter_level, " +
             "lang, id, id_str, in_reply_to_screen_name, in_reply_to_status_id, " +
             "in_reply_to_status_id_str, in_reply_to_user_id, in_reply_to_user_id_str, " +
@@ -111,26 +111,40 @@ def tweet_to_insert_string(tweet):
 if __name__=='__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--collection', default='tweet_pgh')
+    parser.add_argument('--recreate_table', '-r', action='store_true')
     args = parser.parse_args()
 
-    print "About to copy Mongo to Postgres. Enter to continue, Ctrl-C to quit."
-    raw_input()
-    pg_cur.execute("DROP TABLE IF EXISTS tweet_pgh;")
-    psql_conn.commit()
-    create_table_str = "CREATE TABLE tweet_pgh("
-    for key, value in sorted(data_types.iteritems()):
-        if key not in ['coordinates']: # create that coords column separately.
-            create_table_str += key + ' ' + value + ', '
-    create_table_str = create_table_str[:-2] + ");"
+    if args.recreate_table:
+        print "About to dump and recreate Postgres table. Enter to continue, Ctrl-C to quit."
+        raw_input()
+        pg_cur.execute("DROP TABLE IF EXISTS " + args.collection + ";")
+        psql_conn.commit()
+        create_table_str = "CREATE TABLE " + args.collection + "("
+        for key, value in sorted(data_types.iteritems()):
+            if key not in ['coordinates']: # create that coords column separately.
+                create_table_str += key + ' ' + value + ', '
+        create_table_str = create_table_str[:-2] + ");"
 
-    pg_cur.execute(create_table_str)
-    psql_conn.commit()
-    pg_cur.execute("SELECT AddGeometryColumn('tweet_pgh', 'coordinates', 4326, 'POINT', 2)")
-    psql_conn.commit()
+        pg_cur.execute(create_table_str)
+        psql_conn.commit()
+        pg_cur.execute("SELECT AddGeometryColumn('" + args.collection + "', 'coordinates', 4326, 'POINT', 2)")
+        psql_conn.commit()
+        # TODO does this create the indices?
+        print "Done creating table, now creating indices"
+        create_index_str = 'CREATE INDEX %s_user_screen_name_match ON %s USING HASH(user_screen_name);' % (args.collection, args.collection)
+        vacuum_str = 'VACUUM ANALYZE %s;' % args.collection
+        psql_conn.set_isolation_level(0) # so we can VACUUM outside a transaction
+        pg_cur.execute(create_index_str)
+        pg_cur.execute(vacuum_str)
+        coordinates_geo_index_str = 'CREATE INDEX %s_coordinates_geo ON %s USING GIST(coordinates);' % (args.collection, args.collection)
+        pg_cur.execute(coordinates_geo_index_str)
+        pg_cur.execute(vacuum_str)
+        psql_conn.set_isolation_level(1)
+        print "Done creating indices"
 
     counter = 0
-    for tweet in mongo_db['tweet_pgh'].find():
-        insert_str = tweet_to_insert_string(tweet)
+    for tweet in mongo_db[args.collection].find():
+        insert_str = tweet_to_insert_string(tweet, args.collection)
         try:
             pg_cur.execute(insert_str)
             psql_conn.commit()
@@ -145,3 +159,4 @@ if __name__=='__main__':
             print str(counter) + " tweets entered"
 
     psql_conn.close()
+    send_dan_email('loading into %s is done!' % args.collection, 'yep sure is')

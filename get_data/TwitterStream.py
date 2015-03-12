@@ -113,9 +113,9 @@ class TwitterStream:
         psycopg2.extras.register_hstore(self.psql_conn)
         self.pg_cur = self.psql_conn.cursor()
 
-    # Given a tweet from the Twitter API, saves it to PostgreSQL DB.
+    # Given a tweet from the Twitter API, saves it to Postgres DB table |table|.
     def save_to_postgres(self, tweet):
-        insert_str = load_into_postgres.tweet_to_insert_string(tweet)
+        insert_str = load_into_postgres.tweet_to_insert_string(tweet, self.tweet_col)
         try:
             self.pg_cur.execute(insert_str)
             self.psql_conn.commit()

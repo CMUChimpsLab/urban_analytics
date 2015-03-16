@@ -159,4 +159,4 @@ if __name__=='__main__':
             print str(counter) + " tweets entered"
 
     psql_conn.close()
-    send_dan_email('loading into %s is done!' % args.collection, 'yep sure is')
+    send_email.send_dan_email('loading into %s is done!' % args.collection, 'yep sure is')

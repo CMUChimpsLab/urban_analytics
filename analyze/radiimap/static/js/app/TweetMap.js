@@ -157,6 +157,14 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=geometry,
         functionsDiv.appendChild(remove_heatmap_link);
         functionsDiv.appendChild(document.createElement('br'));
 
+        var user_num_bin_link = document.createElement('a');
+        user_num_bin_link.setAttribute("id", "user_num_bin_link");
+        user_num_bin_link.innerText = "Num of Users";
+        user_num_bin_link.index = 1;
+        user_num_bin_link.style.backgroundColor = "white";
+        functionsDiv.appendChild(user_num_bin_link);
+        functionsDiv.appendChild(document.createElement('br'));
+
         var heatmap_link = document.createElement('a');
         heatmap_link.setAttribute("id", "heatmap_link");
         heatmap_link.innerText = "Heatmap of Pittsburgh";
@@ -235,6 +243,18 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=geometry,
         });
 
 
+        google.maps.event.addDomListener(user_num_bin_link, 'click', function() {
+            $.ajax({
+                type: "get",
+                url: $SCRIPT_ROOT + "/get-num-users",
+                success: function (response) {
+                    draw_uniq_users_heatmap(response["bin_to_num_uniq_users"]);
+                },
+                error: function () {
+                    console.log("ajax request failed for " + this.url);
+                }
+            });
+        });
 
         google.maps.event.addDomListener(heatmap_link, 'click', function() {
             $.ajax({
@@ -602,14 +622,33 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=geometry,
 
         function drawBins () {
 
-        // Draw grid lines for our rectangular bins.
-        for (var lat = 40.2417; lat < 40.6417; lat += .001) {
-            drawLine(lat, -80.2, lat, -79.8);
-        }
-        for (var lng = -80.2; lng < -79.8; lng += .001) {
-            drawLine(40.2417, lng, 40.6417, lng);
+            // Draw grid lines for our rectangular bins.
+            for (var lat = 40.2417; lat < 40.6417; lat += .001) {
+                drawLine(lat, -80.2, lat, -79.8);
+            }
+            for (var lng = -80.2; lng < -79.8; lng += .001) {
+                drawLine(40.2417, lng, 40.6417, lng);
+            }
+
         }
 
+        function draw_uniq_users_heatmap(dict) {
+            var heatmapData  = [];
+            for (var key in dict) {
+                if (dict.hasOwnProperty(key)) {
+                    var arr = JSON.parse(key);
+                    var lat = arr[0];
+                    var lon = arr[1];
+                    var count = dict[key];
+                    heatmapData.push({ location: new google.maps.LatLng(lat, lon), weight: count });
+                }
+            }
+            heatmap = new google.maps.visualization.HeatmapLayer({
+                data: heatmapData
+            });
+            heatmap.set('opacity', 1);
+            heatmap.set('radius', 30);
+            heatmap.setMap(map);
         }
 
         function addUserLabel(username, num) {
@@ -674,6 +713,22 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=geometry,
                 for (var key in marks) {
                     removeGroup(key);
                 }
+            },
+
+            drawLine: function(lat1, lng1, lat2, lng2) {
+               var line1Coordinates = [
+                  new google.maps.LatLng(lat1, lng1),
+                  new google.maps.LatLng(lat2, lng2)
+                ];
+                var line1 = new google.maps.Polyline({
+                  path: line1Coordinates,
+                  geodesic: true,
+                  strokeColor: '#000000',
+                  strokeOpacity: 0.3,
+                  strokeWeight: 1
+                });
+                line1.setMap(map);
+                return line1;
             },
 
             plotUsers: function (users) {

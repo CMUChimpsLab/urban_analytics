@@ -152,6 +152,13 @@ def get_ngbh_range():
     result = generate_centroids_and_sd(tweets)
     return jsonify(result=result)
 
+@app.route('/get-num-users', methods=['GET'])
+def get_num_users():
+    bin_to_num_uniq_users = {}
+    for line in DictReader(open('../../../nghd_info/outputs/bins_num_tweets.csv')):
+        bin_to_num_uniq_users[str([float(line['lat']), float(line['lon'])])] = line['num_users']
+    return jsonify(bin_to_num_uniq_users=bin_to_num_uniq_users)
+
 # Returns list of tweet ranges of 10 users who tweet the most
 @app.route('/get-top-10-user-tweet-range', methods=['GET'])
 def get_top_10_user_tweet_range():

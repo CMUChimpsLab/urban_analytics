@@ -1,11 +1,9 @@
 #!/usr/bin/env python
 
 import os, json, csv, psycopg2, psycopg2.extensions, psycopg2.extras
-from osgeo import ogr
 from collections import Counter
 from flask import Flask, render_template, request, jsonify, json, url_for, flash, redirect
 from flask_debugtoolbar import DebugToolbarExtension
-ogr.UseExceptions()
 
 SITE_ROOT = os.path.realpath(os.path.dirname(__file__))
 # general flask app settings
@@ -47,7 +45,9 @@ def get_user_tweets():
     if user_screen_name == '':
         return jsonify([])
 
+    print "starting to call stuff from postgres"
     tweets = get_tweets_from_user(user_screen_name)
+    print "done calling postgres"
     return jsonify(tweets=tweets)
 
 def get_tweets_from_user(user_screen_name):

@@ -44,20 +44,20 @@ define(['jquery', 'app/TweetMap'], function ($, TweetMap) {
             });
         });
 
-        // $("#get-all-tweets-from-area-btn").on("click", function () {
-        //     $.ajax({
-        //         type: "get",
-        //         data: tweetMap.getSelectedArea(),
-        //         url: $SCRIPT_ROOT + "/get-all-tweets-from-area",
-        //         success: function (response) {
-        //             tweetMap.clearMap();
-        //             tweetMap.plotTweets(response["tweets"]);
-        //         },
-        //         error: function () {
-        //             console.log("ajax request failed for " + this.url);
-        //         }
-        //     });
-        // });
+        $("#get-all-tweets-from-area-btn").on("click", function () {
+            $.ajax({
+                type: "get",
+                data: tweetMap.getSelectedArea(),
+                url: $SCRIPT_ROOT + "/get-all-tweets-from-area",
+                success: function (response) {
+                    tweetMap.clearMap();
+                    tweetMap.plotTweets(response["tweets"]);
+                },
+                error: function () {
+                    console.log("ajax request failed for " + this.url);
+                }
+            });
+        });
 
         $("#get-user-tweets-btn").on("click", function () {
             $.ajax({
@@ -76,19 +76,19 @@ define(['jquery', 'app/TweetMap'], function ($, TweetMap) {
             });
         });
 
-        // $("#get-user-tweets-from-area-btn").on("click", function () {
-        //     $.ajax({
-        //         type: "get",
-        //         data: tweetMap.getSelectedArea(),
-        //         url: $SCRIPT_ROOT + "/get-user-tweets-from-area",
-        //         success: function (response) {
-        //             tweetMap.clearMap();
-        //             tweetMap.plotUsers(response["users"]);
-        //         },
-        //         error: function () {
-        //             console.log("ajax request failed for " + this.url);
-        //         }
-        //     });
-        // });
+        $("#get-user-tweets-from-area-btn").on("click", function () {
+            $.ajax({
+                type: "get",
+                data: tweetMap.getSelectedArea(),
+                url: $SCRIPT_ROOT + "/get-user-tweets-from-area",
+                success: function (response) {
+                    tweetMap.clearMap();
+                    tweetMap.plotUsers(response["users"]);
+                },
+                error: function () {
+                    console.log("ajax request failed for " + this.url);
+                }
+            });
+        });
     });
 });

@@ -43,7 +43,8 @@ CITY_LOCATIONS = {
     'cleveland': { 'locations': '-81.9697, 41.1822, -81.4697, 41.5822' },
     'seattle': { 'locations': '-122.5331, 47.4097, -121.9331, 47.8097' },
     'miami': { 'locations': '-80.4241, 25.5877, -80.0641, 26.2877' },
-    'london': { 'locations': '-0.4275, 51.3072, 0.2525, 51.7072' }
+    'london': { 'locations': '-0.4275, 51.3072, 0.2525, 51.7072' },
+    'minneapolis': { 'locations': '-93.465, 44.7778, -93.065, 45.1778' }
 }
 # Locations are lower left long, lower left lat, upper right long, upper right lat.
 # Mostly pretty arbitrarily chosen.
@@ -68,7 +69,8 @@ CITY_COLLECTIONS = {
     'cleveland':('tweet_cleveland','foursquare_cleveland'),
     'seattle': ('tweet_seattle','foursquare_seattle'),
     'miami': ('tweet_miami','foursquare_miami'),
-    'london': ('tweet_london','foursquare_london')
+    'london': ('tweet_london','foursquare_london'),
+    'minneapolis': ('tweet_minneapolis','foursquare_minneapolis')
 }
 
    
@@ -289,7 +291,7 @@ if __name__ == '__main__':
     parser.add_argument('--city', '-c', required=True,
         help='Which city to get data from.',
         choices=['pgh', 'sf', 'ny', 'chicago', 'houston', 'detroit', 'miami',
-            'cleveland', 'seattle', 'london'])
+            'cleveland', 'seattle', 'london', 'minneapolis'])
     parser.add_argument('--mongo_port', '-m', default=27017, type=int,
         help='Which port MongoDB is on.')
     parser.add_argument('--logs_dir', '-l', default='/data/twitter_logs') 

@@ -88,28 +88,29 @@ def get_user_nghds(tweets):
     
     return user_nghds
 
-# If all tweets are from the same user, returns the screen name of that user.
-# (don't call it if not all |tweets| are from the same user.)
-def get_screen_name(tweets):
-    for tweet in tweets:
-        if tweet['user']['screen_name']:
-            return tweet['user']['screen_name']
  
 def doAll():
     print "building indexes"
     db['tweet_pgh'].ensure_index('user.id')
+    db['tweet_pgh'].ensure_index('user.screen_name')
     print "done, loading neighborhoods"
     global nghds # TODO ugh
     nghds = load_nghds()
     print "done"
-    for user in db['user'].find().batch_size(100):
+
+    print "Getting user ids"
+    user_screen_names = set()
+    for tweet in db['tweet_pgh'].find():
+        user_screen_names.add(tweet['user']['screen_name'])
+        
+    for user_screen_name in user_screen_names:
+        user = db['user'].find_one({'screen_name': user_screen_name})
+        if not user:
+            user = {}
         try:
-            tweets = db['tweet_pgh'].find({'user.id':user['_id']})
+            tweets = db['tweet_pgh'].find({'user.screen_name':user_screen_name})
             tweets = list(tweets)
-            screen_name = get_screen_name(tweets)
-            if screen_name:
-                print "user: " + screen_name
-            user['screen_name'] = screen_name
+            user['screen_name'] = user_screen_name
 
             num_tweets = len(tweets)
             user['num_tweets'] = num_tweets
@@ -123,7 +124,7 @@ def doAll():
                 user['most_common_neighborhood'] = user_nghds.most_common(1)[0][0]
             else:
                 user['most_common_neighborhood'] = 'Outside Pittsburgh'
-                print 'Huh? User has zero tweets in neighborhoods?' + screen_name
+                print 'Huh? User has zero tweets in neighborhoods?' + user_screen_name
             print user
             db.user.save(user)
         except Exception as e:

@@ -100,7 +100,11 @@ def doAll():
 
     print "Getting user ids"
     user_screen_names = set()
-    for tweet in db['tweet_pgh'].find():
+    counter = 0
+    for tweet in db['tweet_pgh'].find().batch_size(100):
+        counter += 1
+        if counter % 1000 == 0:
+            print 'Tweets processed: ' + str(counter)
         user_screen_names.add(tweet['user']['screen_name'])
         
     for user_screen_name in user_screen_names:

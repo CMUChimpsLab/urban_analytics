@@ -1,10 +1,8 @@
 # Emails us if we haven't received any Tweets, Instagrams, or Flickrs in a day.
 # Email addresses (from and to) given in config.txt.
 
-import smtplib
-import json
-import ConfigParser
-from pymongo import MongoClient
+import smtplib, json, ConfigParser, psycopg2
+# from pymongo import MongoClient
 
 config = ConfigParser.ConfigParser()
 config.read('config.txt')
@@ -13,7 +11,11 @@ FROM_EMAIL = config.get('error_handling', 'email')
 TO_EMAILS = config.get('error_handling_to_addr', 'email').split(',')
 PSWD = config.get('error_handling', 'password')
 
-COUNT_FILENAME = 'data_counts'
+COUNT_FILENAME = 'data_counts.json'
+
+# mongo_db = MongoClient('localhost', 27017)['tweet']
+psql_conn = psycopg2.connect("dbname='tweet'")
+pg_cur = psql_conn.cursor()
 
 # COLLECTIONS: db -> collection list
 COLLECTIONS = {
@@ -70,16 +72,19 @@ def data_not_updated(data_name):
 
 if __name__ == '__main__':
 
-    client = MongoClient(host='localhost', port=27017)
-    tweet_db = client.tweet
-    flickr_db = client.flickr
-    instagram_db = client.instagram
+    # client = MongoClient(host='localhost', port=27017)
+    # tweet_db = client.tweet
+    # flickr_db = client.flickr
+    # instagram_db = client.instagram
 
     current_counts = {}
-    for db in COLLECTIONS:
+    for db in ['tweet']: # TODO add instagram and flickr
         cols = COLLECTIONS[db]
         for col in cols:
-            current_counts[col] = client[db][col].count()
+            pg_cur.execute("SELECT COUNT(*) FROM " + col + ";")
+            # ^^ This is bad, don't combine strings like this. In this case I
+            # know it's safe because I created |col|.
+            current_counts[col] = pg_cur.fetchone()[0]
 
     # if file does not exist, make one.
     try:
@@ -98,7 +103,7 @@ if __name__ == '__main__':
         f.close()
 
     # Check each collection, send an email if it's not updated.
-    for db in COLLECTIONS:
+    for db in ['tweet']: # TODO add instagram and flickr
         cols = COLLECTIONS[db]
         for col in cols:
             if data_not_updated(col):

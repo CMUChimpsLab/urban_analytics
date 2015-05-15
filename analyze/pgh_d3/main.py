@@ -166,9 +166,9 @@ def user_here_once_query():
 if __name__ == "__main__":
     print "ensuring indexes"
     db['user'].ensure_index('_id')
-    db['user'].ensure_index([('centroid', pymongo.GEOSPHERE)])
-    db['tweet_pgh'].ensure_index([('coordinates', pymongo.GEOSPHERE)])
-    db['foursquare'].ensure_index([('coordinates', pymongo.GEOSPHERE)])
+    # db['user'].ensure_index([('centroid', pymongo.GEOSPHERE)])
+    # db['tweet_pgh'].ensure_index([('coordinates', pymongo.GEOSPHERE)])
+    # db['foursquare'].ensure_index([('coordinates', pymongo.GEOSPHERE)])
     print "indexes have all been created, starting app"
     app.run(host='0.0.0.0')
     # 0.0.0.0 means "listen on all public IPs"

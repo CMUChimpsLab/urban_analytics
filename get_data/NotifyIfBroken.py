@@ -2,7 +2,6 @@
 # Email addresses (from and to) given in config.txt.
 
 import smtplib, json, ConfigParser, psycopg2
-# from pymongo import MongoClient
 
 config = ConfigParser.ConfigParser()
 config.read('config.txt')
@@ -13,7 +12,6 @@ PSWD = config.get('error_handling', 'password')
 
 COUNT_FILENAME = 'data_counts.json'
 
-# mongo_db = MongoClient('localhost', 27017)['tweet']
 psql_conn = psycopg2.connect("dbname='tweet'")
 pg_cur = psql_conn.cursor()
 
@@ -28,7 +26,8 @@ COLLECTIONS = {
                 'tweet_cleveland',
                 'tweet_seattle',
                 'tweet_miami',
-                'tweet_london'], #TODO put the foursquares back in?
+                'tweet_london',
+                'tweet_minneapolis'], #TODO put the foursquares back in?
                 # 'foursquare_pgh',
                 # 'foursquare_ny',
                 # 'foursquare_sf',
@@ -43,6 +42,7 @@ COLLECTIONS = {
     'flickr' : [ 'flickr_pgh' ]
 }
 
+# This actually sends an email.
 def email_error(data_name, prev_count, current_count):
     s = smtplib.SMTP('smtp.gmail.com', 587)  
     s.ehlo()
@@ -65,6 +65,8 @@ def email_error(data_name, prev_count, current_count):
     s.quit()
     return
 
+# Returns true iff the count from this column is the same as the last time
+# we ran this script.
 def data_not_updated(data_name):
     return prev_counts.get(data_name) \
         and current_counts.get(data_name) \
@@ -72,13 +74,8 @@ def data_not_updated(data_name):
 
 if __name__ == '__main__':
 
-    # client = MongoClient(host='localhost', port=27017)
-    # tweet_db = client.tweet
-    # flickr_db = client.flickr
-    # instagram_db = client.instagram
-
     current_counts = {}
-    for db in ['tweet', 'instagram']: # TODO add instagram and flickr
+    for db in ['tweet', 'instagram']: # TODO add flickr
         cols = COLLECTIONS[db]
         for col in cols:
             print "Counting table: " + str(col)
@@ -103,8 +100,10 @@ if __name__ == '__main__':
         f.write(json.dumps(prev_counts))
         f.close()
 
+    print "Previous Counts: %s" % str(prev_counts)
+    print "Current Counts: %s" % str(current_counts)
     # Check each collection, send an email if it's not updated.
-    for db in ['tweet', 'instagram']: # TODO add instagram and flickr
+    for db in ['tweet', 'instagram']: # TODO add flickr
         cols = COLLECTIONS[db]
         for col in cols:
             if data_not_updated(col):

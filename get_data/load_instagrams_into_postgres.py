@@ -6,6 +6,10 @@
 # If run on its own, this file will:
 # Drop any postgres table that already exists (!), recreate it, then 
 # pull instagrams out of a collection in mongodb and put them into postgresql.
+#
+# Note: this was run once, to get all the data from Mongo into Postgres, and
+# then it should probably never have to be run again. Now it exists mostly
+# for the instagram_to_insert_string function, called from ScrapeInstagram.py. 
 
 import argparse, pymongo, psycopg2, psycopg2.extras, psycopg2.extensions
 import ppygis, traceback, pytz, datetime, send_email
@@ -124,6 +128,9 @@ if __name__=='__main__':
 
     counter = 0
     for instagram in mongo_db[args.collection].find():
+        if instagram['location'] == None:
+            continue # only a couple that somehow have no locations
+
         insert_str = instagram_to_insert_string(instagram, args.collection)
         try:
             pg_cur.execute(insert_str)

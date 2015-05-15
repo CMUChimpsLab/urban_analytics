@@ -21,7 +21,7 @@
 import sys, argparse, inspect, time, pycurl, urllib, json, ConfigParser
 import requests, HTMLParser, traceback
 import oauth2 as oauth
-import load_into_postgres, psycopg2, psycopg2.extensions, psycopg2.extras
+import load_tweets_into_postgres, psycopg2, psycopg2.extensions, psycopg2.extras
 from pymongo import Connection
 
 API_ENDPOINT_URL = 'https://stream.twitter.com/1.1/statuses/filter.json'
@@ -117,7 +117,7 @@ class TwitterStream:
 
     # Given a tweet from the Twitter API, saves it to Postgres DB table |table|.
     def save_to_postgres(self, tweet):
-        insert_str = load_into_postgres.tweet_to_insert_string(tweet, self.tweet_col)
+        insert_str = load_tweets_into_postgres.tweet_to_insert_string(tweet, self.tweet_col)
         try:
             self.pg_cur.execute(insert_str)
             self.psql_conn.commit()

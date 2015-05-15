@@ -126,6 +126,9 @@ if __name__=='__main__':
 
     counter = 0
     for instagram in mongo_db[args.collection].find():
+        if instagram['location'] == None:
+            continue # only a couple that somehow have no locations
+
         insert_str = instagram_to_insert_string(instagram, args.collection)
         try:
             pg_cur.execute(insert_str)

@@ -100,6 +100,8 @@ if __name__ == '__main__':
         f.write(json.dumps(prev_counts))
         f.close()
 
+    print "Previous Counts: %s" % str(prev_counts)
+    print "Current Counts: %s" % str(current_counts)
     # Check each collection, send an email if it's not updated.
     for db in ['tweet', 'instagram']: # TODO add flickr
         cols = COLLECTIONS[db]

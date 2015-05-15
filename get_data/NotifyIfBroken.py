@@ -28,7 +28,7 @@ COLLECTIONS = {
                 'tweet_cleveland',
                 'tweet_seattle',
                 'tweet_miami',
-                'tweet_london'] #TODO put the foursquares back in?
+                'tweet_london'], #TODO put the foursquares back in?
                 # 'foursquare_pgh',
                 # 'foursquare_ny',
                 # 'foursquare_sf',
@@ -81,6 +81,7 @@ if __name__ == '__main__':
     for db in ['tweet']: # TODO add instagram and flickr
         cols = COLLECTIONS[db]
         for col in cols:
+            print "Counting table: " + str(col)
             pg_cur.execute("SELECT COUNT(*) FROM " + col + ";")
             # ^^ This is bad, don't combine strings like this. In this case I
             # know it's safe because I created |col|.

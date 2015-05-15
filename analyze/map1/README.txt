@@ -4,3 +4,4 @@ find tweets from people who most commonly tweet in that neighborhood.
 
 neighborhoods.json: a GeoJSON file, neighborhoods of Pittsburgh
 
+screenshot.png is what it looks like; mostly just a bunch of tweet dots.

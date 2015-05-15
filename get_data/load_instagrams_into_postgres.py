@@ -92,8 +92,6 @@ def instagram_to_insert_string(instagram, collection):
         location, tags, type, instagram_user, user_username, user_id))
     return insert_str
 
-    
-# TODO translate the rest of this function, I think I've got instagram-to-string done.
 if __name__=='__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--collection', default='instagram_pgh')
@@ -107,7 +105,7 @@ if __name__=='__main__':
         psql_conn.commit()
         create_table_str = "CREATE TABLE " + args.collection + "("
         for key, value in sorted(data_types.iteritems()):
-            if key not in ['location']: # create that coords column separately.
+            if key not in ['location']: # create that column separately.
                 create_table_str += key + ' ' + value + ', '
         create_table_str = create_table_str[:-2] + ");"
 

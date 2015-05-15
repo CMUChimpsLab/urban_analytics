@@ -78,7 +78,7 @@ if __name__ == '__main__':
     # instagram_db = client.instagram
 
     current_counts = {}
-    for db in ['tweet']: # TODO add instagram and flickr
+    for db in ['tweet', 'instagram']: # TODO add instagram and flickr
         cols = COLLECTIONS[db]
         for col in cols:
             print "Counting table: " + str(col)
@@ -104,7 +104,7 @@ if __name__ == '__main__':
         f.close()
 
     # Check each collection, send an email if it's not updated.
-    for db in ['tweet']: # TODO add instagram and flickr
+    for db in ['tweet', 'instagram']: # TODO add instagram and flickr
         cols = COLLECTIONS[db]
         for col in cols:
             if data_not_updated(col):

@@ -1,5 +1,6 @@
 Trying to use google maps (copy from Andy) to display a map quickly and easily.
 Ideally we'd be able to display one user's tweets easily.
+This doesn't actually get there, but it does display a map, so that's a start. And puts lines over it. Screenshot in screenshot.png.
 
 Client-side, this uses require.js, which was a new thing to me.
 templates/layout.html includes templates/main.html, which includes the script

@@ -42,6 +42,7 @@ COLLECTIONS = {
     'flickr' : [ 'flickr_pgh' ]
 }
 
+# This actually sends an email.
 def email_error(data_name, prev_count, current_count):
     s = smtplib.SMTP('smtp.gmail.com', 587)  
     s.ehlo()
@@ -64,6 +65,8 @@ def email_error(data_name, prev_count, current_count):
     s.quit()
     return
 
+# Returns true iff the count from this column is the same as the last time
+# we ran this script.
 def data_not_updated(data_name):
     return prev_counts.get(data_name) \
         and current_counts.get(data_name) \

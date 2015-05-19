@@ -78,7 +78,7 @@ if __name__ == '__main__':
     for db in ['tweet', 'instagram']: # TODO add flickr
         cols = COLLECTIONS[db]
         for col in cols:
-            print "Counting table: " + str(col)
+            # print "Counting table: " + str(col)
             pg_cur.execute("SELECT COUNT(*) FROM " + col + ";")
             # ^^ This is bad, don't combine strings like this. In this case I
             # know it's safe because I created |col|.
@@ -100,8 +100,8 @@ if __name__ == '__main__':
         f.write(json.dumps(prev_counts))
         f.close()
 
-    print "Previous Counts: %s" % str(prev_counts)
-    print "Current Counts: %s" % str(current_counts)
+    # print "Previous Counts: %s" % str(prev_counts)
+    # print "Current Counts: %s" % str(current_counts)
     # Check each collection, send an email if it's not updated.
     for db in ['tweet', 'instagram']: # TODO add flickr
         cols = COLLECTIONS[db]

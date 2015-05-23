@@ -22,7 +22,6 @@ import sys, argparse, inspect, time, pycurl, urllib, json, ConfigParser
 import requests, HTMLParser, traceback
 import oauth2 as oauth
 import load_tweets_into_postgres, psycopg2, psycopg2.extensions, psycopg2.extras
-from pymongo import Connection
 
 API_ENDPOINT_URL = 'https://stream.twitter.com/1.1/statuses/filter.json'
 
@@ -250,7 +249,7 @@ class TwitterStream:
                             log('Added Foursquare Data: ' + str(message['foursquare_data']))
                     except:
                         log_exception('Failed to add Foursq data to the message.')
-                    db[self.foursquare_col].insert(message)
+                    # db[self.foursquare_col].insert(message)
 
 
     def handle_tweet(self, data):
@@ -275,10 +274,11 @@ class TwitterStream:
                 lat = message['coordinates']['coordinates'][1]
                 if lon >= self.min_lon and lon <= self.max_lon and \
                         lat >= self.min_lat and lat <= self.max_lat:
-                    db[self.tweet_col].insert(dict(message))
+                    # db[self.tweet_col].insert(dict(message))
                     self.save_to_postgres(dict(message))
                     log('Got tweet with text: %s' % message.get('text').encode('utf-8'))
-                    self.save_foursquare_data_if_present(message)
+                    # TODO save foursquare data to its own table
+                    # self.save_foursquare_data_if_present(message)
 
         sys.stdout.flush()
         sys.stderr.flush()
@@ -292,14 +292,10 @@ if __name__ == '__main__':
         help='Which city to get data from.',
         choices=['pgh', 'sf', 'ny', 'chicago', 'houston', 'detroit', 'miami',
             'cleveland', 'seattle', 'london', 'minneapolis'])
-    parser.add_argument('--mongo_port', '-m', default=27017, type=int,
-        help='Which port MongoDB is on.')
     parser.add_argument('--logs_dir', '-l', default='/data/twitter_logs') 
     args = parser.parse_args()
 
-    db = Connection('localhost', args.mongo_port)['tweet']
-
-    print "Getting stream in " + args.city + " on port " + str(args.mongo_port)
+    print "Getting stream in " + args.city
 
     timestamp = time.time()
     errFile = open(args.logs_dir + '/error_%s_%d.log'%(args.city, timestamp), 'w')

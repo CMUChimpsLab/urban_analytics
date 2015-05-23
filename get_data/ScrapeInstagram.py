@@ -5,9 +5,6 @@
 
 import requests, json, time, sys, ConfigParser, traceback
 import load_instagrams_into_postgres, psycopg2, psycopg2.extensions, psycopg2.extras
-import pymongo
-
-db = pymongo.Connection('localhost',27017)['instagram']
 
 # coordinates in Twitter scraper: lower left (40.241667, -80.2),
 # upper right (40.641667, -79.8)
@@ -104,7 +101,6 @@ while True:
                 # Rename id to _id b/c that's what load_instagrams_into_postgres takes
                 media['_id'] = id
                 del media['id']
-                db.instagram_pgh.insert(dict(media)) # TODO remove this and all the rest of the mongo.
                 insert_str = load_instagrams_into_postgres.instagram_to_insert_string(media, 'instagram_pgh')
                 try:
                     pg_cur.execute(insert_str)

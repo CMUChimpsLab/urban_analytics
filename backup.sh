@@ -1,10 +1,12 @@
 #!/bin/bash
 
 echo $(date)
-name=$(date | sed 's/\ /_/g')
-pg_dumpall > /data/dbbackup/pg_$name.sql && tar -cvf /data/dbbackup/pg_$name.tar /data/dbbackup/pg_$name.sql && rm -r /data/dbbackup/pg_$name.sql
-mongodump --out=/data/dbbackup/$name && tar -cvf /data/dbbackup/$name.tar /data/dbbackup/$name && rm -r /data/dbbackup/$name
-echo "removing..."
-find /data/dbbackup/ -mtime 3 -exec echo {} \;
-find /data/dbbackup/ -mtime 3 -exec rm {} \;
+# tar chokes on spaces and colons.
+name=$(date | sed 's/\ /_/g' | sed 's/:/_/g')
+cd /data/dbbackup
+pg_dumpall > pg_$name.sql && tar -czf pg_$name.tar.gz pg_$name.sql && rm -r pg_$name.sql
+# mongodump --out=$name && tar -czf $name.tar.gz $name && rm -r $name
+echo "removing old files..."
+find /data/dbbackup/ -mtime +2 -exec echo {} \;
+find /data/dbbackup/ -mtime +2 -exec rm -r {} \;
 echo $(date)

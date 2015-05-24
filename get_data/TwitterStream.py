@@ -21,8 +21,7 @@
 import sys, argparse, inspect, time, pycurl, urllib, json, ConfigParser
 import requests, HTMLParser, traceback
 import oauth2 as oauth
-import load_into_postgres, psycopg2, psycopg2.extensions, psycopg2.extras
-from pymongo import Connection
+import load_tweets_into_postgres, psycopg2, psycopg2.extensions, psycopg2.extras
 
 API_ENDPOINT_URL = 'https://stream.twitter.com/1.1/statuses/filter.json'
 
@@ -43,7 +42,8 @@ CITY_LOCATIONS = {
     'cleveland': { 'locations': '-81.9697, 41.1822, -81.4697, 41.5822' },
     'seattle': { 'locations': '-122.5331, 47.4097, -121.9331, 47.8097' },
     'miami': { 'locations': '-80.4241, 25.5877, -80.0641, 26.2877' },
-    'london': { 'locations': '-0.4275, 51.3072, 0.2525, 51.7072' }
+    'london': { 'locations': '-0.4275, 51.3072, 0.2525, 51.7072' },
+    'minneapolis': { 'locations': '-93.465, 44.7778, -93.065, 45.1778' }
 }
 # Locations are lower left long, lower left lat, upper right long, upper right lat.
 # Mostly pretty arbitrarily chosen.
@@ -68,7 +68,8 @@ CITY_COLLECTIONS = {
     'cleveland':('tweet_cleveland','foursquare_cleveland'),
     'seattle': ('tweet_seattle','foursquare_seattle'),
     'miami': ('tweet_miami','foursquare_miami'),
-    'london': ('tweet_london','foursquare_london')
+    'london': ('tweet_london','foursquare_london'),
+    'minneapolis': ('tweet_minneapolis','foursquare_minneapolis')
 }
 
    
@@ -115,7 +116,7 @@ class TwitterStream:
 
     # Given a tweet from the Twitter API, saves it to Postgres DB table |table|.
     def save_to_postgres(self, tweet):
-        insert_str = load_into_postgres.tweet_to_insert_string(tweet, self.tweet_col)
+        insert_str = load_tweets_into_postgres.tweet_to_insert_string(tweet, self.tweet_col)
         try:
             self.pg_cur.execute(insert_str)
             self.psql_conn.commit()
@@ -248,7 +249,7 @@ class TwitterStream:
                             log('Added Foursquare Data: ' + str(message['foursquare_data']))
                     except:
                         log_exception('Failed to add Foursq data to the message.')
-                    db[self.foursquare_col].insert(message)
+                    # db[self.foursquare_col].insert(message)
 
 
     def handle_tweet(self, data):
@@ -273,10 +274,11 @@ class TwitterStream:
                 lat = message['coordinates']['coordinates'][1]
                 if lon >= self.min_lon and lon <= self.max_lon and \
                         lat >= self.min_lat and lat <= self.max_lat:
-                    db[self.tweet_col].insert(dict(message))
+                    # db[self.tweet_col].insert(dict(message))
                     self.save_to_postgres(dict(message))
                     log('Got tweet with text: %s' % message.get('text').encode('utf-8'))
-                    self.save_foursquare_data_if_present(message)
+                    # TODO save foursquare data to its own table
+                    # self.save_foursquare_data_if_present(message)
 
         sys.stdout.flush()
         sys.stderr.flush()
@@ -289,15 +291,11 @@ if __name__ == '__main__':
     parser.add_argument('--city', '-c', required=True,
         help='Which city to get data from.',
         choices=['pgh', 'sf', 'ny', 'chicago', 'houston', 'detroit', 'miami',
-            'cleveland', 'seattle', 'london'])
-    parser.add_argument('--mongo_port', '-m', default=27017, type=int,
-        help='Which port MongoDB is on.')
+            'cleveland', 'seattle', 'london', 'minneapolis'])
     parser.add_argument('--logs_dir', '-l', default='/data/twitter_logs') 
     args = parser.parse_args()
 
-    db = Connection('localhost', args.mongo_port)['tweet']
-
-    print "Getting stream in " + args.city + " on port " + str(args.mongo_port)
+    print "Getting stream in " + args.city
 
     timestamp = time.time()
     errFile = open(args.logs_dir + '/error_%s_%d.log'%(args.city, timestamp), 'w')

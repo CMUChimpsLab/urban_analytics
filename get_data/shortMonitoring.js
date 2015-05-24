@@ -11,6 +11,7 @@ var tweet_miami = db.tweet_miami.count();
 var tweet_detroit = db.tweet_detroit.count();
 var tweet_chicago = db.tweet_chicago.count();
 var tweet_london = db.tweet_london.count();
+var tweet_minneapolis = db.tweet_minneapolis.count();
 db = db.getSiblingDB('flickr');
 var flickrs = db.runCommand({count: 'flickr_pgh'})['n'];
 db = db.getSiblingDB('instagram');
@@ -21,4 +22,4 @@ print(currentDate + ',' + tweet_pgh + ',' + tweet_sf +
     ',' + tweet_cleveland + ',' + tweet_seattle +
     ',' + tweet_miami + ',' + tweet_detroit +
     ',' + tweet_chicago + ',' + tweet_london +
-    ',' + flickrs + ',' + instagrams)
+    ',' + flickrs + ',' + instagrams + ',' + tweet_minneapolis)

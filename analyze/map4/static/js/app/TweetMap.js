@@ -20,6 +20,24 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=drawing,p
             disableDefaultUI: true
         };
         var map = new google.maps.Map(canvas, mapOptions);
+        var selectedAreaNE,
+            selectedAreaSW;
+        var selectedArea = new google.maps.Rectangle({
+            bounds: getDefaultBounds(latitude, longitude),
+            editable: true,
+            draggable: true
+        });
+
+        selectedArea.setMap(map);
+        google.maps.event.addListener(selectedArea, 'bounds_changed', updateDataPanel);
+        updateDataPanel();
+
+        function updateDataPanel() {
+            selectedAreaNE = selectedArea.getBounds().getNorthEast();
+            selectedAreaSW = selectedArea.getBounds().getSouthWest();
+            var contentString = '<b>NorthEast Corner:</b> ' + selectedAreaNE.lat().toFixed(3) + ', ' + selectedAreaNE.lng().toFixed(3) + '<br> <b>SouthWest Corner:</b> ' + selectedAreaSW.lat().toFixed(3) + ', ' + selectedAreaSW.lng().toFixed(3);
+            dataPanel.innerHTML = contentString;
+        }
 
         var drawLine = function(lat1, lng1, lat2, lng2) {
            var line1Coordinates = [
@@ -81,7 +99,7 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=drawing,p
                     map.setCenter(centerMarker.getPosition());
                 });
 
-                // selectedArea.setBounds(getDefaultBounds(latitude, longitude));
+                selectedArea.setBounds(getDefaultBounds(latitude, longitude));
             },
 
             clearMap: function () {
@@ -164,13 +182,13 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=drawing,p
                 }
             },
 
-            // getSelectedArea: function () {
-            //     return {ne_lat: selectedAreaNE.lat(),
-            //             ne_lng: selectedAreaNE.lng(),
-            //             sw_lat: selectedAreaSW.lat(),
-            //             sw_lng: selectedAreaSW.lng()
-            //     };
-            // }
+            getSelectedArea: function () {
+                return {ne_lat: selectedAreaNE.lat(),
+                        ne_lng: selectedAreaNE.lng(),
+                        sw_lat: selectedAreaSW.lat(),
+                        sw_lng: selectedAreaSW.lng()
+                };
+            }
         };
 
         return api;

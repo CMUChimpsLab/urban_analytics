@@ -3,10 +3,8 @@
 # Instagram scraper
 # Tries to get all the photos/videos in the Pittsburgh area.
 
-import requests, json, time, sys, ConfigParser
-import pymongo
-
-db = pymongo.Connection('localhost',27017)['instagram']
+import requests, json, time, sys, ConfigParser, traceback
+import load_instagrams_into_postgres, psycopg2, psycopg2.extensions, psycopg2.extras
 
 # coordinates in Twitter scraper: lower left (40.241667, -80.2),
 # upper right (40.641667, -79.8)
@@ -61,6 +59,12 @@ payload = {'client_id': config.get('instagram', 'client_id'),
         'aspect': 'media',
         'radius': '5000'}
 
+# set up the Postgres connection.
+psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
+psycopg2.extensions.register_type(psycopg2.extensions.UNICODEARRAY)
+psql_conn = psycopg2.connect("dbname='tweet'")
+psycopg2.extras.register_hstore(psql_conn)
+pg_cur = psql_conn.cursor()
 
 curr_point_num = 0
 # ID of each photo/video we've seen already.
@@ -94,10 +98,19 @@ while True:
         for media in r.json()['data']:
             id = media['id']
             if id not in media_seen:
+                # Rename id to _id b/c that's what load_instagrams_into_postgres takes
                 media['_id'] = id
-                del media['id'] # rename id to _id so mongo will use it as the object ID
-                # print id
-                db.instagram_pgh.insert(dict(media))
+                del media['id']
+                insert_str = load_instagrams_into_postgres.instagram_to_insert_string(media, 'instagram_pgh')
+                try:
+                    pg_cur.execute(insert_str)
+                    psql_conn.commit()
+                except Exception as e:
+                    print "Error running this command: %s" % insert_str
+                    traceback.print_exc()
+                    traceback.print_stack()
+                    psql_conn.commit()
+
                 media_seen.append(id)
         time.sleep(5)
         # one request every 5 sec = ~720/hr, well under 5000 rate limit

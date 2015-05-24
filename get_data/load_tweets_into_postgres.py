@@ -13,6 +13,10 @@
 # If run on its own, this file will:
 # Drop any postgres table that already exists (!), recreate it, then 
 # pull tweets out of a collection in mongodb and put them into postgresql.
+#
+# Note: this was run once, to get all the data from Mongo into Postgres, and
+# then it should probably never have to be run again. Now it exists mostly
+# for the tweet_to_insert_string function, called from TwitterStream. 
 
 import argparse, pymongo, psycopg2, psycopg2.extras, psycopg2.extensions
 import ppygis, traceback, pytz, datetime, send_email

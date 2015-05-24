@@ -165,6 +165,14 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=geometry,
         functionsDiv.appendChild(user_num_bin_link);
         functionsDiv.appendChild(document.createElement('br'));
 
+        var venues_categories_bin_link = document.createElement('a');
+        venues_categories_bin_link.setAttribute("id", "venues_categories_bin_link");
+        venues_categories_bin_link.innerText = "Users / Venues";
+        venues_categories_bin_link.index = 1;
+        venues_categories_bin_link.style.backgroundColor = "white";
+        functionsDiv.appendChild(venues_categories_bin_link);
+        functionsDiv.appendChild(document.createElement('br'));
+
         var heatmap_link = document.createElement('a');
         heatmap_link.setAttribute("id", "heatmap_link");
         heatmap_link.innerText = "Heatmap of Pittsburgh";
@@ -181,6 +189,16 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=geometry,
         functionsDiv.appendChild(drawbins_link);
         map.controls[google.maps.ControlPosition.BOTTOM_LEFT].push(functionsDiv);
 
+        var venuebox = document.createElement('div');
+        venuebox.setAttribute('id', 'venuebox');
+        venuebox.style.display = "none";
+        var venuebox_info = document.createElement('p');
+        venuebox_info.setAttribute('id', 'venuebox_info');
+        venuebox.appendChild(venuebox_info);
+        map.controls[google.maps.ControlPosition.RIGHT_CENTER].push(venuebox);
+
+        var bin_bound_options = null;
+        var bin_bound = new google.maps.Rectangle(); 
 
         // Draw Ellipse: Stolen from https://github.com/monkeyherder/v3-eshapes/blob/master/eshapes.js
         function make_shape(point, r1, r2, r3, r4, rotation, vertexCount, strokeColour, strokeWeight, Strokepacity, fillColour, fillOpacity, opts, tilt) {
@@ -249,6 +267,19 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=geometry,
                 url: $SCRIPT_ROOT + "/get-num-users",
                 success: function (response) {
                     draw_uniq_users_heatmap(response["bin_to_num_uniq_users"]);
+                },
+                error: function () {
+                    console.log("ajax request failed for " + this.url);
+                }
+            });
+        });
+
+        google.maps.event.addDomListener(venues_categories_bin_link, 'click', function() {
+            $.ajax({
+                type: "get",
+                url: $SCRIPT_ROOT + "/get-venues",
+                success: function (response) {
+                    draw_venue_categories(response["bin_to_venue_categories"]);
                 },
                 error: function () {
                     console.log("ajax request failed for " + this.url);
@@ -644,11 +675,58 @@ define(['async!//maps.googleapis.com/maps/api/js?language=en&libraries=geometry,
                 }
             }
             heatmap = new google.maps.visualization.HeatmapLayer({
-                data: heatmapData
+                data: heatmapData,
+                maxIntensity: 969
             });
             heatmap.set('opacity', 1);
             heatmap.set('radius', 30);
             heatmap.setMap(map);
+        }
+
+        function draw_venue_categories(dict) {
+            venuebox.style.display = "block";
+            for (var key in dict) {
+                if (dict.hasOwnProperty(key)) {
+                      
+                    var arr = JSON.parse(key.replace('(','[').replace(')',']'));
+                    var lat = arr[0];
+                    var lon = arr[1];
+                    var user = dict[key]['user'];
+                    var venues = dict[key]['venue'];
+                }
+            }
+            google.maps.event.addDomListener(map, 'mousemove', function(event) {
+                var lat = Math.floor(event.latLng.lat() * 100) / 100;
+                var lon = Math.ceil(event.latLng.lng() * 100) / 100;
+                var coord = "(" + lat + ", " + lon + ")";
+                if (dict.hasOwnProperty(coord)) {
+                    var user = dict[coord]['user'];
+                    var venues = dict[coord]['venue'];
+                }
+                var cats = [];
+                for (var k in venues) {
+                    cats.push([k, venues[k]]);
+                }
+                cats.sort(function(a,b) {return b[1] - a[1]; });
+                var txt = coord + "\nNum users: " + user;
+                for (var i in cats) {
+                    txt = txt + "\n" + cats[i][0] + ": " + cats[i][1];
+                }
+                venuebox_info.innerText = txt; 
+                var bound = new google.maps.LatLngBounds(
+                    new google.maps.LatLng(lat, lon - 0.01),
+                    new google.maps.LatLng(lat + 0.01, lon));
+                bin_bound_options = {
+                    strokeColor: '#FF0000',
+                    strokeOpacity: 0.8,
+                    strokeWeight: 2,
+                    fillColor: '#FF0000',
+                    fillOpacity: 0.35,
+                    map: map,
+                    bounds: bound
+                };
+                bin_bound.setOptions(bin_bound_options);
+            });
         }
 
         function addUserLabel(username, num) {

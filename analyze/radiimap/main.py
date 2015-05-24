@@ -159,6 +159,13 @@ def get_num_users():
         bin_to_num_uniq_users[str([float(line['lat']), float(line['lon'])])] = line['num_users']
     return jsonify(bin_to_num_uniq_users=bin_to_num_uniq_users)
 
+@app.route('/get-venues', methods=['GET'])
+def get_venues():
+    bin_to_venue_categories = {}
+    with open('../../../nghd_info/outputs/bins_uniq_user_venue.json', 'r') as f:
+        bin_to_venue_categories = json.load(f)
+    return jsonify(bin_to_venue_categories=bin_to_venue_categories)
+
 # Returns list of tweet ranges of 10 users who tweet the most
 @app.route('/get-top-10-user-tweet-range', methods=['GET'])
 def get_top_10_user_tweet_range():

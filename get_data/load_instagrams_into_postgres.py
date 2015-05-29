@@ -17,7 +17,7 @@ import ppygis, traceback, pytz, datetime, send_email
 psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
 psycopg2.extensions.register_type(psycopg2.extensions.UNICODEARRAY)
 
-mongo_db = pymongo.MongoClient('localhost', 27017)['instagram']
+mongo_db = None
 psql_conn = psycopg2.connect("dbname='tweet'")
 psycopg2.extras.register_hstore(psql_conn)
 
@@ -98,6 +98,7 @@ if __name__=='__main__':
     parser.add_argument('--recreate_table', '-r', action='store_true')
     args = parser.parse_args()
 
+    mongo_db = pymongo.MongoClient('localhost', 27017)['instagram']
     if args.recreate_table:
         print "About to dump and recreate Postgres table. Enter to continue, Ctrl-C to quit."
         raw_input()

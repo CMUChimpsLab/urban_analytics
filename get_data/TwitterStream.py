@@ -124,7 +124,6 @@ class TwitterStream:
             print "Error running this command: %s" % insert_str
             traceback.print_exc()
             traceback.print_stack()
-            self.psql_conn.commit()
 
     def set_credentials(self):
         log('setting api credentials num %s' % self.credential_num)

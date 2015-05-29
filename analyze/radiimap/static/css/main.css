@@ -73,3 +73,8 @@ button {
     width: 15px;
     margin-left: 20px;
 }
+
+#venuebox {
+    padding: 15px;
+    background-color: rgba(255,255,255,0.6);
+}

@@ -120,10 +120,13 @@ class TwitterStream:
         try:
             self.pg_cur.execute(insert_str)
             self.psql_conn.commit()
+       
         except Exception as e:
             print "Error running this command: %s" % insert_str
             traceback.print_exc()
             traceback.print_stack()
+            self.psql_conn.rollback() # just ignore the error
+            # because, whatever, we miss one tweet
 
     def set_credentials(self):
         log('setting api credentials num %s' % self.credential_num)

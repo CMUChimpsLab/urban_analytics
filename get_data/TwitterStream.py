@@ -72,7 +72,10 @@ CITY_COLLECTIONS = {
     'seattle': ('tweet_seattle','foursquare_seattle'),
     'miami': ('tweet_miami','foursquare_miami'),
     'london': ('tweet_london','foursquare_london'),
-    'minneapolis': ('tweet_minneapolis','foursquare_minneapolis')
+    'minneapolis': ('tweet_minneapolis','foursquare_minneapolis'),
+    'austin': ('tweet_austin', 'NOTHING'),
+    'sanantonio': ('tweet_sanantonio', 'NOTHING'),
+    'dallas': ('tweet_dallas', 'NOTHING'),
 }
 
    
@@ -106,7 +109,8 @@ class TwitterStream:
         self.post_params = CITY_LOCATIONS.get(self.city)
         coords = CITY_LOCATIONS[self.city]['locations'].split(',')
         self.min_lon, self.min_lat, self.max_lon, self.max_lat = map(float, coords)
-        self.tweet_col, self.foursquare_col = CITY_COLLECTIONS.get(self.city)
+        # self.tweet_col, self.foursquare_col = CITY_COLLECTIONS.get(self.city)
+        self.tweet_col = CITY_COLLECTIONS.get(self.city)[0]
         self.num_reconnect = 0
         self.setup_connection()
 
@@ -134,14 +138,14 @@ class TwitterStream:
     def set_credentials(self):
         log('setting api credentials num %s' % self.credential_num)
         twitter_cred_name = 'twitter-' + str(self.credential_num)
-        foursq_cred_name = '4sq-' + str(self.credential_num)
+        # foursq_cred_name = '4sq-' + str(self.credential_num)
         oauth_keys = {'consumer_key': config.get(twitter_cred_name, 'consumer_key'),
                       'consumer_secret': config.get(twitter_cred_name, 'consumer_secret'),
                       'access_token_key': config.get(twitter_cred_name, 'access_token_key'),
                       'access_token_secret': config.get(twitter_cred_name, 'access_token_secret')}
-        self.foursq_credentials = {'client_id': config.get(foursq_cred_name, 'client_id'),
-                                   'client_secret': config.get(foursq_cred_name, 'client_secret'),
-                                   'api_version': FOURSQUARE_API_VERSION}
+        # self.foursq_credentials = {'client_id': config.get(foursq_cred_name, 'client_id'),
+        #                            'client_secret': config.get(foursq_cred_name, 'client_secret'),
+        #                            'api_version': FOURSQUARE_API_VERSION}
         self.oauth_token = oauth.Token(key=oauth_keys['access_token_key'], secret=oauth_keys['access_token_secret'])
         self.oauth_consumer = oauth.Consumer(key=oauth_keys['consumer_key'], secret=oauth_keys['consumer_secret'])
         self.credential_num += 1
@@ -223,6 +227,8 @@ class TwitterStream:
                 backoff_http_error = min(backoff_http_error * 2, 320)
 
     # Check if this is a Foursquare post and save to foursquare table if so.
+    # TODO: currently this is never called; left in here because there is some good hackery
+    # anyway the TODO is to delete this code.
     def save_foursquare_data_if_present(self, message):
         entities = message.get('entities')
         if entities and entities.get('urls'):
@@ -296,7 +302,8 @@ if __name__ == '__main__':
     parser.add_argument('--city', '-c', required=True,
         help='Which city to get data from.',
         choices=['pgh', 'sf', 'ny', 'chicago', 'houston', 'detroit', 'miami',
-            'cleveland', 'seattle', 'london', 'minneapolis'])
+            'cleveland', 'seattle', 'london', 'minneapolis', 'austin',
+            'sanantonio', 'dallas'])
     parser.add_argument('--logs_dir', '-l', default='/data/twitter_logs') 
     args = parser.parse_args()
 

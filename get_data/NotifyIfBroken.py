@@ -27,7 +27,10 @@ COLLECTIONS = {
                 'tweet_seattle',
                 'tweet_miami',
                 'tweet_london',
-                'tweet_minneapolis'], #TODO put the foursquares back in?
+                'tweet_minneapolis',
+                'tweet_austin',
+                'tweet_sanantonio',
+                'tweet_dallas'], #TODO put the foursquares back in?
                 # 'foursquare_pgh',
                 # 'foursquare_ny',
                 # 'foursquare_sf',

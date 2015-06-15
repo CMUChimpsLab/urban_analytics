@@ -43,7 +43,10 @@ CITY_LOCATIONS = {
     'seattle': { 'locations': '-122.5331, 47.4097, -121.9331, 47.8097' },
     'miami': { 'locations': '-80.4241, 25.5877, -80.0641, 26.2877' },
     'london': { 'locations': '-0.4275, 51.3072, 0.2525, 51.7072' },
-    'minneapolis': { 'locations': '-93.465, 44.7778, -93.065, 45.1778' }
+    'minneapolis': { 'locations': '-93.465, 44.7778, -93.065, 45.1778' },
+    'austin': {'locations': '-97.95, 30.05, -97.55, 30.45'},
+    'sanantonio': {'locations': '-98.7, 29.21667, -98.3, 29.61667'},
+    'dallas': {'locations': '-96.996667, 32.575833, -96.596667, 32.975833'},
 }
 # Locations are lower left long, lower left lat, upper right long, upper right lat.
 # Mostly pretty arbitrarily chosen.

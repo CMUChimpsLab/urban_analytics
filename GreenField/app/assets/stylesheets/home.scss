@@ -1,0 +1,36 @@
+// Place all the styles related to the home controller here.
+// They will automatically be included in application.css.
+// You can use Sass (SCSS) here: http://sass-lang.com/
+
+@import "materialize/components/color";
+$primary-color: color("indigo", "darken-4") !default;
+@import "materialize";
+
+
+body {
+  line-height: 1.5;
+
+}
+
+.logo {
+  line-height: .65;
+}
+
+.image_norm {
+	background:
+	url(bridge.png) no-repeat;
+    width: 100%;
+    height: 256px;
+    background-size: 100%, 100%;
+}
+
+.image {
+	background: 
+	linear-gradient(
+      rgba(255, 255, 255, .75), 
+      rgba(255, 255, 255, .75)
+    ), url(bridge2.png) no-repeat;
+    width: 100%;
+    height: 256px;
+    background-size: 100%, 100%;
+}

@@ -1,0 +1,38 @@
+COPY climates FROM '/home/mogh/GreenField/names.csv' DELIMITER ',' CSV HEADER; 
+COPY names FROM '/home/mogh/GreenField/names.csv' DELIMITER ','; 
+select twitter_user->'id' from tweets limit 10;
+
+
+COPY climates(EST,Max_TemperatureF,Mean_TemperatureF,Min_TemperatureF,Max_Dew_PointF,MeanDew_PointF,Min_DewpointF,Max_Humidity,Mean_Humidity,Min_Humidity,Max_Sea_Level_PressureIn,Mean_Sea_Level_PressureIn,Min_Sea_Level_PressureIn,Max_VisibilityMiles,Mean_VisibilityMiles,Min_VisibilityMiles,Max_Wind_SpeedMPH,Mean_Wind_SpeedMPH,Max_Gust_SpeedMPH,PrecipitationIn,CloudCover,Events,WindDirDegrees) FROM '/home/mogh/GreenField/2006.csv' DELIMITER ',' CSV HEADER; 
+
+
+
+DELETE FROM TWEETS 
+
+ratio of people actually tweeting about place
+around venue 
+
+tweets vs actually being at venue
+
+age 
+
+
+frame project
+
+for every construction area buffer area, tweets in location, increase and decrease
+
+comparative analysis 
+
+access vs popularity
+
+'positive' vs 'negative' tweets 
+
+user_id(unique ids) in buffer /hashtags
+
+time frames between tweets 
+
+cluster between visitor vs residences (specific areas)
+
+midnight, when you tweet 
+
+overview of tweets, basic numbers 

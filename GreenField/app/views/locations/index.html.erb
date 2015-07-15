@@ -1,0 +1,46 @@
+
+<!DOCTYPE html>
+  <% @total_visitors,@total_locals = 0,0 %> 
+
+  <% @latArray5,  @longArray5 = [],[] %>
+
+  <% @latArray, @longArray, @colors = [], [] ,[]%>
+
+  <% @tweet_text = Array.new %>
+
+  <% @locations.each do |location| %> 
+
+  <% start_index = (location.coordinates =~ /-\d/) %>
+  <% end_index = (location.coordinates =~ /\s/)-1 %>
+
+  <% start_index2 = (location.coordinates =~ /\s/) %>
+  <% end_index2 = (location.coordinates =~ /\)/)-1 %>
+
+  <% @latArray5 << location.coordinates[start_index...end_index] %>
+  <% @longArray5 << location.coordinates[start_index2...end_index2] %>
+  <% @tweet_text << location.text %>
+
+  <% if location.is_local?(30)
+        @total_locals+=1
+        @colors << "FF9900"
+      else
+        @total_visitors+=1
+        @colors << "003399"
+      end   %> 
+
+  <% end %>
+
+<%= render :partial => 'form' %> 
+
+ Displaying <FONT COLOR = "FF0000"> <%= @locations.size %> </FONT> Tweets | 
+  <FONT COLOR = "FF0000"> <%= @locations_morning.length %> </FONT> Tweets in the Morning |
+  <FONT COLOR = "FF0000"> <%= @locations_afternoon.length  %> </FONT> Tweets in the Afternoon |
+  <FONT COLOR = "FF0000"> <%= @locations_evening.length  %> </FONT> Tweets in the Evening |
+  <FONT COLOR = "FF9900"> <%= @total_locals  %> </FONT> Locals | 
+  <FONT COLOR = "003399"> <%= @total_visitors  %> </FONT> Visitors   
+<%#= link_to "Markers",  %>
+<%#= @colors %> 
+<%= render :partial => 'google_form' %> 
+<%#= render partial: 'maps' %>
+<%= render partial: 'tabs', locals: {total_locals: @total_locals, total_visitors: @total_visitors}%>
+<%= render partial: 'summary' %>

@@ -1,0 +1,34 @@
+<% if @tweets.empty? %>
+  <p><em>There are no tweets at this time.</em></p>
+<% else %>
+<h2> Tweets</h2>
+<table class="bordered">
+  <thead>
+    <tr>
+      <th>Twitter User</th>
+      <th>Entities</th>
+      <th>Favourite Count</th>
+      <th>Place</th>
+      <th>Retweet Count</th>
+      <th>Text</th>
+      <th>Coordinates</th>
+      <th>&nbsp;</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @tweets.each do |tweet| %>
+      <tr>
+      	<td><%= tweet.user_screen_name %></td>
+        <td><%= tweet.entities %></td>
+        <td><%= tweet.favourite_count %></td>
+        <td><%= tweet.place %></td>      
+        <td><%= tweet.retweet_count %></td>
+        <td><%= tweet.text %></td>
+        <td><%= tweet.coordinates %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+<%= will_paginate @tweets, previous_label: "Previous&nbsp;", next_label: "&nbsp;Next" %>  
+<% end %>
+<p>&nbsp;</p>

@@ -1,0 +1,19 @@
+{
+  "name": "GreenField",
+  "version": "0.0.0",
+  "authors": [
+    "mogh <mogh@example.com>"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "underscore": "~1.8.3",
+    "materialize": "~0.97.0"
+  }
+}

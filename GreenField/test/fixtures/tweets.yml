@@ -1,0 +1,45 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  contributors: MyText
+  created_at: 2015-06-08 13:30:00
+  entities: 
+  favourite_count: 1
+  filter_level: MyText
+  id: 
+  id_str: MyText
+  in_reply_to_screen_name: MyText
+  in_reply_to_status_id: 
+  in_reply_to_status_id_str: MyText
+  in_reply_to_user_id: 
+  in_reply_to_user_id_str: MyText
+  lang: MyText
+  place: 
+  retweet_count: 1
+  source: MyText
+  text: MyText
+  twitter_user: 
+  user_screen_name: MyText
+  coordinates: 
+
+two:
+  contributors: MyText
+  created_at: 2015-06-08 13:30:00
+  entities: 
+  favourite_count: 1
+  filter_level: MyText
+  id: 
+  id_str: MyText
+  in_reply_to_screen_name: MyText
+  in_reply_to_status_id: 
+  in_reply_to_status_id_str: MyText
+  in_reply_to_user_id: 
+  in_reply_to_user_id_str: MyText
+  lang: MyText
+  place: 
+  retweet_count: 1
+  source: MyText
+  text: MyText
+  twitter_user: 
+  user_screen_name: MyText
+  coordinates: 

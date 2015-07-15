@@ -1,0 +1,52 @@
+<% num_months = 11 %> 
+<% before_date = Date.parse(num_months.months.ago.to_s)  %> 
+<% Date.today %> 
+<% days = Date.today - before_date %>
+<% month_hash=@locations.get_tweet_statistics(days) %> 
+<% cur_month = Date.today.mon %> 
+<% @category_array = Array.new %> 
+<% @display_array = Array.new %> 
+<% (0..num_months).each do |n| 
+	@category_array << Tweet::MONTHS[(cur_month-(num_months-n)-1)%12]
+	month_hash[(cur_month-(num_months-n)-1)%12]==nil ? (@display_array) << 0 : (@display_array << month_hash[(cur_month-(num_months-n)-1)%12])
+end 
+ %> 
+
+<%= render partial: 'date_range_form' %> 
+<div id="history" style="width:100%; height:400px;"></div>
+
+<script>
+$(function () {
+	var category_array  = <%= raw @category_array %> ;
+	var display_array  = <%= raw @display_array %> ;
+    $('#history').highcharts({
+        title: {
+            text: 'Number of tweets in the last <%= days.round%> days',
+            x: -20 //center
+        },
+        xAxis: {
+            categories: category_array
+        },
+        yAxis: {
+            title: {
+                text: 'Number of Tweets'
+            },
+            plotLines: [{
+                value: 0,
+                width: 1,
+                color: '#808080'
+            }]
+        },
+        legend: {
+            layout: 'vertical',
+            align: 'right',
+            verticalAlign: 'middle',
+            borderWidth: 0
+        },
+        series: [{
+            name: 'Tweets',
+            data: display_array
+        }]
+    });
+});
+</script> 

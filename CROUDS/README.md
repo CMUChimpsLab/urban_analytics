@@ -12,20 +12,20 @@ FindUsers.py
 ------------
 Find public Twitter users whose recent tweets were at a specific location point. 
 
-#### Defalt values:
+#### Defalt values
 - users within **500 meters** from the location point
 - tweet made within the last **5 minutes** 
 - home (user's most commonly tweeted neighborhood) **not** specified
 - tweets made in **City of Pittsburgh, PA**
 
-#### Example queries:
+#### Example queries
 - `FindUsers.search(home = 'Central Oakland', location_type = 'venue name', location = 'Jared L. Cohon University Center')`
 - `FindUsers.search(minutes_since = 10, location_type = 'venue name', location = 'Jared L. Cohon University Center')`
 - `FindUsers.search(location_type = 'venue id', location = '40a55d8dfeee3')`
 - `FindUsers.search(location_type = 'streets', location = ('Craig st', 'Forbes ave'))`
 - `FindUsers.search(location_type = 'streets', location = ('Craig st', 'Forbes ave'), max_distance='10000', test = True)`
 
-#### Notes:
+#### Notes
 
 - If a `location` is specified, **location-type** must also be specified: 
 	- `venue id`
@@ -39,9 +39,9 @@ ParseTweet.py
 ------------
 Parses a tweet text to extract a number (for numeric type response) or a letter (for multiple-choice type response).
 
-#### To test:
+#### To test
 Run `tester.py`.
-Check that ParseTweet-tests.csv is saved as Windows CSV file. 
+Make sure that ParseTweet-tests.csv is saved as Windows CSV file. 
 
 
 

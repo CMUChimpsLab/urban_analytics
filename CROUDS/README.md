@@ -1,10 +1,9 @@
 CROUDS
 ======
 
-Crowd Reporting of Urban Data Streams
--------------------------------------
-
 This document started 2015-07-28 by Jinny Kim - hyunjiki@andrew.cmu. 
+
+CROUDS stands for Crowd Reporting of Urban Data Streams.
 
 CROUDS is a branch of Jason Hong and Dan Tasse's [Urban Analytics Project](https://www.hcii.cmu.edu/news/2015/hong-tasse-see-social-media-urban-planning-tool). 
 
@@ -38,6 +37,11 @@ Find public Twitter users whose recent tweets were at a specific location point.
 
 ParseTweet.py
 ------------
+Parses a tweet text to extract a number (for numeric type response) or a letter (for multiple-choice type response).
+
+#### To test:
+Run `tester.py`.
+Check that ParseTweet-tests.csv is saved as Windows CSV file. 
 
 
 

@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+
+{% block h %}
+{% endblock %}
+
+{% block content %}
+  <div class="banner center">
+      <div class="row">
+          <div class="col s12 center">
+            <h1>FIND USERS</h1>
+            <a href="/search_users" id="download-button">Volunteers Only</a>
+        &nbsp; &nbsp; 
+        &nbsp; &nbsp; 
+            <a href="/search_users" id="download-button">All Public Users</a>
+          </div>
+      </div>
+  </div>
+
+  <div class="container">
+    <form action="{{ url_for('query_users') }}" method="POST" style="padding:50px">
+      <div class="section">
+        <div class="row">
+          <div class="input-field col s4">
+            <h5>Location</h5>
+          </div>
+          <div class="input-field col s8 center-align">
+            <input type="radio" name="location_type" value="venue name" id="name"><label for="name">Venue Name</label>      
+            &nbsp; &nbsp; &nbsp; &nbsp;
+            &nbsp; &nbsp; &nbsp; &nbsp;
+            &nbsp; &nbsp; &nbsp; &nbsp;
+            &nbsp; &nbsp; &nbsp; &nbsp;
+            <input type="radio" name="location_type" value="venue id" id="id"><label for="id">Venue ID</label>
+            &nbsp; &nbsp; &nbsp; &nbsp;
+            &nbsp; &nbsp; &nbsp; &nbsp;
+            &nbsp; &nbsp; &nbsp; &nbsp;
+            &nbsp; &nbsp; &nbsp; &nbsp;
+            <input type="radio" name="location_type" value="streets" id="streets"><label for="streets">Streets</label>
+          </div>
+        </div>
+        <div class="row">
+          <div class="input-field col s4">
+          </div>
+          <div class="input-field col s8">
+            <input type="text" name="venue" placeholder="Carnegie Mellon University OR 4ad787a1f964a520d40b21e3">
+          </div>
+        </div>
+        <div class="row">
+          <div class="input-field col s4">
+          </div>
+          <div class="input-field col s8">
+            <div class="input-field col s6">
+              <input type="text" name="street-1" placeholder="Craig St">
+            </div>
+            <div class="input-field col s6">
+              <input type="text" name="street-2" placeholder="Forbes Ave">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+          <div class="row">
+              <div class="input-field col s4">
+                <h5>Include tweets within last... </h5>
+              </div>
+              <div class="input-field col s8 center">
+                <select class="browser-default" name="minutes">
+                  <option value="5">5 minutes</option>
+                  <option value="10">10 minutes</option>
+                  <option value="20">20 minutes</option>
+                  <option value="30">30 minutes</option>
+                  <option value="60">60 minutes</option>
+                  <option value="1000">1000 minutes</option>
+                </select>
+              </div>
+          </div>
+      </div>
+
+      <div class="section">
+        <div class="row">
+          <div class="input-field col s4">
+            <h5>Distance from location</h5>
+          </div>
+          <div class="input-field col s8 center">
+            <select class="browser-default" name="max_distance">
+              <option value="50">50 meters</option>
+              <option value="100">100</option>
+              <option value="500">500</option>
+              <option value="1000">1000</option>
+              <option value="3000">3000</option>
+              <option value="5000">5000</option>
+              <option value="10000">10000</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="row">
+            <div class="input-field col s4">
+              <h5>Limit to users who live in <g style="color:red">*</g>...</h5>
+            </div>
+            <div class="input-field col s8 center">
+              <select class="browser-default" name="home">
+                  <option value="Any">Any neighborhood</option>
+                  <option value="Squirrel Hill">Squirrel Hill</option>
+                  <option value="Shadyside">Shadyside</option>
+                  <option value="Manchester">Manchester</option>
+                  <option value="Central Oakland">Central Oakland</option>
+                  <option value="Crafton Heights">Crafton Heights</option>
+                  <option value="South Side Flats">South Side Flats</option>
+                  <option value="Glen Hazel">Glen Hazel</option>
+                  <option value="Arlington">Arlington</option>
+                  <option value="Upper Lawrenceville">Upper Lawrenceville</option>
+                  <option value="Marshall-Shadeland">Marshall-Shadeland</option>
+                  <option value="Central Lawrenceville">Central Lawrenceville</option>
+                  <option value="Westwood">Westwood</option>
+                  <option value="South Oakland">South Oakland</option>
+                  <option value="Spring Garden">Spring Garden</option>
+                  <option value="Highland Park">Highland Park</option>
+                  <option value="Spring Hill-City View">Spring Hill-City View</option>
+                  <option value="Outside Pittsburgh">Outside Pittsburgh</option>
+              </select>
+            </div>
+        </div>
+      </div>
+
+      <div class="input-field col s12 row center">
+        <button class="btn waves-effect waves-light" type="submit" name="action">Search</button>
+      </div>
+    </form>
+  </div>
+{% endblock %}
+

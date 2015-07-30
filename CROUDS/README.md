@@ -44,7 +44,3 @@ Run `tester.py`.
 Make sure that ParseTweet-tests.csv is saved as Windows CSV file. 
 
 
-
-AddQuestion.py
-------------
-

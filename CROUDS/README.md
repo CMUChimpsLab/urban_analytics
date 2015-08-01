@@ -4,7 +4,6 @@ CROUDS
 This document started 2015-07-28 by Jinny Kim - hyunjiki@andrew.cmu. 
 
 CROUDS stands for Crowd Reporting of Urban Data Streams.
-
 CROUDS is a branch of Jason Hong and Dan Tasse's [Urban Analytics Project](https://www.hcii.cmu.edu/news/2015/hong-tasse-see-social-media-urban-planning-tool). 
 
 
@@ -42,5 +41,17 @@ Parses a tweet text to extract a number (for numeric type response) or a letter 
 #### To test
 Run `tester.py`.
 Make sure that ParseTweet-tests.csv is saved as Windows CSV file. 
+
+
+To run CROUDS flask web app
+----------------------------
+1. Activate env
+2. Run run.py
+
+#### You can
+- Add new question (open a question)
+- Find users near a location
+- View questions in db
+- View responses in db
 
 

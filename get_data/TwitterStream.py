@@ -47,6 +47,7 @@ CITY_LOCATIONS = {
     'austin': {'locations': '-97.95, 30.05, -97.55, 30.45'},
     'sanantonio': {'locations': '-98.7, 29.21667, -98.3, 29.61667'},
     'dallas': {'locations': '-96.996667, 32.575833, -96.596667, 32.975833'},
+    'whitehouse': {'locations': '-77.038, 38.8965, -77.035, 38.8985'},
 }
 # Locations are lower left long, lower left lat, upper right long, upper right lat.
 # Mostly pretty arbitrarily chosen.
@@ -76,9 +77,9 @@ CITY_COLLECTIONS = {
     'austin': ('tweet_austin', 'NOTHING'),
     'sanantonio': ('tweet_sanantonio', 'NOTHING'),
     'dallas': ('tweet_dallas', 'NOTHING'),
+    'whitehouse': ('tweet_whitehouse', 'NOTHING'),
 }
 
-   
 # Prints out a log including the stack trace, time, and a message, when an
 # exception has occurred.
 def log_exception(message):
@@ -92,8 +93,6 @@ def log(message):
     line_no = int(info.lineno)
     print '%d, line %d: %s' % (time.time(), line_no, message)
 
-
- 
 class TwitterStream:
     def __init__(self, city, timeout=False):
         self.credential_num = 1
@@ -303,7 +302,7 @@ if __name__ == '__main__':
         help='Which city to get data from.',
         choices=['pgh', 'sf', 'ny', 'chicago', 'houston', 'detroit', 'miami',
             'cleveland', 'seattle', 'london', 'minneapolis', 'austin',
-            'sanantonio', 'dallas'])
+            'sanantonio', 'dallas', 'whitehouse'])
     parser.add_argument('--logs_dir', '-l', default='/data/twitter_logs') 
     args = parser.parse_args()
 

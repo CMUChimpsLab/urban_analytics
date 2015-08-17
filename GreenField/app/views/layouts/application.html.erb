@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+  <nav>
+    <div class="nav-wrapper">
+      <a href="/home" class="brand-logo">  
+        <div class="logo"> 
+          <b> <br> &nbsp Greenfield Bridge </b> <br> &nbsp <font size="4"> Impact on Neighbouring Businesses </font> 
+        </div> </a>
+      <ul id="nav-mobile" class="right hide-on-med-and-down">
+        <li><a href="components.html">Research</a></li>
+        <li><a href="javascript.html">Metrics</a></li>
+        <li><a href="javascript.html">Venues</a></li>
+        <li><a href="/about">About</a></li>
+      </ul>
+    </div>
+  </nav>
+<head>
+  <title>GFB</title>
+    <%= stylesheet_link_tag    "application" %>
+    <%= javascript_include_tag "vendor/modernizr" %>
+  <%= csrf_meta_tags %>
+</head>
+<body>
+
+<%= yield %>
+    <%= javascript_include_tag "application" %>
+</body>
+</html>

@@ -1,0 +1,5 @@
+{
+  "directory": "vendor/bower_components"
+}
+
+rails generate model Climate EST:date Max_TemperatureF:integer Mean_TemperatureF:integer Min_TemperatureF:integer Max_Dew_PointF:integer MeanDew_PointF:integer Min_DewpointF:integer Max_Humidity:integer Mean_Humidity:integer Min_Humidity:integer Max_Sea_Level_PressureIn:decimal Mean_Sea_Level_PressureIn:decimal Min_Sea_Level_PressureIn:decimal Max_VisibilityMiles:integer Mean_VisibilityMiles:integer Min_VisibilityMiles:integer Max_Wind_SpeedMPH:integer Mean_Wind_SpeedMPH:integer Max_Gust_SpeedMPH:integer PrecipitationIn:decimal CloudCover:integer Events:text WindDirDegrees:integer

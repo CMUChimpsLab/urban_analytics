@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block content %}
+  <div class="banner">
+    <div class="row center">
+      <h2>OPEN QUESTIONS</h2>
+      <a href="/new_question" id="download-button">Add New Question</a>
+      &nbsp;
+      <a href="/view_questions" id="download-button">View Open Questions</a>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="row">
+      {% for question in open_questions %}
+        <div class="col s4 m3">
+          <div class="card blue-grey darken-1">
+            <div class="card-content white-text">
+              <span class="card-title">{{ question.subject }}</span>
+              <p>Mon 7/22/15 - Friday 7/26/15</p>
+              <p>{{ question.start_time }} - {{ question.end_time }}</p>
+              <p>{{ question.question }}</p>
+            </div>
+            <div class="card-action">
+              <a href="#">{{ question.location }}</a>
+            </div>
+          </div>
+        </div>
+      {% endfor %} 
+    </div>                
+  </div>
+{% endblock %}

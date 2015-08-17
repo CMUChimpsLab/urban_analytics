@@ -1,0 +1,65 @@
+<html>
+  <head>
+    {% if title %}
+      <title>{{ title }} - microblog</title>
+    {% else %}
+      <title>CROUDS</title>
+    {% endif %}
+
+    <link href="{{ url_for('.static', filename='css/style.css') }}" rel="stylesheet">
+    <link href="{{ url_for('.static', filename='css/materialize.min.css') }}" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+    <script src="{{ url_for('.static', filename='js/materialize.min.js') }}"></script>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+    <style>
+      body{
+        font-size: .6rem;
+      }
+      nav{
+        background-color: #55acee;
+      }
+      #index-banner a{
+        color: #80deea;
+        font-weight: 300;
+        font-size: 1.2rem;
+      }
+      h1{
+        margin-bottom: 10px;
+      }
+      .grey-text h5{
+        color: grey;
+        font-weight: 200;
+      }
+    </style>
+
+    {% block h %}{% endblock %}
+  </head>
+
+  <body>
+    <nav role="navigation">
+      <div class="nav-wrapper container">
+        <a id="logo-container" href="/" class="brand-logo">CROUDS</a>
+        <ul class="right hide-on-med-and-down">
+          <li><a href="/new_question">Questions</a></li>
+          <li><a href="/responses_parsed">Responses</a></li>
+          <li><a href="/search_users">Users</a></li>
+        </ul>
+
+        <ul id="nav-mobile" class="side-nav">
+          <li><a href="/new_question">Questions</a></li>
+          <li><a href="/responses_parsed">Responses</a></li>
+          <li><a href="/search_users">Users</a></li>
+        </ul>
+        <a href="#" data-activates="nav-mobile" class="button-collapse"><i class="material-icons">menu</i></a>
+      </div>
+    </nav>
+
+    {% block content %}{% endblock %}
+
+    <div class="footer">
+      <p style="color: grey;font-size: .7em;font-weight:100;padding-top: 30px; margin-bottom: 0px; text-align:center">© Carnegie Mellon University CHIMPS Lab</p>
+    </div>
+  </body>
+</html>
+

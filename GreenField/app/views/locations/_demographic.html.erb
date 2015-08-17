@@ -1,0 +1,49 @@
+<% @total = total_visitors+total_locals %> 
+<% @visitor_percentage = total_visitors.to_f/@total * 100  %> 
+<% @local_percentage = total_locals.to_f/@total *100 %> 
+
+<div id="container3" style="width:100%; height:400px;"></div>
+<script>
+$(function () {
+    $('#container3').highcharts({
+        chart: {
+            plotBackgroundColor: null,
+            plotBorderWidth: null,
+            plotShadow: false,
+            type: 'pie'
+        },
+        title: {
+            text: 'Visitors vs. Locals'
+        },
+        tooltip: {
+            pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+        },
+        plotOptions: {
+            pie: {
+                allowPointSelect: true,
+                cursor: 'pointer',
+                dataLabels: {
+                    enabled: true,
+                    format: '<b>{point.name}</b>: {point.percentage:.1f} %',
+                    style: {
+                        color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
+                    }
+                }
+            }
+        },
+        series: [{
+            name: "Brands",
+            colorByPoint: true,
+            data: [{
+                name: "Visitors",
+                y: <%= @visitor_percentage %> ,
+            }, {
+                name: "Locals",
+                y: <%=  @local_percentage %> ,
+                sliced: true,
+                selected: true
+            }]
+        }]
+    });
+});
+</script>

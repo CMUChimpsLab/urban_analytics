@@ -1,0 +1,47 @@
+
+<div id="container" style="width:100%; height:400px;"></div>
+<script>
+    $(function () { 
+    $('#container').highcharts({
+        chart: {
+            type: 'bar'
+        },
+        title: {
+        	<% if params[:keyword] %> 
+            	text: 'When <%= params[:keyword].length!=0 ? params[:keyword]+' was Tweeted' :'Were People Tweeting'%>'
+            <% else %>
+            	text: 'Tweets'
+            <% end %> 
+
+        },
+        xAxis: {
+        	allowDecimals : false,
+        	title: {
+        		text: 'Time of Day'
+        	},
+            categories: ['Morning', 'Afternoon', 'Evening']
+        },
+        yAxis: {
+        	allowDecimals : false,
+            title: {
+                text: 'Tweets'
+            }
+        },
+        series: [{
+            index:2, 
+            name: 'Male',
+            data: [<%= @morn_gender_array[0] %>, <%= @noon_gender_array[0] %> , <%= @evening_gender_array[0] %> ]
+        }, {
+            index:1,
+            name: 'Female',
+            data: [<%= @morn_gender_array[1] %>, <%= @noon_gender_array[1] %>, <%= @evening_gender_array[1]%>],
+            color: Highcharts.getOptions().colors[3] 
+        },
+        {   index:0,
+            name: 'Gender Unknown',
+            data: [<%= @morn_gender_array[2] %>, <%= @noon_gender_array[2] %>, <%= @evening_gender_array[2] %>]
+        }]
+    });
+});
+</script>
+

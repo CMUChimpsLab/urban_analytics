@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="banner center">
+    <div class="row">
+        <div class="col s12 center">
+            <h1>NEW QUESTION</h1>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col s12">
+            <a href="/new_question" id="download-button">Add New Question </a>
+            &nbsp;
+            <a href="/view_questions" id="download-button">View Open Questions</a>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <form action="{{ url_for('enqueue_question') }}" method="POST">
+        <div class="section">
+            <h2>1. Choose Location</h2>
+            <div class="row">
+                <div class="input-field col s12 center">
+                    <input type="radio" name="location" value="venue-name" id="name"><label for="name">Venue Name</label>      
+                    &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+                    <input type="radio" name="location" value="venue-id" id="id"><label for="id">Venue ID</label>        
+                    &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+                    <input type="radio" name="location" value="streets" id="streets"><label for="streets">Streets</label>
+                </div>
+            </div>
+            <div class="row">
+                <div class="input-field col s12">
+                    <input type="text" name="venue-name" placeholder="e.g. Carnegie Mellon University"></div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>2. Choose Subject</h2>
+            <div class="row">
+                <div class="input-field col s12 center">
+                    <input type="text" name="subject" id="subject" placeholder="e.g. pedestrian count, cyclist count, truck count, parking space"><!-- <label for="subject">Subject</label> -->
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>3. Enter Start & End Time </h2>
+            <div class="row">
+                <div class="input-field col s12">
+                    <div class='col s6'>
+                        Open question at:<br>
+                        <input type="datetime-local" name="open_at" value="2000-01-01T00:00">
+                    </div>
+                    <div class='col s6'>
+                        Close question at:<br>
+                        <input type="datetime-local" name="close_at" value="2000-01-01T00:05">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>4. Write your question.</h2>
+            <div class="row">
+                <div class="input-field col s12">
+                    <textarea id="textarea1" class="materialize-textarea" name="question" placeholder="Can you count how many trucks you see passing by at Forbes+Craig in the next 2 minutes?" rows="1"></textarea>
+                </div>
+            </div>
+        </div>
+        <br/><br/>
+        <div class="input-field col s12 center">
+            <button class="btn waves-effect waves-light" type="submit" name="action">Ask!</button> 
+        </div>   
+    </form>
+</div>
+
+{% endblock %}

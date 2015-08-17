@@ -1,0 +1,51 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  EST: 2015-06-30
+  Max_TemperatureF: 1
+  Mean_TemperatureF: 1
+  Min_TemperatureF: 1
+  Max_Dew_PointF: 1
+  MeanDew_PointF: 1
+  Min_DewpointF: 1
+  Max_Humidity: 1
+  Mean_Humidity: 1
+  Min_Humidity: 1
+  Max_Sea_Level_PressureIn: 9.99
+  Mean_Sea_Level_PressureIn: 9.99
+  Min_Sea_Level_PressureIn: 9.99
+  Max_VisibilityMiles: 1
+  Mean_VisibilityMiles: 1
+  Min_VisibilityMiles: 1
+  Max_Wind_SpeedMPH: 1
+  Mean_Wind_SpeedMPH: 1
+  Max_Gust_SpeedMPH: 1
+  PrecipitationIn: 9.99
+  CloudCover: 1
+  Events: MyText
+  WindDirDegrees: 1
+
+two:
+  EST: 2015-06-30
+  Max_TemperatureF: 1
+  Mean_TemperatureF: 1
+  Min_TemperatureF: 1
+  Max_Dew_PointF: 1
+  MeanDew_PointF: 1
+  Min_DewpointF: 1
+  Max_Humidity: 1
+  Mean_Humidity: 1
+  Min_Humidity: 1
+  Max_Sea_Level_PressureIn: 9.99
+  Mean_Sea_Level_PressureIn: 9.99
+  Min_Sea_Level_PressureIn: 9.99
+  Max_VisibilityMiles: 1
+  Mean_VisibilityMiles: 1
+  Min_VisibilityMiles: 1
+  Max_Wind_SpeedMPH: 1
+  Mean_Wind_SpeedMPH: 1
+  Max_Gust_SpeedMPH: 1
+  PrecipitationIn: 9.99
+  CloudCover: 1
+  Events: MyText
+  WindDirDegrees: 1

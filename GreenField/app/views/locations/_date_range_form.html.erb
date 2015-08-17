@@ -1,0 +1,32 @@
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>jQuery UI Datepicker - Default functionality</title>
+  <link rel="stylesheet" href="jquery-ui.css">
+  <script src="//code.jquery.com/jquery-1.10.2.js"></script>
+  <script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+  <link rel="stylesheet" href="/resources/demos/style.css">
+  <script>
+  $(function() {
+    $( "#datepicker" ).datepicker();
+  });
+  </script>
+    <script>
+  $(function() {
+    $( "#datepicker2" ).datepicker();
+  });
+  </script>
+</head>
+
+</html>
+
+<p> <%= form_tag "date_range", remote: true, :method => 'get' do %>
+  Start Date 
+  <%#= text_field_tag("datepicker",  params[:start_date]) %>
+  End Date
+  <%#= text_field_tag("datepicker2", params[:end_date]) %>
+  Months
+
+  <%= month_field_tag "months_back", params[:months_back] %> 
+  <%= submit_tag "Search" %>
+<% end %>  </p>

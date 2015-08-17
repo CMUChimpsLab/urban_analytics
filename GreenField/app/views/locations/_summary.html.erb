@@ -1,0 +1,1 @@
+<p> &nbsp; &nbsp; &nbsp; Most people like to go to this venue in the <%=@locations.find_max_tweets%>. Patrons tend to be <%= Tweet::GENDERS[Tweet.get_max_index(@morn_gender_array, @noon_gender_array, @evening_gender_array)] %> <%= Tweet::TYPES[[@total_visitors,@total_locals].index([@total_visitors,@total_locals].max)] %>.</p><br> <br> <br> 

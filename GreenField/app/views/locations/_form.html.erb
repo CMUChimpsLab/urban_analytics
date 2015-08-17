@@ -1,0 +1,8 @@
+<p> <%= form_tag "locations", :method => 'get' do %>
+  Time of Day (AM | PM) 
+  <% check_box_tag 'tos', 'yes', false, class: 'accept_tos'%>
+  <%= text_field_tag "daytime", params[:daytime] %>
+  Keyword
+  <%= text_field_tag "keyword", params[:keyword] %>
+  <%= submit_tag "Search" %>
+<% end %>  </p>

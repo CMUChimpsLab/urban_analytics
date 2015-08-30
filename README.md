@@ -1,11 +1,9 @@
 # Scripts etc for urban analytics work
-Doc updated 2015-05-15
+Doc updated 2015-08-30
 
 ## get_data/
 
-Scripts to download Tweets, Instagrams, and Flickr photos, along with some monitoring stuff, and tools that will help us know if any of our data collection is broken at all. These scripts are basically running 24/7. (at least, the Twitter and Instagram ones are; the Flickr one just ran once to get all historical photos.)
-
-Also `load_tweets_into_postgres` and `load_instagrams_into_postgres`, which are there to transfer all that data from Mongo to PostgreSQL, and are maintained for the functions `tweet_to_insert_string` and `instagram_to_insert_string`, which map between JSON objects from APIs and database rows.
+There used to be a folder called `get_data`. It was there to contain all the scripts where we would gather data from social media (twitter, instagram). It's since been moved over to another repo, `scrape_social_media_in_area`.
 
 ## analyze/
 

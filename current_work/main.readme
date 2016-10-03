@@ -1,0 +1,12 @@
+This is the major part of the back end code. To run this code, please first read "report.pdf" and "poster.pdf" in this folder.
+
+There are five major components of code in this repository.
+0. tweet preprocessing (see "main.py") 
+1. topic selection
+2. keywords selection
+3. tweet topic matching
+4. visualization
+
+To get the result, please run the four components sequentially.
+
+For the detail of the four components, refer to the readme file in its folders and the pdf document.

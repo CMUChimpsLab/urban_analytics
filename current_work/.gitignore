@@ -1,0 +1,5 @@
+*.pyc
+nltk_data/bin
+nltk_env/
+txt/
+.idea

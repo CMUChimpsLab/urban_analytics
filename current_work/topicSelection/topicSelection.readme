@@ -1,0 +1,3 @@
+The this part is used to generate the topics that people interested in about the city. 
+
+After running the code, we can get the result of LDA algorithm. Then the topic related to the urban can be selected with little human supervision. 

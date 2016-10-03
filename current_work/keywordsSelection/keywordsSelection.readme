@@ -1,0 +1,5 @@
+This part is used to generate a bag of keywords related to a certain topic. 
+In this part, we should
+1. run "termWordGenerator.py" to obtain the term words to every tweet
+2. run "myWord2vec.py" to train the word2vec model in the term word corpus
+3. generate the bag of keywords iteratively with "selectKeywords.py" (refer to the pdf document for details)
